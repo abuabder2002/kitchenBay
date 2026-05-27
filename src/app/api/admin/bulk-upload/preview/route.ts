@@ -56,8 +56,13 @@ export async function POST(req: NextRequest) {
     const invalidRows: any[] = [];
     const duplicateRows: any[] = [];
 
+    interface ExistingProduct {
+      sku: string | null;
+      name: string;
+    }
+
     // Fetch existing SKUs and names to check for duplicates
-    const existingProducts = await prisma.product.findMany({
+    const existingProducts: ExistingProduct[] = await prisma.product.findMany({
       select: {
         sku: true,
         name: true,
