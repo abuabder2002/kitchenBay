@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String        @id @default(cuid())
+  clerkUserId   String?       @unique
+  name          String?
+  email         String        @unique
+  password      String?
+  image         String?
+  role          Role          @default(USER)
+  orders        Order[]
+  addresses     Address[]
+  cart          Cart?
+  wishlist      Wishlist?
+  bulkInquiries BulkInquiry[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  street    String
+  city      String
+  state     String
+  zip       String
+  country   String   @default("India")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id               String            @id @default(cuid())
+  name             String
+  description      String
+  price            Int               // Stored in paise (currency * 100)
+  discountPrice    Int?              // Optional discounted price in paise
+  gstPercent       Int               @default(18)
+  stock            Int               @default(0)
+  category         String
+  subcategory      String?           // Optional sub‑category
+  sku              String?           @unique // Stock‑keeping unit, unique if present
+  material         String?           // Material description
+  dimensions       String?           // e.g., "10x20x5 cm"
+  tags             String[] // Array of tags/keywords
+  moq              Int?              // Minimum Order Quantity for bulk
+  bulkPricingTiers Json?             // [{ qty: number, price: number }]
+  image            String
+  rating           Float             @default(0)
+  reviewCount      Int               @default(0)
+  featured         Boolean           @default(false)
+  bulkInquiryItems BulkInquiryItem[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id])
+  totalAmount    Int
+  status         OrderStatus @default(PENDING)
+  razorpayId     String?     @unique
+  paymentStatus  String      @default("PENDING")
+  shippingAddrId String?
+  items          OrderItem[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Int     // Price at the time of purchase in paise
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model TraditionVideo {
+  id        String   @id @default(cuid())
+  videoUrl  String
+  title     String
+  thumbnail String?
+  link      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+}
+
+model Wishlist {
+  id        String         @id @default(cuid())
+  userId    String         @unique
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     WishlistItem[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([wishlistId, productId])
+}
+
+model BulkInquiry {
+  id                  String            @id @default(cuid())
+  userId              String?           // Nullable for guest inquiries
+  user                User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName        String
+  companyName         String?
+  mobile              String
+  email               String
+  gstNumber           String?
+  deliveryLocation    String
+  specialRequirements String?
+  preferredContact    String            // "EMAIL" | "WHATSAPP" | "PHONE"
+  status              String            @default("PENDING") // PENDING, CONTACTED, QUOTATION_SENT, APPROVED, REJECTED, COMPLETED
+  adminNotes          String?
+  negotiatedPrice     Int?              // Custom negotiated pricing in paise
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  items               BulkInquiryItem[]
+}
+
+model BulkInquiryItem {
+  id         String      @id @default(cuid())
+  inquiryId  String
+  productId  String
+  quantity   Int
+  inquiry    BulkInquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model BulkImportLog {
+  id              String   @id @default(cuid())
+  adminEmail      String   // email of admin who performed the upload
+  fileName        String   // original uploaded file name
+  totalRows       Int
+  successCount    Int
+  failedCount     Int
+  duplicateCount  Int
+  createdAt       DateTime @default(now())
+}
+

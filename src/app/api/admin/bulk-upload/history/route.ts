@@ -1,0 +1,40 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { currentUser } from '@clerk/nextjs/server';
+
+async function verifyAdmin() {
+  const clerkUser = await currentUser();
+  if (!clerkUser) return { error: 'Please sign in to continue', status: 401 };
+
+  const email = clerkUser.emailAddresses?.[0]?.emailAddress;
+  if (!email) return { error: 'Clerk email address not found', status: 401 };
+
+  const user = await prisma.user.findUnique({ where: { clerkUserId: clerkUser.id } });
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
+  
+  if (!user || user.email.toLowerCase() !== adminEmail.toLowerCase()) {
+    return { error: 'Unauthorized: Admin privileges required', status: 403 };
+  }
+
+  return { user, email };
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const auth = await verifyAdmin();
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
+    const logs = await prisma.bulkImportLog.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json({ success: true, logs });
+  } catch (error: any) {
+    console.error('Error fetching bulk upload history:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch bulk upload history' }, { status: 500 });
+  }
+}

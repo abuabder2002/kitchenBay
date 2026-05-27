@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-brand-accent: #1D4ED8;          /* Royal Blue */
+  --color-brand-accent-hover: #1E40AF;    /* Deep Blue */
+  --color-brand-accent-yellow: #FBBF24;  /* Golden Yellow */
+  --color-brand-accent-yellow-hover: #F59E0B; /* Amber */
+  --color-brand-bg: #FFFFFF;
+  --color-brand-card: #EFF6FF;            /* Light blue tint */
+  --color-brand-text: #0F172A;
+  --color-brand-muted: #64748B;
+  --color-brand-border: #BFDBFE;          /* Blue-200 */
+  --color-brand-success: #10B981;
+  --color-brand-top-bar: #1E3A8A;         /* Dark Navy Blue */
+  
+  /* Override Tailwind's default blues to match our premium brand blue */
+  --color-blue-50: #EFF6FF;
+  --color-blue-100: #DBEAFE;
+  --color-blue-200: #BFDBFE;
+  --color-blue-300: #93C5FD;
+  --color-blue-400: #60A5FA;
+  --color-blue-500: #3B82F6;
+  --color-blue-600: #1D4ED8;
+  --color-blue-700: #1E40AF;
+  --color-blue-800: #1E3A8A;
+  --color-blue-900: #1E3A8A;
+  --color-blue-950: #0B1A30;
+
+  /* Override Tailwind's default yellows to match our brand gold */
+  --color-yellow-50: #FEFCE8;
+  --color-yellow-100: #FEF9C3;
+  --color-yellow-200: #FEF08A;
+  --color-yellow-300: #FDE047;
+  --color-yellow-400: #FBBF24;
+  --color-yellow-500: #FBBF24; /* Golden Yellow */
+  --color-yellow-600: #F59E0B; /* Amber */
+  --color-yellow-700: #D97706;
+
+  --font-heading: var(--font-lato);
+  --font-body: var(--font-nunito-sans);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  ::selection {
+    background-color: var(--color-brand-accent);
+    color: #ffffff;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
 }
