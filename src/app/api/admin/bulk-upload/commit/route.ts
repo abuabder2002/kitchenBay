@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
 import { downloadImage } from '@/lib/images/download';
+import { Prisma } from '@prisma/client';
 
 // Helper to verify admin role
 async function verifyAdmin() {
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     // Step 2: Perform the database inserts inside a Prisma transaction
     let importedProducts: any[] = [];
     
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // To prevent duplicate products using SKU or product name during commit,
       // we check and make sure that we don't insert duplicate records.
       // If a product with the same SKU or Name already exists, we skip it (or we could update it,
