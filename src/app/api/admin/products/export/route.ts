@@ -30,8 +30,28 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const format = url.searchParams.get('format') || 'csv';
 
+    interface ExportProduct {
+      id: string;
+      name: string;
+      description: string;
+      category: string;
+      subcategory: string | null;
+      price: number;
+      discountPrice: number | null;
+      gstPercent: number;
+      stock: number;
+      sku: string | null;
+      material: string | null;
+      dimensions: string | null;
+      tags: string[];
+      image: string;
+      moq: number | null;
+      bulkPricingTiers: any;
+      createdAt: Date;
+    }
+
     // Fetch all products from PostgreSQL database
-    const products = await prisma.product.findMany({
+    const products: ExportProduct[] = await prisma.product.findMany({
       orderBy: { createdAt: 'desc' },
     });
 

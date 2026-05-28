@@ -27,8 +27,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
+    interface AdminOrder {
+      id: string;
+      shippingAddrId: string | null;
+      totalAmount: number;
+      paymentStatus: string;
+      status: string;
+      createdAt: Date;
+      items: any[];
+      user: {
+        name: string | null;
+        email: string;
+      };
+    }
+
     // Fetch all orders in the entire database
-    const orders = await prisma.order.findMany({
+    const orders: AdminOrder[] = await prisma.order.findMany({
       include: {
         items: true,
         user: true,
