@@ -88,7 +88,7 @@ Defined in `prisma/schema.prisma`.
 *   **Database Features:** Complete PostgreSQL schema with Prisma ORM.
 *   **Bulk Upload Features:** Schema support for `BulkImportLog`.
 *   **Bulk Inquiry Features:** B2B forms (`BulkInquiryModal.tsx`), database schema, and `/api/bulk-inquiries` routes.
-*   **Design & UI:** Luxury aesthetic with custom fonts (Playfair Display, DM Sans), smooth micro-animations, and responsive layout.
+*   **Design & UI:** Fully overhauled to a Zishta-inspired premium heritage aesthetic. Uses HSL/Hex theme variables (Cream, Deep Brown, Dark Olive Green). Features include a sticky mega-menu, editorial-style Brand Story page, masonry grid PLP with persistent sidebar, and a highly immersive PDP with sticky buy buttons and narrative tabs. Typography uses Playfair Display for headings and Nunito Sans for body.
 
 ## 7. Pending / Upcoming Features
 

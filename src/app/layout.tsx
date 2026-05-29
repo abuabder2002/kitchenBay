@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Lato, Nunito_Sans } from 'next/font/google';
+import { Playfair_Display, Nunito_Sans } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/cartContext';
 import { WishlistProvider } from '@/lib/wishlistContext';
@@ -8,16 +8,16 @@ import { AuthProvider } from '@/lib/authContext';
 import { OrdersProvider } from '@/lib/ordersContext';
 import { NextAuthProvider } from '@/components/Providers';
 
-const lato = Lato({ 
-  weight: ['300', '400', '700', '900'], 
+const playfair = Playfair_Display({ 
+  weight: ['400', '500', '600', '700', '800', '900'], 
   subsets: ['latin'], 
-  variable: '--font-lato' 
+  variable: '--font-heading' 
 });
 
 const nunitoSans = Nunito_Sans({ 
-  weight: ['400', '600', '700'], 
+  weight: ['300', '400', '600', '700'], 
   subsets: ['latin'], 
-  variable: '--font-nunito-sans' 
+  variable: '--font-body' 
 });
 
 export const metadata: Metadata = {
@@ -32,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${lato.variable} ${nunitoSans.variable} font-[family-name:var(--font-body)] bg-[--color-brand-bg] text-[--color-brand-text] antialiased selection:bg-[--color-brand-accent] selection:text-white`}>
+      <body className={`${playfair.variable} ${nunitoSans.variable} font-[family-name:var(--font-body)] bg-[--color-brand-bg] text-[--color-brand-text] antialiased selection:bg-[--color-brand-accent] selection:text-white`}>
         <NextAuthProvider>
           <AuthProvider>
             <ProductsProvider>

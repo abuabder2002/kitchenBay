@@ -8,11 +8,11 @@ import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/lib/productsContext';
 import { useCart } from '@/lib/cartContext';
 import {
-  Star, ShoppingCart, Zap, Shield, Truck, Package,
-  ChevronLeft, Check, Info
+  Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import BulkInquiryModal from '@/components/BulkInquiryModal';
+import Image from 'next/image';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +23,8 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  
+  const [activeTab, setActiveTab] = useState<'story' | 'artisan' | 'care'>('story');
 
   if (!product) return notFound();
 
@@ -32,7 +34,6 @@ export default function ProductDetailPage() {
   const sgstPercent = product.gstPercent / 2;
   const cgstAmount = Math.floor(gstAmount / 2);
   const sgstAmount = gstAmount - cgstAmount;
-  const inCart = items.find(i => i.product.id === product.id);
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
@@ -44,227 +45,242 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[--color-brand-bg]">
       <Navbar />
-      <main className="flex-1 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <main className="flex-1 w-full pb-24">
+        
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/" className="hover:text-blue-600">Home</Link>
-          <span>/</span>
-          <Link href="/products" className="hover:text-blue-600">Products</Link>
-          <span>/</span>
-          <span className="capitalize text-gray-400">{product.category}</span>
-          <span>/</span>
-          <span className="text-gray-700 font-medium line-clamp-1">{product.name}</span>
-        </nav>
+        <div className="border-b border-[--color-brand-border] bg-white">
+          <nav className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-2 text-xs uppercase tracking-widest text-[--color-brand-muted]">
+            <Link href="/" className="hover:text-[--color-brand-text] transition-colors">Home</Link>
+            <span>/</span>
+            <Link href="/products" className="hover:text-[--color-brand-text] transition-colors">Products</Link>
+            <span>/</span>
+            <span className="text-[--color-brand-text] font-bold line-clamp-1">{product.name}</span>
+          </nav>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          {/* Image */}
-          <div className="relative bg-white rounded-3xl border border-gray-100 overflow-hidden aspect-square max-h-[520px] shadow-sm">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
-            {product.featured && (
-              <span className="absolute top-4 left-4 bg-gradient-to-r from-blue-600 to-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                <Zap size={12} /> Featured
-              </span>
-            )}
-          </div>
-
-          {/* Details */}
-          <div className="flex flex-col">
-            <span className="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full capitalize w-fit mb-3">
-              {product.category}
-            </span>
-            <h1 className="text-3xl font-bold text-gray-900 leading-tight mb-3">{product.name}</h1>
-
-            {/* Rating */}
-            <div className="flex items-center gap-3 mb-5">
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map(s => (
-                  <Star key={s} size={16} className={s <= Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'} />
-                ))}
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-16">
+            
+            {/* Left: Image Gallery */}
+            <div className="space-y-6">
+              <div className="relative w-full aspect-[4/5] md:aspect-[3/4] bg-white rounded-sm overflow-hidden shadow-md">
+                <Image
+                  src={product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop'}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
-              <span className="text-sm font-semibold text-gray-700">{product.rating}</span>
-              <span className="text-sm text-gray-400">({product.reviewCount} reviews)</span>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-blue-50 border border-blue-50 rounded-2xl p-5 mb-6">
-              <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 uppercase tracking-wider mb-3">
-                <Info size={13} /> Price Breakdown (CGST + SGST Inclusive)
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Base Price (excl. tax)</span>
-                  <span className="font-medium text-gray-800">{formatPrice(product.price)}</span>
-                </div>
-                {product.gstPercent > 0 ? (
-                  <>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">CGST ({cgstPercent}%)</span>
-                      <span className="font-medium text-emerald-600">+ {formatPrice(cgstAmount)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">SGST ({sgstPercent}%)</span>
-                      <span className="font-medium text-emerald-600">+ {formatPrice(sgstAmount)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-400">
-                      <span>Total Tax (CGST + SGST = {product.gstPercent}%)</span>
-                      <span>{formatPrice(gstAmount)}</span>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-xs text-gray-500">GST exempt — no tax applicable</p>
-                )}
-                <div className="border-t border-blue-200 pt-2 mt-2 flex justify-between">
-                  <span className="font-bold text-gray-900">Final Price</span>
-                  <span className="text-2xl font-bold text-blue-700">{formatPrice(product.finalPrice)}</span>
-                </div>
+              <div className="grid grid-cols-4 gap-4">
+                 <div className="relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 border-[--color-brand-text] cursor-pointer">
+                    <Image src={product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=400&auto=format&fit=crop'} alt="Thumb 1" fill className="object-cover opacity-100" />
+                 </div>
+                 {/* Placeholders for additional gallery images */}
+                 {[1,2,3].map(i => (
+                   <div key={i} className="relative w-full aspect-square bg-[--color-brand-card] rounded-sm overflow-hidden border border-transparent cursor-not-allowed opacity-50">
+                      <Image src={product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=400&auto=format&fit=crop'} alt={`Thumb ${i+1}`} fill className="object-cover" />
+                   </div>
+                 ))}
               </div>
             </div>
 
-            {/* Stock */}
-            <div className="flex items-center gap-2 mb-5">
-              <div className={`w-2 h-2 rounded-full ${product.stock > 20 ? 'bg-emerald-500' : product.stock > 0 ? 'bg-orange-500' : 'bg-red-500'}`} />
-              <span className={`text-sm font-medium ${product.stock > 20 ? 'text-emerald-600' : product.stock > 0 ? 'text-orange-600' : 'text-red-600'}`}>
-                {product.stock > 20 ? `In Stock (${product.stock} units)` : product.stock > 0 ? `Only ${product.stock} left!` : 'Out of Stock'}
-              </span>
-            </div>
-
-            {/* Quantity & Cart */}
-            {product.stock > 0 && (
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="w-10 h-11 text-xl text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    −
-                  </button>
-                  <span className="w-12 text-center text-sm font-semibold text-gray-800">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
-                    className="w-10 h-11 text-xl text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    +
-                  </button>
-                </div>
-                <button
-                  onClick={handleAddToCart}
-                  className={`flex-1 flex items-center justify-center gap-2 font-semibold py-3 rounded-xl transition-all ${
-                    added
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-blue-600 hover:bg-blue-700 active:scale-95 text-white shadow-lg shadow-blue-200'
-                  }`}
-                >
-                  {added ? <><Check size={18} /> Added!</> : <><ShoppingCart size={18} /> Add to Cart</>}
-                </button>
-                <Link
-                  href="/cart"
-                  className="px-5 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-colors"
-                >
-                  Buy Now
-                </Link>
-              </div>
-            )}
-
-            {/* B2B Wholesale Section */}
-            <div className="bg-gradient-to-br from-blue-950 to-[#0b1b30] text-white rounded-2xl p-5 mb-6 border border-blue-900 shadow-md">
-              <div className="flex items-center gap-2 text-xs font-bold text-yellow-400 uppercase tracking-wider mb-2">
-                <Package size={13} /> Wholesale & Business buyers (B2B)
-              </div>
-              <h3 className="text-base font-bold mb-2">Interested in Bulk Orders?</h3>
-              <p className="text-xs text-blue-200/80 leading-relaxed mb-4">
-                Get customized pricing, volume discounts, tax-invoices, and dedicated support for hotels, restaurants, corporate gifting, or resellers.
-              </p>
-
-              <div className="grid grid-cols-2 gap-4 mb-4 bg-blue-950/40 p-3.5 rounded-xl border border-blue-900/40">
+            {/* Right: Sticky Details */}
+            <div className="relative">
+              <div className="sticky top-32 space-y-8">
+                
+                {/* Header */}
                 <div>
-                  <span className="block text-[10px] text-blue-400 uppercase font-semibold">Minimum Quantity (MOQ)</span>
-                  <span className="text-sm font-bold text-yellow-400">{product.category === 'kitchenware' ? '50 units' : '30 units'}</span>
+                  <span className="inline-block text-xs font-bold text-[--color-brand-accent] uppercase tracking-widest mb-4 border border-[--color-brand-accent] px-3 py-1">
+                    {product.material}
+                  </span>
+                  <h1 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] leading-tight mb-4">
+                    {product.name}
+                  </h1>
+                  
+                  {/* Rating */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map(s => (
+                        <Star key={s} size={16} className={s <= Math.floor(product.rating) ? 'fill-[--color-brand-accent-yellow] text-[--color-brand-accent-yellow]' : 'fill-gray-300 text-gray-300'} />
+                      ))}
+                    </div>
+                    <span className="text-sm font-bold text-[--color-brand-text]">{product.rating}</span>
+                    <span className="text-sm text-[--color-brand-muted] underline decoration-[--color-brand-border] hover:decoration-[--color-brand-muted] cursor-pointer transition-colors">
+                      {product.reviewCount} Reviews
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="block text-[10px] text-blue-400 uppercase font-semibold">Estimated Volume Discounts</span>
-                  <span className="text-sm font-bold text-emerald-400">Up to 30% OFF</span>
-                </div>
-              </div>
 
-              {/* Volume Tiers Table */}
-              <div className="text-xs border border-blue-900/60 rounded-xl overflow-hidden mb-4">
-                <div className="bg-blue-900/20 px-3 py-1.5 font-semibold text-blue-300 border-b border-blue-900/60 grid grid-cols-2">
-                  <span>Quantity Range</span>
-                  <span className="text-right">Expected Discount</span>
+                {/* Price block */}
+                <div className="pt-6 border-t border-[--color-brand-border]">
+                  <div className="flex items-baseline gap-4 mb-2">
+                    <span className="text-3xl font-bold text-[--color-brand-text]">{formatPrice(product.finalPrice)}</span>
+                    {product.discount > 0 && (
+                      <span className="text-xl line-through text-[--color-brand-muted]">{formatPrice(product.originalPrice)}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-6">Inclusive of all taxes</p>
+
+                  <div className="bg-[--color-brand-card]/50 p-4 rounded-sm text-sm border border-[--color-brand-border]">
+                     <div className="flex items-center gap-2 font-bold text-[--color-brand-text] mb-3">
+                       <Info size={16} /> Tax Breakdown
+                     </div>
+                     <div className="flex justify-between text-[--color-brand-muted] mb-1">
+                       <span>Base Price</span>
+                       <span className="font-medium text-[--color-brand-text]">{formatPrice(product.price)}</span>
+                     </div>
+                     {product.gstPercent > 0 ? (
+                       <>
+                         <div className="flex justify-between text-[--color-brand-muted] mb-1">
+                           <span>CGST ({cgstPercent}%)</span>
+                           <span className="font-medium text-[--color-brand-text]">+{formatPrice(cgstAmount)}</span>
+                         </div>
+                         <div className="flex justify-between text-[--color-brand-muted]">
+                           <span>SGST ({sgstPercent}%)</span>
+                           <span className="font-medium text-[--color-brand-text]">+{formatPrice(sgstAmount)}</span>
+                         </div>
+                       </>
+                     ) : (
+                       <div className="text-[--color-brand-muted] italic mt-2">GST Exempt (Handicraft)</div>
+                     )}
+                  </div>
                 </div>
-                {product.category === 'kitchenware' ? (
-                  <div className="divide-y divide-blue-900/40">
-                    <div className="px-3 py-1.5 grid grid-cols-2">
-                      <span>50 – 99 units</span>
-                      <span className="text-right text-emerald-400 font-bold">10% OFF</span>
+
+                {/* Description */}
+                <div className="text-[--color-brand-text] leading-relaxed">
+                  {product.description}
+                </div>
+
+                {/* Add to Cart Area */}
+                {product.stock > 0 ? (
+                  <div className="space-y-4 pt-6 border-t border-[--color-brand-border]">
+                    <div className="flex items-center gap-4">
+                      {/* Quantity selector */}
+                      <div className="flex items-center border border-[--color-brand-text] rounded-sm">
+                        <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Minus size={16}/></button>
+                        <span className="w-8 text-center font-bold text-[--color-brand-text]">{quantity}</span>
+                        <button onClick={() => setQuantity(q => Math.min(product.stock, q + 1))} className="px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Plus size={16}/></button>
+                      </div>
+                      
+                      <button
+                        onClick={handleAddToCart}
+                        className={`flex-1 flex items-center justify-center gap-3 py-4 font-bold uppercase tracking-widest text-sm transition-all rounded-sm ${
+                          added
+                            ? 'bg-[--color-brand-success] text-white'
+                            : 'bg-[--color-brand-text] hover:bg-[--color-brand-accent] text-[--color-brand-bg]'
+                        }`}
+                      >
+                        {added ? <><Check size={18} /> Added</> : 'Add to Cart'}
+                      </button>
                     </div>
-                    <div className="px-3 py-1.5 grid grid-cols-2">
-                      <span>100 – 249 units</span>
-                      <span className="text-right text-emerald-400 font-bold">20% OFF</span>
-                    </div>
-                    <div className="px-3 py-1.5 grid grid-cols-2">
-                      <span>250+ units</span>
-                      <span className="text-right text-emerald-400 font-bold">30% OFF</span>
-                    </div>
+
+                    <Link
+                      href="/cart"
+                      className="block w-full text-center py-4 border-2 border-[--color-brand-text] text-[--color-brand-text] font-bold uppercase tracking-widest text-sm hover:bg-[--color-brand-text] hover:text-[--color-brand-bg] transition-colors rounded-sm"
+                    >
+                      Buy It Now
+                    </Link>
+
+                    <p className="text-xs font-bold text-[--color-brand-success] uppercase tracking-widest text-center mt-4 flex items-center justify-center gap-2">
+                       <Check size={14}/> Ready to ship — {product.stock} in stock
+                    </p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-blue-900/40">
-                    <div className="px-3 py-1.5 grid grid-cols-2">
-                      <span>30 – 74 units</span>
-                      <span className="text-right text-emerald-400 font-bold">10% OFF</span>
-                    </div>
-                    <div className="px-3 py-1.5 grid grid-cols-2">
-                      <span>75 – 149 units</span>
-                      <span className="text-right text-emerald-400 font-bold">15% OFF</span>
-                    </div>
-                    <div className="px-3 py-1.5 grid grid-cols-2">
-                      <span>150+ units</span>
-                      <span className="text-right text-emerald-400 font-bold">25% OFF</span>
-                    </div>
+                  <div className="pt-6 border-t border-[--color-brand-border]">
+                     <div className="bg-red-50 text-red-600 font-bold uppercase tracking-widest py-4 text-center rounded-sm border border-red-200">
+                        Out of Stock
+                     </div>
                   </div>
                 )}
-              </div>
 
-              <button
-                onClick={() => setIsBulkModalOpen(true)}
-                className="w-full bg-yellow-500 hover:bg-yellow-400 active:scale-[0.98] text-blue-950 font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-yellow-500/10 flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Package size={14} /> Request Bulk Quotation
-              </button>
-            </div>
-
-            {/* Description */}
-            <div className="mb-6">
-              <h2 className="text-sm font-semibold text-gray-800 mb-2">Description</h2>
-              <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>
-            </div>
-
-            {/* Features */}
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { icon: Truck, label: 'Free Delivery' },
-                { icon: Shield, label: 'GST Invoice' },
-                { icon: Package, label: 'Easy Returns' },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex flex-col items-center gap-1.5 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <Icon size={18} className="text-blue-600" />
-                  <span className="text-xs font-medium text-gray-600 text-center">{label}</span>
+                {/* Features */}
+                <div className="grid grid-cols-3 gap-4 pt-8">
+                  {[
+                    { icon: Truck, label: 'Free Worldwide Shipping' },
+                    { icon: ShieldCheck, label: 'Authentic Heritage' },
+                    { icon: Package, label: 'Secure Packaging' },
+                  ].map(({ icon: Icon, label }) => (
+                    <div key={label} className="flex flex-col items-center text-center gap-2 p-4 bg-white border border-[--color-brand-border] rounded-sm">
+                      <Icon size={24} className="text-[--color-brand-accent]" />
+                      <span className="text-xs font-bold text-[--color-brand-text] uppercase tracking-wide leading-tight">{label}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+
+                {/* Bulk Wholesale */}
+                <div className="bg-gradient-to-br from-[#3E322A] to-[#2A221C] p-6 rounded-sm text-[--color-brand-bg] shadow-xl mt-8">
+                  <div className="flex items-center gap-3 text-[--color-brand-accent-yellow] mb-2 uppercase tracking-widest text-xs font-bold">
+                    <Package size={16} /> Wholesale / B2B
+                  </div>
+                  <h3 className="font-[family-name:var(--font-heading)] text-2xl font-bold mb-2">Curating for a project?</h3>
+                  <p className="text-sm text-[--color-brand-bg]/80 mb-6">
+                    Special pricing available for restaurants, hotels, and corporate gifting. Minimum order {product.category === 'kitchenware' ? '50' : '30'} units.
+                  </p>
+                  <button
+                    onClick={() => setIsBulkModalOpen(true)}
+                    className="w-full bg-[--color-brand-accent-yellow] hover:bg-[--color-brand-accent-yellow-hover] text-[--color-brand-text] font-bold py-3 uppercase tracking-widest text-xs transition-colors rounded-sm"
+                  >
+                    Request Trade Quote
+                  </button>
+                </div>
+
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Related Products */}
+        {/* ── Tabs Section: Story / Artisan / Care ──────────────────────── */}
+        <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 py-24">
+           <div className="flex items-center justify-center gap-8 md:gap-16 border-b border-[--color-brand-border] mb-12">
+              {[
+                { id: 'story', label: 'The Story' },
+                { id: 'artisan', label: 'The Maker' },
+                { id: 'care', label: 'Care & Use' }
+              ].map(tab => (
+                 <button 
+                   key={tab.id}
+                   onClick={() => setActiveTab(tab.id as any)}
+                   className={`pb-4 text-sm font-bold uppercase tracking-widest transition-all ${
+                     activeTab === tab.id 
+                       ? 'text-[--color-brand-text] border-b-2 border-[--color-brand-accent]' 
+                       : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'
+                   }`}
+                 >
+                   {tab.label}
+                 </button>
+              ))}
+           </div>
+           
+           <div className="text-center font-serif text-xl md:text-2xl text-[--color-brand-text] leading-relaxed max-w-3xl mx-auto">
+              {activeTab === 'story' && (
+                <p>
+                  Rooted in centuries-old traditions, this {product.material} piece is shaped exactly as it was during the eras of ancient Indian kingdoms. The craft has survived through generations, passing from father to son, preserving not just a technique, but a way of life that celebrates slow, intentional creation.
+                </p>
+              )}
+              {activeTab === 'artisan' && (
+                <p>
+                  Crafted by master artisans in rural clusters who have dedicated their entire lives to perfecting the art of working with {product.material}. Every hammer mark and curve is a testament to human hands. By bringing this to your home, you directly support their livelihood and help keep this dying art alive.
+                </p>
+              )}
+              {activeTab === 'care' && (
+                <p>
+                  Natural materials require natural care. Wash only with mild soap and warm water. Avoid harsh chemicals or abrasive scrubbers. Dry completely immediately after washing to prevent natural oxidation. With love and proper seasoning, this piece will outlive us all.
+                </p>
+              )}
+           </div>
+        </div>
+
+        {/* ── Related Products ──────────────────────────────────────────── */}
         {related.length > 0 && (
-          <section className="mt-16">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Related Products</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 border-t border-[--color-brand-border] pt-24">
+            <div className="text-center mb-16">
+              <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Complete The Look</span>
+              <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">You May Also Love</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {related.map(p => <ProductCard key={p.id} product={p} />)}
             </div>
           </section>
