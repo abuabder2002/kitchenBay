@@ -25,6 +25,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
 
 type PaymentMethod = 'RAZORPAY' | 'COD';
 
@@ -219,6 +220,33 @@ export default function CheckoutPage() {
             setPlacedOrderId(verifyData.orderId);
             clearCart();
             setOrdered(true);
+            
+            // Show SweetAlert
+            Swal.fire({
+              title: 'Order Placed!',
+              text: 'Your order has been successfully placed.',
+              icon: 'success',
+              confirmButtonColor: '#2563EB'
+            });
+
+            // Send Email Notification
+            fetch('/api/send-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                order: {
+                  id: verifyData.orderId,
+                  customer: form.fullName,
+                  email: form.email,
+                  items: items,
+                  subtotal,
+                  cgstAmount,
+                  sgstAmount,
+                  total
+                },
+                status: 'processing'
+              })
+            }).catch(console.error);
           } catch (err: any) {
             stopTimer();
             setPaymentFailed(true);
@@ -288,6 +316,33 @@ export default function CheckoutPage() {
       setPlacedOrderId(data.id);
       clearCart();
       setOrdered(true);
+
+      // Show SweetAlert
+      Swal.fire({
+        title: 'Order Placed!',
+        text: 'Your order has been successfully placed.',
+        icon: 'success',
+        confirmButtonColor: '#2563EB'
+      });
+
+      // Send Email Notification
+      fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order: {
+            id: data.id,
+            customer: form.fullName,
+            email: form.email,
+            items: items,
+            subtotal,
+            cgstAmount,
+            sgstAmount,
+            total
+          },
+          status: 'processing'
+        })
+      }).catch(console.error);
     } catch (err: any) {
       setErrorMsg(err.message || 'Error placing COD order.');
     } finally {

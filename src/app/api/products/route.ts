@@ -1,0 +1,105 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+
+export async function GET() {
+  try {
+    const dbProducts = await prisma.product.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const formattedProducts = dbProducts.map(p => {
+      const basePrice = p.price / 100;
+      const gstAmount = Math.round(basePrice * p.gstPercent / 100);
+      const finalPrice = basePrice + gstAmount;
+      const originalPrice = p.discountPrice ? p.discountPrice / 100 : finalPrice;
+      const discount = originalPrice > finalPrice ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
+
+      return {
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: basePrice,
+        originalPrice: originalPrice,
+        finalPrice: finalPrice,
+        discount: discount,
+        gstPercent: p.gstPercent,
+        stock: p.stock,
+        category: p.category,
+        subcategory: p.subcategory || p.category,
+        material: p.material || 'Standard',
+        dimensions: p.dimensions,
+        tags: p.tags,
+        image: p.image,
+        rating: p.rating,
+        reviewCount: p.reviewCount,
+        featured: p.featured,
+        isFromDb: true
+      };
+    });
+
+    return NextResponse.json(formattedProducts);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const data = await req.json();
+
+    const priceInPaise = Math.round(data.price * 100);
+    const originalPriceInPaise = data.originalPrice ? Math.round(data.originalPrice * 100) : null;
+
+    const newProduct = await prisma.product.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        price: priceInPaise,
+        discountPrice: originalPriceInPaise,
+        gstPercent: data.gstPercent,
+        stock: data.stock,
+        category: data.category,
+        subcategory: data.subcategory || data.category,
+        material: data.material || 'Standard',
+        dimensions: data.dimensions,
+        tags: data.tags || [],
+        image: data.image,
+        rating: data.rating || 0,
+        reviewCount: data.reviewCount || 0,
+        featured: data.featured || false,
+      }
+    });
+
+    const basePrice = newProduct.price / 100;
+    const gstAmount = Math.round(basePrice * newProduct.gstPercent / 100);
+    const finalPrice = basePrice + gstAmount;
+    const originalPrice = newProduct.discountPrice ? newProduct.discountPrice / 100 : finalPrice;
+    const discount = originalPrice > finalPrice ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
+
+    return NextResponse.json({
+      id: newProduct.id,
+      name: newProduct.name,
+      description: newProduct.description,
+      price: basePrice,
+      originalPrice: originalPrice,
+      finalPrice: finalPrice,
+      discount: discount,
+      gstPercent: newProduct.gstPercent,
+      stock: newProduct.stock,
+      category: newProduct.category,
+      subcategory: newProduct.subcategory || newProduct.category,
+      material: newProduct.material || 'Standard',
+      dimensions: newProduct.dimensions,
+      tags: newProduct.tags,
+      image: newProduct.image,
+      rating: newProduct.rating,
+      reviewCount: newProduct.reviewCount,
+      featured: newProduct.featured,
+      isFromDb: true
+    });
+  } catch (error) {
+    console.error('Error creating product:', error);
+    return NextResponse.json({ error: 'Failed to create product' }, { status: 500 });
+  }
+}

@@ -44,9 +44,10 @@ export interface Order {
 
 // ─── CATEGORIES ─────────────────────────────────────────────
 export const categories = [
-  { id: 'kitchenware', name: 'Kitchenware', icon: '🍳', count: 34 },
-  { id: 'dining',      name: 'Dining',      icon: '🍽️', count: 13 },
-  { id: 'decor',       name: 'Décor',       icon: '🪔',  count: 8  },
+  { id: 'kitchenware',   name: 'Kitchenware',         icon: '🍳', count: 34 },
+  { id: 'dining',        name: 'Dining',              icon: '🍽️', count: 13 },
+  { id: 'brass-copper',  name: 'Brass/Copper',        icon: '🫕', count: 7  },
+  { id: 'decor',         name: 'Décor',               icon: '🪔',  count: 8  },
 ];
 
 // ─── SUBCATEGORIES ───────────────────────────────────────────
@@ -61,8 +62,12 @@ export const subcategories = [
   { id: 'coffee-tea-maker',      name: 'Coffee & Tea Maker',    category: 'dining', icon: '☕' },
   { id: 'tray-bowls',            name: 'Tray & Bowls',          category: 'dining', icon: '🥗' },
   { id: 'pitcher-cups-glass',    name: 'Pitcher, Cups & Glass', category: 'dining', icon: '🥛' },
-  { id: 'brass-copper-cookware', name: 'Brass/Copper Cookware', category: 'kitchenware', icon: '🫕' },
   { id: 'dining-plates',         name: 'Dining Plates',         category: 'dining', icon: '🍽️' },
+  // Brass / Copper
+  { id: 'brass-cookware',        name: 'Brass Cookware',        category: 'brass-copper', icon: '🍯' },
+  { id: 'copper-cookware',       name: 'Copper Cookware',       category: 'brass-copper', icon: '🫖' },
+  { id: 'brass-dining',          name: 'Brass Dining & Serving',category: 'brass-copper', icon: '🥘' },
+  { id: 'brass-copper-cookware', name: 'All Brass/Copper',      category: 'brass-copper', icon: '🫕' },
   // Décor
   { id: 'lamp-diya',             name: 'Lamp & Diya',           category: 'decor', icon: '🪔' },
 ];
@@ -725,8 +730,8 @@ export const products: Product[] = [
     discount: 40,
     gstPercent: 18,
     stock: 35,
-    category: 'dining',
-    subcategory: 'coffee-tea-maker',
+    category: 'brass-copper',
+    subcategory: 'brass-dining',
     material: 'Brass',
     image: 'https://images.unsplash.com/photo-1577968897966-3d4325b36b61?w=600&auto=format&fit=crop&q=80',
     rating: 4.7,
@@ -869,7 +874,7 @@ export const products: Product[] = [
   },
 
   // ══════════════════════════════════════════════════════════
-  // DINING → Brass/Copper Cookware (3 products)
+  // BRASS/COPPER → All Brass/Copper (3 products)
   // ══════════════════════════════════════════════════════════
   {
     id: 'bcc-001',
@@ -881,8 +886,8 @@ export const products: Product[] = [
     discount: 23,
     gstPercent: 18,
     stock: 15,
-    category: 'dining',
-    subcategory: 'brass-copper-cookware',
+    category: 'brass-copper',
+    subcategory: 'brass-cookware',
     material: 'Brass',
     image: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=600&auto=format&fit=crop&q=80',
     rating: 4.6,
@@ -899,8 +904,8 @@ export const products: Product[] = [
     discount: 28,
     gstPercent: 18,
     stock: 12,
-    category: 'dining',
-    subcategory: 'brass-copper-cookware',
+    category: 'brass-copper',
+    subcategory: 'brass-cookware',
     material: 'Brass',
     image: 'https://images.unsplash.com/photo-1610393221976-654dbdbb242e?w=600&auto=format&fit=crop&q=80',
     rating: 4.5,
@@ -917,8 +922,8 @@ export const products: Product[] = [
     discount: 33,
     gstPercent: 18,
     stock: 10,
-    category: 'dining',
-    subcategory: 'brass-copper-cookware',
+    category: 'brass-copper',
+    subcategory: 'copper-cookware',
     material: 'Copper',
     image: 'https://images.unsplash.com/photo-1531685250784-7569952593d2?w=600&auto=format&fit=crop&q=80',
     rating: 4.7,

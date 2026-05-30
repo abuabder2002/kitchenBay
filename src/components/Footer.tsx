@@ -1,82 +1,211 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
-import { Smartphone } from 'lucide-react';
+import { Smartphone, Apple, Play } from 'lucide-react';
 import logoImg from '../images/logo.jpeg';
 
-const socialIcons = [
-  { label: 'Facebook', svg: <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /> },
-  { label: 'Instagram', svg: <><rect x="2" y="2" width="20" height="20" rx="5" ry="5" strokeWidth="1.5" /><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zM17.5 6.5h.01" strokeWidth="1.5" strokeLinecap="round" /></> },
-  { label: 'YouTube', svg: <><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z" strokeWidth="1.5" /><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></> },
+const socialLinks = [
+  {
+    label: 'Facebook',
+    href: 'https://facebook.com/kitchenbay',
+    svg: <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />,
+  },
+  {
+    label: 'Instagram',
+    href: 'https://instagram.com/kitchenbay',
+    svg: <><rect x="2" y="2" width="20" height="20" rx="5" ry="5" strokeWidth="1.5" /><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zM17.5 6.5h.01" strokeWidth="1.5" strokeLinecap="round" /></>,
+  },
+  {
+    label: 'YouTube',
+    href: 'https://youtube.com/@kitchenbay',
+    svg: <><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z" strokeWidth="1.5" /><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></>,
+  },
+];
+
+// Explicit correct paths — no slug-generation guessing
+const companyLinks = [
+  { label: 'About Us',      href: '/about-us'      },
+  { label: 'Careers',       href: '/careers'        },
+  { label: 'Press',         href: '/press'          },
+  { label: 'Blog',          href: '/blog'           },
+  { label: 'Store Locator', href: '/store-locator'  },
+  { label: 'Our Story',     href: '/story'          },
+];
+
+const helpLinks = [
+  { label: 'FAQ',               href: '/faq'             },
+  { label: 'Track Order',       href: '/track'           },  // page is at /track
+  { label: 'Returns & Refunds', href: '/returns-refunds' },
+  { label: 'Contact Us',        href: '/contact'         },  // page is at /contact
+  { label: 'Sitemap',           href: '/sitemap'         },
+];
+
+const policyLinks = [
+  { label: 'Privacy Policy', href: '/privacy-policy' },
+  { label: 'Terms of Use',   href: '/terms-of-use'   },
+  { label: 'Cookie Policy',  href: '/cookie-policy'  },
+  { label: 'GST Invoice',    href: '/gst-invoice'    },
+];
+
+const shopLinks = [
+  { label: 'All Products',   href: '/products'              },
+  { label: 'Kitchenware',    href: '/products?cat=Kitchenware' },
+  { label: 'Dining',         href: '/products?cat=Dining'   },
+  { label: 'Décor',          href: '/products?cat=Décor'    },
+  { label: 'Wishlist',       href: '/wishlist'              },
+  { label: 'My Orders',      href: '/orders'                },
 ];
 
 export default function Footer() {
   return (
     <footer className="w-full flex flex-col border-t-4 border-yellow-400">
-      {/* TOP FOOTER */}
-      <div className="bg-blue-950 text-white py-12">
+
+      {/* ── TOP FOOTER ────────────────────────────────────────────────── */}
+      <div className="bg-blue-950 text-white py-14">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-            
-            {/* Col 1 - Brand */}
-            <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10">
+
+            {/* Brand – spans 2 cols on large screens */}
+            <div className="lg:col-span-2 flex flex-col gap-5">
               <Link href="/">
-                <Image src={logoImg} alt="Brand Logo" width={180} height={40} className="object-contain h-10 w-auto invert brightness-0" />
+                <Image
+                  src={logoImg}
+                  alt="KitchenBay Logo"
+                  width={160}
+                  height={40}
+                  className="object-contain h-10 w-auto invert brightness-0"
+                />
               </Link>
-              <p className="text-sm text-blue-100/80">
-                India's Premium Destination for Authentic Handcrafted Kitchenware, Dining & Traditional Home Décor
+              <p className="text-sm text-blue-100/80 leading-relaxed max-w-xs">
+                India's Premium Destination for Authentic Handcrafted Kitchenware,
+                Dining &amp; Traditional Home Décor
               </p>
-              <div className="flex items-center gap-3 mt-2">
-                {socialIcons.map((item) => (
-                  <a key={item.label} href={`https://${item.label.toLowerCase()}.com/artisancraft`} target="_blank" rel="noopener noreferrer" aria-label={item.label} className="w-8 h-8 rounded-full border border-blue-800 flex items-center justify-center hover:bg-yellow-400 hover:border-yellow-400 hover:text-blue-950 transition-colors">
-                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor">{item.svg}</svg>
+
+              {/* Social icons */}
+              <div className="flex items-center gap-3 mt-1">
+                {socialLinks.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.label}
+                    className="w-9 h-9 rounded-full border border-blue-800 flex items-center justify-center hover:bg-yellow-400 hover:border-yellow-400 hover:text-blue-950 transition-all duration-200"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor">
+                      {item.svg}
+                    </svg>
                   </a>
                 ))}
               </div>
             </div>
 
-            {/* Col 2 - Company */}
+            {/* Company */}
             <div>
-              <h4 className="font-bold mb-4 uppercase text-sm text-yellow-400">Company</h4>
-              <ul className="flex flex-col gap-2 text-sm text-blue-200/80">
-                {['About Us', 'Careers', 'Press', 'Blog', 'Store Locator'].map(link => (
-                  <li key={link}><Link href={`/${link.toLowerCase().replace(/ /g, '-')}`} className="hover:text-yellow-400 transition-colors">{link}</Link></li>
+              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-yellow-400">Company</h4>
+              <ul className="flex flex-col gap-2.5 text-sm text-blue-200/80">
+                {companyLinks.map(({ label, href }) => (
+                  <li key={label}>
+                    <Link href={href} className="hover:text-yellow-400 transition-colors">
+                      {label}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </div>
 
-            {/* Col 3 - Help */}
+            {/* Shop */}
             <div>
-              <h4 className="font-bold mb-4 uppercase text-sm text-yellow-400">Help</h4>
-              <ul className="flex flex-col gap-2 text-sm text-blue-200/80">
-                {['FAQ', 'Track Order', 'Returns & Refunds', 'Contact Us', 'Sitemap'].map(link => (
-                  <li key={link}><Link href={`/${link.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`} className="hover:text-yellow-400 transition-colors">{link}</Link></li>
+              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-yellow-400">Shop</h4>
+              <ul className="flex flex-col gap-2.5 text-sm text-blue-200/80">
+                {shopLinks.map(({ label, href }) => (
+                  <li key={label}>
+                    <Link href={href} className="hover:text-yellow-400 transition-colors">
+                      {label}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </div>
 
-            {/* Col 4 - Policies */}
+            {/* Help */}
             <div>
-              <h4 className="font-bold mb-4 uppercase text-sm text-yellow-400">Policies</h4>
-              <ul className="flex flex-col gap-2 text-sm text-blue-200/80">
-                {['Privacy Policy', 'Terms of Use', 'Cookie Policy', 'GST Invoice'].map(link => (
-                  <li key={link}><Link href={`/${link.toLowerCase().replace(/ /g, '-')}`} className="hover:text-yellow-400 transition-colors">{link}</Link></li>
+              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-yellow-400">Help</h4>
+              <ul className="flex flex-col gap-2.5 text-sm text-blue-200/80">
+                {helpLinks.map(({ label, href }) => (
+                  <li key={label}>
+                    <Link href={href} className="hover:text-yellow-400 transition-colors">
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <h4 className="font-bold mt-7 mb-5 uppercase text-xs tracking-widest text-yellow-400">Policies</h4>
+              <ul className="flex flex-col gap-2.5 text-sm text-blue-200/80">
+                {policyLinks.map(({ label, href }) => (
+                  <li key={label}>
+                    <Link href={href} className="hover:text-yellow-400 transition-colors">
+                      {label}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </div>
 
-            {/* Col 5 - Get the App */}
+            {/* Get the App */}
             <div>
-              <h4 className="font-bold mb-4 uppercase text-sm text-yellow-400">Get the App</h4>
-              <p className="text-sm text-blue-200/80 mb-4">Download our app for exclusive deals</p>
+              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-yellow-400">Get the App</h4>
+              <p className="text-sm text-blue-200/80 mb-5 leading-relaxed">
+                Download our app for exclusive deals &amp; early access
+              </p>
               <div className="flex flex-col gap-3">
-                <button suppressHydrationWarning className="flex items-center justify-center gap-2 bg-white text-blue-950 rounded-full py-2 px-4 hover:bg-yellow-400 hover:text-blue-950 transition-colors w-40 font-semibold shadow-sm">
-                  <Smartphone size={18} />
-                  <span className="text-sm font-bold">App Store</span>
-                </button>
-                <button suppressHydrationWarning className="flex items-center justify-center gap-2 bg-white text-blue-950 rounded-full py-2 px-4 hover:bg-yellow-400 hover:text-blue-950 transition-colors w-40 font-semibold shadow-sm">
-                  <Smartphone size={18} />
-                  <span className="text-sm font-bold">Play Store</span>
-                </button>
+                <a
+                  href="https://apps.apple.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2.5 bg-white/10 hover:bg-yellow-400 hover:text-blue-950 text-white border border-white/20 hover:border-yellow-400 rounded-lg py-2.5 px-4 transition-all duration-200 group"
+                >
+                  <Apple size={18} className="shrink-0" />
+                  <div className="text-left">
+                    <p className="text-[10px] opacity-70 group-hover:opacity-100 leading-none">Download on the</p>
+                    <p className="text-sm font-bold leading-tight">App Store</p>
+                  </div>
+                </a>
+                <a
+                  href="https://play.google.com/store"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2.5 bg-white/10 hover:bg-yellow-400 hover:text-blue-950 text-white border border-white/20 hover:border-yellow-400 rounded-lg py-2.5 px-4 transition-all duration-200 group"
+                >
+                  <Play size={18} className="shrink-0" />
+                  <div className="text-left">
+                    <p className="text-[10px] opacity-70 group-hover:opacity-100 leading-none">Get it on</p>
+                    <p className="text-sm font-bold leading-tight">Play Store</p>
+                  </div>
+                </a>
+              </div>
+
+              {/* Newsletter */}
+              <div className="mt-7">
+                <h4 className="font-bold mb-3 uppercase text-xs tracking-widest text-yellow-400">Newsletter</h4>
+                <form
+                  onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing!'); }}
+                  className="flex gap-2"
+                >
+                  <input
+                    type="email"
+                    required
+                    placeholder="Your email"
+                    className="flex-1 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-blue-200/50 text-xs px-3 py-2.5 outline-none focus:border-yellow-400 transition-colors min-w-0"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-bold text-xs rounded-lg px-3 py-2.5 transition-colors shrink-0"
+                  >
+                    Join
+                  </button>
+                </form>
               </div>
             </div>
 
@@ -84,21 +213,25 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* BOTTOM FOOTER */}
+      {/* ── BOTTOM FOOTER ─────────────────────────────────────────────── */}
       <div className="bg-[#071120] py-4">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-blue-300/60 text-sm">
-            © 2026 ArtisanCraft. All Rights Reserved.
+            © {new Date().getFullYear()} KitchenBay. All Rights Reserved.
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            {['Razorpay', 'UPI', 'Visa', 'Mastercard', 'NetBanking'].map(method => (
-              <span key={method} className="bg-blue-950/80 text-blue-200/80 border border-blue-900/50 text-xs px-3 py-1 rounded-full">
+            {['Razorpay', 'UPI', 'Visa', 'Mastercard', 'NetBanking'].map((method) => (
+              <span
+                key={method}
+                className="bg-blue-950/80 text-blue-200/80 border border-blue-900/50 text-xs px-3 py-1 rounded-full"
+              >
                 {method}
               </span>
             ))}
           </div>
         </div>
       </div>
+
     </footer>
   );
 }

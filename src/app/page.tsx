@@ -24,14 +24,59 @@ const materials = [
 ];
 
 const journalEntries = [
-  { title: 'The Lost Art of Hand-Hammered Cookware', category: 'Craftsmanship', img: '/artisan_making_cookware.png' },
-  { title: 'Why Traditional Brass Adds Positive Energy', category: 'Heritage', img: '/journal_brass_energy.png' },
-  { title: 'Seasoning Your Cast Iron: A Masterclass', category: 'Care Guide', img: '/journal_cast_iron.png' }
+  { title: 'The Lost Art of Hand-Hammered Cookware', category: 'Craftsmanship', img: '/artisan_hammering_copper.png' },
+  { title: 'Why Traditional Brass Adds Positive Energy', category: 'Heritage', img: '/artisan_crafting_brass.png' },
+  { title: 'Seasoning Your Cast Iron: A Masterclass', category: 'Care Guide', img: '/artisan_forging_cast_iron.png' }
+];
+
+const promoSlides = [
+  {
+    title: "Premium Kitchenware",
+    subtitle: "Collection",
+    image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=800&auto=format&fit=crop",
+    link: "/products?category=kitchenware"
+  },
+  {
+    title: "Modern Cookware",
+    subtitle: "Collection",
+    image: "https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?q=80&w=800&auto=format&fit=crop",
+    link: "/products"
+  },
+  {
+    title: "Brass & Copper",
+    subtitle: "Collection",
+    image: "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?q=80&w=800&auto=format&fit=crop",
+    link: "/products?material=Pure%20Brass"
+  },
+  {
+    title: "Elegant Dining",
+    subtitle: "Collection",
+    image: "https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=800&auto=format&fit=crop",
+    link: "/products?category=dining"
+  }
 ];
 
 export default function HomePage() {
   const { products } = useProducts();
   const { isAdmin } = useAuth();
+  const [traditionVideos, setTraditionVideos] = useState<any[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % promoSlides.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/videos')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setTraditionVideos(data);
+      })
+      .catch(console.error);
+  }, []);
 
   const bestsellers = useMemo(() => products.slice(0, 4), [products]);
   const newArrivals = useMemo(() => products.slice(4, 8), [products]);
@@ -49,51 +94,154 @@ export default function HomePage() {
       <Navbar />
       <main className="flex-1">
 
-        {/* ── HERO SECTION (Full Width) ─────────────────────────────────── */}
-        <section className="relative w-full h-[85vh] min-h-[600px] bg-black">
-          <Image
-            src="/artisan_kitchenware_hero.png"
-            alt="Authentic Indian Kitchenware"
-            fill
-            priority
-            className="object-cover opacity-80"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/40" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-            <span className="text-[--color-brand-accent-yellow] text-sm md:text-base font-semibold tracking-[0.3em] uppercase mb-6">
-              Handcrafted Indian Kitchenware
-            </span>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-[family-name:var(--font-heading)] text-white max-w-4xl leading-tight mb-8">
-              Reviving Culinary Wisdom For The Modern Kitchen
-            </h1>
-            <Link href="/products" className="bg-[--color-brand-bg] text-[--color-brand-text] hover:bg-[--color-brand-accent-yellow] hover:text-white px-10 py-4 text-sm font-semibold uppercase tracking-widest transition-all duration-300 rounded-sm">
-              Explore The Collection
+        {/* ── NEW HERO SECTION (Banner Grid) ────────────────────────────── */}
+        <section className="bg-white">
+          <div className="max-w-[1600px] mx-auto p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              
+              {/* Left Main Banner (Summer Sale) */}
+              <Link href="/products" className="lg:col-span-8 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block">
+                <Image
+                  src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=1200&auto=format&fit=crop"
+                  alt="Summer Sale"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/50 to-transparent" />
+                <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 sm:p-8 md:p-12 lg:p-16 max-w-full sm:max-w-md">
+                  <span className="text-lg sm:text-xl md:text-2xl font-[family-name:var(--font-heading)] italic text-gray-800 mb-1 sm:mb-2">End of</span>
+                  <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold text-orange-600 mb-2 sm:mb-4 tracking-tight leading-none">SUMMER<br/>SALE</h2>
+                  <p className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-1 sm:mb-2">Upto <span className="font-bold text-black text-xl sm:text-2xl md:text-4xl">70%</span> Off + <span className="font-bold text-black text-xl sm:text-2xl md:text-3xl">20%</span> Cashback</p>
+                  <p className="text-orange-600 font-medium text-sm sm:text-base">Free Shipping Sitewide</p>
+                </div>
+              </Link>
+
+              {/* Right Side Banner (Premium Slideshow) */}
+              <div className="lg:col-span-4 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block bg-slate-900">
+                {promoSlides.map((slide, idx) => (
+                  <Link
+                    key={idx}
+                    href={slide.link}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                      idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                    }`}
+                  >
+                    <Image
+                      src={slide.image}
+                      alt={slide.title}
+                      fill
+                      className={`object-cover transition-transform duration-[4000ms] ease-out ${
+                        idx === currentSlide ? 'scale-105' : 'scale-100'
+                      }`}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/80" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-end p-8 text-center pb-12">
+                      <span className="text-white/90 text-xs font-semibold tracking-[0.2em] uppercase mb-2">
+                        {slide.subtitle}
+                      </span>
+                      <h3 className="text-2xl md:text-3xl font-bold text-white font-[family-name:var(--font-heading)] leading-tight mb-4">
+                        {slide.title}
+                      </h3>
+                      <span className="border-b border-white/60 pb-1 text-xs font-bold text-white uppercase tracking-widest hover:border-white transition-colors">
+                        Explore Collection
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+                
+                {/* Navigation Dots */}
+                <div className="absolute bottom-5 left-0 right-0 z-20 flex justify-center gap-2">
+                  {promoSlides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentSlide(idx)}
+                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                        idx === currentSlide ? 'bg-white w-5' : 'bg-white/40 hover:bg-white/80'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── TRUST BADGES ROW ──────────────────────────────────────────── */}
+        <section className="border-b border-gray-200 bg-white">
+          <div className="max-w-[1600px] mx-auto px-4 py-4">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
+              <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
+                <ShieldCheck className="text-gray-600" size={28} />
+                <span className="text-sm md:text-base font-bold text-gray-800">11 Million Happy Deliveries</span>
+              </div>
+              <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
+                <Users className="text-gray-600" size={28} />
+                <span className="text-sm md:text-base font-bold text-gray-800">150+ Stores Across 100+ Cities</span>
+              </div>
+              <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
+                <RotateCcw className="text-gray-600" size={28} />
+                <span className="text-sm md:text-base font-bold text-gray-800">7 Day Easy Return Policy</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FULL WIDTH PROMO BAR ──────────────────────────────────────── */}
+        <section className="bg-[#9c3f11] text-white py-4 relative">
+          <div className="max-w-[1600px] mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <span className="text-xl sm:text-2xl italic font-[family-name:var(--font-heading)] font-light">Now Serving:</span>
+              <span className="text-lg sm:text-xl md:text-2xl font-bold">Get Upto Rs.1,500 Off On Your First Order</span>
+            </div>
+            <Link href="/login" className="flex items-center gap-2 text-lg font-bold border-b border-white hover:text-[--color-brand-accent-yellow] hover:border-[--color-brand-accent-yellow] transition-colors">
+              Sign Up Now <span className="text-xl">&gt;</span>
             </Link>
           </div>
         </section>
 
-        {/* ── WHY CHOOSE US STRIP ───────────────────────────────────────── */}
-        <section className="border-b border-[--color-brand-border] bg-white py-12">
-          <div className="max-w-[1600px] mx-auto px-4 flex flex-col md:flex-row items-center justify-around gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-[--color-brand-border]">
-            <div className="flex flex-col items-center gap-4 flex-1 px-4">
-              <Users className="text-[--color-brand-accent]" size={32} />
-              <h4 className="text-lg font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Fair Trade</h4>
-              <p className="text-sm text-[--color-brand-muted]">Empowering 500+ rural artisans directly.</p>
-            </div>
-            <div className="flex flex-col items-center gap-4 flex-1 px-4 pt-8 md:pt-0">
-              <Leaf className="text-[--color-brand-accent]" size={32} />
-              <h4 className="text-lg font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Sustainable</h4>
-              <p className="text-sm text-[--color-brand-muted]">100% natural, eco-friendly materials.</p>
-            </div>
-            <div className="flex flex-col items-center gap-4 flex-1 px-4 pt-8 md:pt-0">
-              <ShieldCheck className="text-[--color-brand-accent]" size={32} />
-              <h4 className="text-lg font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Lab Tested</h4>
-              <p className="text-sm text-[--color-brand-muted]">Certified for purity and food safety.</p>
-            </div>
-            <div className="flex flex-col items-center gap-4 flex-1 px-4 pt-8 md:pt-0">
-              <RotateCcw className="text-[--color-brand-accent]" size={32} />
-              <h4 className="text-lg font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Heritage</h4>
-              <p className="text-sm text-[--color-brand-muted]">Crafting methods passed down for generations.</p>
+        {/* ── 3 CATEGORY BANNERS ────────────────────────────────────────── */}
+        <section className="bg-white py-6">
+          <div className="max-w-[1600px] mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Link href="/products?category=kitchenware" className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group rounded-sm block bg-slate-100">
+                <Image
+                  src="https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?q=80&w=800&auto=format&fit=crop"
+                  alt="Modern Kitchen Collection"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent" />
+                <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
+                  <h4 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">Modern Kitchen<br/>Collection &rarr;</h4>
+                </div>
+              </Link>
+
+              <Link href="/products?category=dining" className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group rounded-sm block bg-slate-100">
+                <Image
+                  src="https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=800&auto=format&fit=crop"
+                  alt="Premium Dining Sets"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+                <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
+                  <h4 className="text-lg md:text-xl font-bold text-white leading-tight">Premium Dining &amp;<br/>Serveware &rarr;</h4>
+                </div>
+              </Link>
+
+              <Link href="/products?category=decor" className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group rounded-sm block bg-slate-100">
+                <Image
+                  src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop"
+                  alt="Bring Style Into Everyday Living"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent" />
+                <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
+                  <h4 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">Bring Style Into<br/>Everyday Living &rarr;</h4>
+                </div>
+              </Link>
             </div>
           </div>
         </section>
@@ -129,15 +277,15 @@ export default function HomePage() {
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-center gap-16">
               <div className="flex-1 lg:pr-12">
-                <span className="text-[--color-brand-accent-yellow] text-sm font-semibold tracking-[0.2em] uppercase mb-6 block">Our Impact</span>
+                <span className="text-[--color-brand-accent-yellow] text-sm font-semibold tracking-[0.2em] uppercase mb-6 block">Our Heritage</span>
                 <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] mb-8 leading-tight">
-                  Reviving Forgotten Crafts &amp; Empowering Hands
+                  Reviving Ancient Kitchen Wisdom
                 </h2>
                 <p className="text-lg text-[--color-brand-bg]/80 mb-6 leading-relaxed">
-                  We travel to the deepest corners of India to collaborate with traditional craft clusters. By bringing their authentic creations directly to you, we eliminate middlemen and ensure these master artisans receive fair value for their generational skills.
+                  We journey to traditional clusters across India, from the Kansa makers of West Bengal to the cast-iron artisans of Tamil Nadu. By bringing their authentic, handcrafted cookware directly to your home, we help preserve generational skills that modern manufacturing has left behind.
                 </p>
                 <p className="text-lg text-[--color-brand-bg]/80 mb-10 leading-relaxed">
-                  Every product tells a story of heritage, patience, and a deep connection to the earth.
+                  Every utensil is forged with purpose—designed not just to cook food, but to nourish the body according to timeless Ayurvedic principles.
                 </p>
                 <Link href="/story" className="inline-block border-b-2 border-[--color-brand-accent-yellow] pb-1 text-sm font-bold uppercase tracking-widest hover:text-[--color-brand-accent-yellow] transition-colors">
                   Read Our Story
@@ -145,8 +293,8 @@ export default function HomePage() {
               </div>
               <div className="flex-1 relative w-full aspect-square max-w-lg mx-auto lg:max-w-none">
                 <Image
-                  src="https://images.unsplash.com/photo-1520625399580-bfae3489e217?q=80&w=800&auto=format&fit=crop"
-                  alt="Artisan at work"
+                  src="/artisan_kitchenware.png"
+                  alt="Traditional Indian handcrafted kitchenware"
                   fill
                   className="object-cover rounded-t-full shadow-2xl"
                 />
@@ -154,6 +302,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+
 
         {/* ── BESTSELLERS ───────────────────────────────────────────────── */}
         <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">

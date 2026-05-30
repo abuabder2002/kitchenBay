@@ -157,12 +157,12 @@ export default function ProductDetailPage() {
                 {/* Add to Cart Area */}
                 {product.stock > 0 ? (
                   <div className="space-y-4 pt-6 border-t border-[--color-brand-border]">
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                       {/* Quantity selector */}
-                      <div className="flex items-center border border-[--color-brand-text] rounded-sm">
-                        <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Minus size={16}/></button>
-                        <span className="w-8 text-center font-bold text-[--color-brand-text]">{quantity}</span>
-                        <button onClick={() => setQuantity(q => Math.min(product.stock, q + 1))} className="px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Plus size={16}/></button>
+                      <div className="flex items-center justify-between sm:justify-center border border-[--color-brand-text] rounded-sm">
+                        <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-6 sm:px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Minus size={16}/></button>
+                        <span className="w-12 sm:w-8 text-center font-bold text-[--color-brand-text]">{quantity}</span>
+                        <button onClick={() => setQuantity(q => Math.min(product.stock, q + 1))} className="px-6 sm:px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Plus size={16}/></button>
                       </div>
                       
                       <button

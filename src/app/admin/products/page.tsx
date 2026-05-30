@@ -1,9 +1,9 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, Search, Star, X, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Star, X, Upload, ShieldCheck } from 'lucide-react';
 import { useProducts } from '@/lib/productsContext';
-import { categories, Product } from '@/lib/mockData';
+import { categories, subcategories, Product } from '@/lib/mockData';
 
 export default function AdminProductsPage() {
   const { products, toggleFeatured, deleteProduct, updateProduct } = useProducts();
@@ -28,13 +28,16 @@ export default function AdminProductsPage() {
       
       const updated = { ...prev, [id]: value };
       
-      if (id === 'price' || id === 'gstPercent') {
+      if (id === 'price' || id === 'gstPercent' || id === 'originalPrice') {
         const bp = parseFloat(id === 'price' ? value : String(prev.price)) || 0;
         const gp = parseFloat(id === 'gstPercent' ? value : String(prev.gstPercent)) || 0;
+        const opInput = parseFloat(id === 'originalPrice' ? value : String(prev.originalPrice)) || 0;
         const gstAmt = Math.round(bp * gp / 100);
         updated.price = bp;
         updated.gstPercent = gp;
         updated.finalPrice = bp + gstAmt;
+        updated.originalPrice = opInput > updated.finalPrice ? opInput : updated.finalPrice;
+        updated.discount = updated.originalPrice > updated.finalPrice ? Math.round(((updated.originalPrice - updated.finalPrice) / updated.originalPrice) * 100) : 0;
       } else if (id === 'stock') {
         updated.stock = parseInt(value) || 0;
       } else if (id === 'rating') {
@@ -84,6 +87,24 @@ export default function AdminProductsPage() {
     };
     reader.readAsDataURL(file);
   };
+
+  const availableSubcategories = editingProduct 
+    ? subcategories.filter(s => s.category === editingProduct.category) 
+    : [];
+
+  const isCategoryValid = !!editingProduct?.category;
+  const isSubcategoryValid = !!editingProduct?.subcategory;
+  const isNameValid = !!editingProduct?.name;
+  const isDescValid = !!editingProduct?.description;
+  const isImageValid = !!editingProduct?.image;
+  const isPriceValid = editingProduct ? editingProduct.price > 0 : false;
+  const isStockValid = editingProduct ? editingProduct.stock >= 0 : false;
+  const isGstValid = editingProduct ? editingProduct.gstPercent >= 0 : false;
+  const isVisible = isCategoryValid && isSubcategoryValid && isNameValid && isPriceValid;
+  
+  const validCount = [isCategoryValid, isSubcategoryValid, isNameValid, isDescValid, isImageValid, isGstValid, isPriceValid, isVisible].filter(Boolean).length;
+  const score = Math.round((validCount / 8) * 100);
+  const allValid = validCount === 8;
 
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,7 +273,7 @@ export default function AdminProductsPage() {
                 </div>
 
                 {/* Stock & Category */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="stock" className="text-sm font-medium text-gray-700">Stock Quantity</label>
                     <input
@@ -277,6 +298,33 @@ export default function AdminProductsPage() {
                         <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                     </select>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="subcategory" className="text-sm font-medium text-gray-700">Subcategory</label>
+                    <select
+                      id="subcategory"
+                      value={editingProduct.subcategory}
+                      onChange={handleEditChange}
+                      required
+                      className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
+                    >
+                      <option value="">Select subcategory</option>
+                      {availableSubcategories.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="material" className="text-sm font-medium text-gray-700">Material</label>
+                    <input
+                      id="material"
+                      type="text"
+                      placeholder="e.g. Cast Iron, Copper"
+                      value={editingProduct.material}
+                      onChange={handleEditChange}
+                      required
+                      className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
+                    />
                   </div>
                 </div>
 
@@ -310,7 +358,17 @@ export default function AdminProductsPage() {
                 </div>
 
                 {/* Pricing */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="originalPrice" className="text-sm font-medium text-gray-700">MRP (₹)</label>
+                    <input
+                      id="originalPrice"
+                      type="number"
+                      value={editingProduct.originalPrice}
+                      onChange={handleEditChange}
+                      className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
+                    />
+                  </div>
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="price" className="text-sm font-medium text-gray-700">Base Price (₹)</label>
                     <input
@@ -365,10 +423,89 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
+              {/* Validation Checklist */}
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mt-6">
+                <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <ShieldCheck size={18} className="text-blue-600" /> Product Validation Checklist
+                </h2>
+                
+                {(!isCategoryValid || !isSubcategoryValid) && (
+                  <div className="text-red-600 font-medium text-sm mb-4 bg-red-50 p-3 rounded-lg border border-red-100">
+                    Please select Category and Subcategory.
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 text-sm font-medium">
+                  <div className={`flex items-center gap-2 ${isCategoryValid ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    {isCategoryValid ? '✅' : '❌'} Category Selected
+                  </div>
+                  <div className={`flex items-center gap-2 ${isSubcategoryValid ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    {isSubcategoryValid ? '✅' : '❌'} Subcategory Selected
+                  </div>
+                  <div className={`flex items-center gap-2 ${isNameValid ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    {isNameValid ? '✅' : '❌'} Product Name Added
+                  </div>
+                  <div className={`flex items-center gap-2 ${isDescValid ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    {isDescValid ? '✅' : '❌'} Description Added
+                  </div>
+                  <div className={`flex items-center gap-2 ${isImageValid ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    {isImageValid ? '✅' : '❌'} Images Uploaded
+                  </div>
+                  <div className={`flex items-center gap-2 ${isGstValid ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    {isGstValid ? '✅' : '❌'} GST Status: {isGstValid ? 'Valid' : 'Missing'}
+                  </div>
+                  <div className={`flex items-center gap-2 ${isPriceValid ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    {isPriceValid ? '✅' : '❌'} Pricing Valid
+                  </div>
+                  <div className={`flex items-center gap-2 ${isVisible ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    {isVisible ? '✅' : '❌'} Product Visible in UI
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex justify-between text-sm font-bold mb-2">
+                    <span className="text-gray-700">Health Score</span>
+                    <span className={score === 100 ? 'text-emerald-600' : 'text-blue-600'}>{score}% Complete</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2.5">
+                    <div className="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${score}%` }}></div>
+                  </div>
+                </div>
+
+                {allValid ? (
+                  <div className="bg-emerald-50 text-emerald-800 p-4 rounded-xl text-sm flex items-start gap-3 border border-emerald-100">
+                    <div className="text-xl">🎉</div>
+                    <div>
+                      <strong className="block text-base mb-1">Product Validation Passed</strong>
+                      <p>This product is properly configured and visible across the storefront.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-red-50 text-red-800 p-4 rounded-xl text-sm flex items-start gap-3 border border-red-100">
+                    <div className="text-xl">⚠</div>
+                    <div>
+                      <strong className="block text-base mb-2">Product Validation Failed</strong>
+                      <p className="font-semibold mb-1">Missing Items:</p>
+                      <ul className="list-disc ml-5 mb-2 space-y-1">
+                        {!isGstValid && <li>GST Percentage</li>}
+                        {!isImageValid && <li>Product Images</li>}
+                        {!isSubcategoryValid && <li>Subcategory</li>}
+                        {!isCategoryValid && <li>Category</li>}
+                        {!isNameValid && <li>Product Name</li>}
+                        {!isDescValid && <li>Description</li>}
+                        {!isPriceValid && <li>Price</li>}
+                      </ul>
+                      <p className="text-red-700 font-medium">Please complete all required fields before publishing.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center gap-3 pt-4 border-t border-gray-100 mt-6">
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-200 flex-1"
+                  disabled={!allValid}
+                  className={`px-6 py-2.5 rounded-xl text-sm transition-all shadow-lg flex-1 font-semibold ${allValid ? 'bg-blue-600 hover:bg-blue-700 active:scale-95 text-white shadow-blue-200' : 'bg-gray-400 text-white cursor-not-allowed shadow-none'}`}
                 >
                   Save Changes
                 </button>

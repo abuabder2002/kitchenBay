@@ -25,7 +25,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
   const formatPrice = (price: number) => priceFormatter.format(price);
 
   return (
-    <div className="bg-white rounded-2xl border border-[--color-brand-border] overflow-hidden hover:shadow-xl transition-all duration-300 w-full h-full flex flex-col relative group">
+    <div className="bg-white rounded-2xl border border-[--color-brand-blue-mid] overflow-hidden hover:shadow-xl hover:shadow-[--color-brand-blue-light] transition-all duration-300 w-full h-full flex flex-col relative group">
       
       {/* Image Area */}
       <div className={`relative ${isHero ? 'aspect-auto h-[300px] md:h-full' : 'aspect-square'} overflow-hidden`}>
@@ -49,7 +49,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
 
         {/* Featured Badge */}
         {product.featured && (
-          <div className="absolute top-0 right-10 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-b-lg z-10 uppercase tracking-wide">
+          <div className="absolute top-0 right-10 text-[10px] font-bold px-2 py-0.5 rounded-b-lg z-10 uppercase tracking-wide" style={{backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}>
             Featured
           </div>
         )}
@@ -75,10 +75,10 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         )}
 
         {/* Quick Add to Cart on Hover */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3 flex items-end">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3 hidden md:flex items-end">
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(product); }}
-            className="w-full flex items-center justify-center gap-2 bg-white text-[--color-brand-text] font-semibold rounded-full py-2 text-xs hover:bg-[--color-brand-accent] hover:text-white transition-colors shadow-lg"
+            className="w-full flex items-center justify-center gap-2 font-semibold rounded-full py-2 text-xs shadow-lg transition-colors" style={{backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}
           >
             <ShoppingCart size={14} /> Quick Add
           </button>
@@ -88,12 +88,12 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
       {/* Card Body */}
       <div className="p-4 flex flex-col flex-1">
         {/* Material Tag */}
-        <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit mb-1.5 uppercase tracking-wider">
+        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full w-fit mb-1.5 uppercase tracking-wider" style={{backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}>
           {product.material}
         </span>
         
         <Link href={`/products/${product.id}`} className="mb-2">
-          <h3 className="text-sm font-semibold text-[--color-brand-text] line-clamp-2 hover:text-[--color-brand-accent] transition-colors leading-snug">
+          <h3 className="text-sm font-semibold text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors leading-snug">
             {product.name}
           </h3>
         </Link>
@@ -111,7 +111,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         <div className="flex-1" />
 
         {/* Price Row */}
-        <div className="flex items-baseline flex-wrap gap-2 mb-3">
+        <div className="flex items-baseline flex-wrap gap-1 sm:gap-2 mb-3">
           <span className="text-lg font-bold text-[--color-brand-text]">
             ₹{formatPrice(product.finalPrice)}
           </span>
@@ -138,9 +138,12 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         {/* Add to Cart */}
         <button 
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(product); }} 
-          className="w-full bg-white border-2 border-[--color-brand-accent] text-[--color-brand-accent] font-bold rounded-full py-2 text-sm hover:bg-[--color-brand-accent] hover:text-white transition-colors"
+          className="w-full flex items-center justify-center gap-2 font-bold rounded-full py-2 text-sm transition-colors"
+          style={{backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-mid)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-light)'; }}
         >
-          Add to Cart
+          <ShoppingCart size={15} /> Add to Cart
         </button>
       </div>
     </div>

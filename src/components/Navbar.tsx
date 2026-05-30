@@ -35,14 +35,16 @@ export default function Navbar() {
 
   const topBarLinks = [
     { label: "Sell on ArtisanCraft", href: "#" },
-    { label: "Gift Cards", href: "#" },
-    { label: "Track Your Order", href: "/orders" },
-    { label: "Contact Us", href: "#" }
+    { label: "Gift Concierge", href: "/gift-concierge" },
+    { label: "Track Your Order", href: "/track" },
+    { label: "Contact Us", href: "/contact" }
   ];
 
   const categories = [
     { id: 'kitchenware', name: "Kitchenware", href: "/products?category=kitchenware" },
     { id: 'dining', name: "Dining", href: "/products?category=dining" },
+    { id: 'brass-copper', name: "Brass/Copper", href: "/products?category=brass-copper" },
+    { id: 'gifting', name: "Gifting", href: "/gift-concierge" },
     { id: 'decor', name: "Décor", href: "/products?category=decor" }
   ];
 
@@ -57,7 +59,7 @@ export default function Navbar() {
     <>
       {/* TIER 1: Top Utility Bar (Minimal) */}
       <div className="bg-[--color-brand-top-bar] text-[--color-brand-bg] h-8 text-[11px] flex items-center px-4 sm:px-6 lg:px-8 justify-between z-50 relative tracking-widest font-medium uppercase">
-        <div>
+        <div className="w-full text-center md:w-auto md:text-left truncate px-2">
           Sign Up & Get ₹500 off on your First Purchase
         </div>
         <div className="hidden md:flex items-center gap-6">
@@ -71,21 +73,18 @@ export default function Navbar() {
 
       {/* Main Navbar */}
       <header 
-        className={`z-40 w-full transition-all duration-500 backdrop-blur-md ${scrolled ? 'sticky top-0 shadow-sm py-2' : 'relative py-4'} border-b border-[#D8C2AE]/40`}
-        style={{
-          background: 'linear-gradient(110deg, rgba(245, 241, 232, 0.95) 0%, rgba(216, 194, 174, 0.85) 25%, rgba(184, 194, 165, 0.8) 50%, rgba(168, 182, 196, 0.8) 75%, rgba(141, 110, 99, 0.6) 100%)'
-        }}
+        className={`z-40 w-full transition-all duration-500 backdrop-blur-md ${scrolled ? 'sticky top-0 shadow-sm py-2' : 'relative py-4'} border-b border-[#E6F2FF] bg-white`}
       >
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
           {/* LEFT: Logo */}
-          <Link href="/" className="flex items-center shrink-0 mr-8">
+          <Link href="/" className="flex items-center shrink-0 mr-2 sm:mr-8">
             <Image 
               src={logoImg} 
               alt="Brand Logo" 
               width={280} 
               height={90} 
-              className={`object-contain mix-blend-multiply transition-all duration-300 ${scrolled ? 'h-14 lg:h-16' : 'h-20 lg:h-28'} w-auto`} 
+              className={`object-contain mix-blend-multiply transition-all duration-300 ${scrolled ? 'h-12 sm:h-14 lg:h-16' : 'h-14 sm:h-20 lg:h-28'} w-auto max-w-[140px] sm:max-w-[200px] lg:max-w-none`}
               priority 
             />
           </Link>
@@ -101,9 +100,14 @@ export default function Navbar() {
               >
                 <Link 
                   href={cat.href}
-                  className="text-[13px] font-bold uppercase tracking-widest text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors flex items-center gap-1.5"
+                  className="text-[13px] font-bold uppercase tracking-widest text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors flex items-center gap-1.5 px-3 py-1 rounded-full hover:bg-[--color-brand-blue-light]"
                 >
                   {cat.name}
+                  {cat.id === 'gifting' && (
+                    <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest bg-[#F5E6C8] text-[#4A3B18] rounded-full leading-none whitespace-nowrap">
+                      Personalized
+                    </span>
+                  )}
                   <ChevronDown size={14} className={`transition-transform duration-200 ${activeMenu === cat.name ? 'rotate-180' : 'opacity-60'}`} />
                 </Link>
                 
@@ -111,18 +115,38 @@ export default function Navbar() {
                 {activeMenu === cat.name && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 bg-[#F7F2E8] shadow-2xl border border-[--color-brand-border] py-3 min-w-[280px] z-50 rounded-sm animate-in fade-in zoom-in-95 duration-200">
                     <ul className="flex flex-col">
-                      {subcategories
-                        .filter(sub => sub.category === cat.id)
-                        .map(sub => (
-                          <li key={sub.id}>
+                      {cat.id === 'gifting' ? (
+                        [
+                          { name: 'Wedding Gifts', href: '/products?category=gifting&subcategory=wedding' },
+                          { name: 'Housewarming Gifts', href: '/products?category=gifting&subcategory=housewarming' },
+                          { name: 'Festival Gifts', href: '/products?category=gifting&subcategory=festival' },
+                          { name: 'Corporate Gifting', href: '/products?category=gifting&subcategory=corporate' },
+                          { name: 'Return Gifts', href: '/products?category=gifting&subcategory=return' },
+                          { name: 'Gift Concierge', href: '/gift-concierge' },
+                        ].map(sub => (
+                          <li key={sub.name}>
                             <Link
-                              href={`/products?category=${cat.id}&subcategory=${sub.id}`}
-                              className="text-[12px] font-semibold text-[--color-brand-text] hover:bg-[--color-brand-card] hover:text-[--color-brand-accent] transition-colors block px-6 py-3 uppercase tracking-widest"
+                              href={sub.href}
+                              className="text-[12px] font-semibold text-[--color-brand-text] hover:bg-[--color-brand-blue-light] hover:text-[--color-brand-accent] transition-colors block px-6 py-3 uppercase tracking-widest border-l-2 border-transparent hover:border-[--color-brand-blue-text]"
                             >
                               {sub.name}
                             </Link>
                           </li>
-                        ))}
+                        ))
+                      ) : (
+                        subcategories
+                          .filter(sub => sub.category === cat.id)
+                          .map(sub => (
+                            <li key={sub.id}>
+                              <Link
+                                href={`/products?category=${cat.id}&subcategory=${sub.id}`}
+                                className="text-[12px] font-semibold text-[--color-brand-text] hover:bg-[--color-brand-blue-light] hover:text-[--color-brand-accent] transition-colors block px-6 py-3 uppercase tracking-widest border-l-2 border-transparent hover:border-[--color-brand-blue-text]"
+                              >
+                                {sub.name}
+                              </Link>
+                            </li>
+                          ))
+                      )}
                     </ul>
                   </div>
                 )}
@@ -131,7 +155,7 @@ export default function Navbar() {
           </nav>
 
           {/* RIGHT: Actions */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 sm:gap-4 lg:gap-6">
             
             {/* Search Icon / Input */}
             <div className="hidden md:flex items-center">
@@ -149,14 +173,14 @@ export default function Navbar() {
                   <X size={16} className="text-[--color-brand-muted] cursor-pointer hover:text-[--color-brand-text]" onClick={() => setIsSearchOpen(false)} />
                 </div>
               ) : (
-                <button onClick={() => setIsSearchOpen(true)} className="text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors" aria-label="Search">
+                <button onClick={() => setIsSearchOpen(true)} className="text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Search">
                   <Search size={22} strokeWidth={1.5} />
                 </button>
               )}
             </div>
 
             {/* Find Store */}
-            <Link href="/store-locator" className="hidden lg:block text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors" aria-label="Find Store">
+            <Link href="/store-locator" className="hidden lg:block text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Find Store">
               <MapPin size={22} strokeWidth={1.5} />
             </Link>
 
@@ -166,7 +190,7 @@ export default function Navbar() {
               onMouseEnter={() => setShowUserDropdown(true)}
               onMouseLeave={() => setShowUserDropdown(false)}
             >
-              <Link href={user ? "/profile" : "/login"} className="text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors flex items-center">
+              <Link href={user ? "/profile" : "/login"} className="text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors flex items-center p-2 rounded-full hover:bg-[--color-brand-blue-light]">
                 <UserCircle2 size={22} strokeWidth={1.5} />
               </Link>
               
@@ -191,20 +215,20 @@ export default function Navbar() {
             </div>
 
             {/* Wishlist */}
-            <Link href="/wishlist" className="relative text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors" aria-label="Wishlist">
+            <Link href="/wishlist" className="relative text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Wishlist">
               <Heart size={22} strokeWidth={1.5} />
               {wishlistItems.length > 0 && (
-                <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-[--color-brand-accent] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[--color-brand-accent] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {wishlistItems.length > 9 ? '9+' : wishlistItems.length}
                 </span>
               )}
             </Link>
 
             {/* Cart */}
-            <Link href="/cart" className="relative text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors" aria-label="Cart">
+            <Link href="/cart" className="relative text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Cart">
               <ShoppingCart size={22} strokeWidth={1.5} />
               {itemCount > 0 && (
-                <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-[--color-brand-accent] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[--color-brand-accent] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {itemCount > 9 ? '9+' : itemCount}
                 </span>
               )}
@@ -222,17 +246,17 @@ export default function Navbar() {
       {/* Mobile Sidebar */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <div className="relative w-4/5 max-w-sm bg-[--color-brand-bg] h-full flex flex-col shadow-2xl animate-in slide-in-from-left duration-300">
-            <div className="flex items-center justify-between p-6 border-b border-[--color-brand-border]">
+          <div className="fixed inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
+          <div className="relative w-[85%] max-w-sm bg-white h-full flex flex-col shadow-2xl animate-in slide-in-from-left duration-300">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <span className="font-[family-name:var(--font-heading)] font-bold text-2xl text-[--color-brand-text]">Menu</span>
-              <button onClick={() => setMobileOpen(false)} className="text-[--color-brand-muted] hover:text-[--color-brand-text] transition-colors">
-                <X size={28} strokeWidth={1.5} />
+              <button onClick={() => setMobileOpen(false)} className="text-[--color-brand-muted] hover:text-[--color-brand-text] transition-colors p-2 -mr-2">
+                <X size={26} strokeWidth={1.5} />
               </button>
             </div>
             
-            <div className="p-6 border-b border-[--color-brand-border]">
-              <div className="relative flex items-center border border-[--color-brand-border] rounded-sm overflow-hidden bg-white">
+            <div className="p-6 border-b border-gray-100">
+              <div className="relative flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
                 <Search size={18} className="text-[--color-brand-muted] absolute left-4" />
                 <input
                   type="text"
@@ -251,45 +275,78 @@ export default function Navbar() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
-              <ul className="flex flex-col gap-6">
+              <ul className="flex flex-col gap-8">
                 {categories.map(cat => (
                   <li key={cat.name}>
-                    <div className="mb-3">
+                    <div className="mb-4">
                       <Link 
                         href={cat.href} 
                         onClick={() => setMobileOpen(false)} 
-                        className="font-bold text-lg uppercase tracking-widest text-[--color-brand-text]"
+                        className="font-extrabold text-[14px] uppercase tracking-widest text-[--color-brand-text] flex items-center justify-between bg-[#F7F2E8] px-4 py-3.5 rounded-xl border border-[#E6DBC4]/60 shadow-sm"
                       >
-                        {cat.name}
+                        <span className="flex items-center gap-2">
+                          {cat.name}
+                          {cat.id === 'gifting' && (
+                            <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest bg-white text-[#4A3B18] rounded-full leading-none shadow-sm">
+                              Personalized
+                            </span>
+                          )}
+                        </span>
                       </Link>
                     </div>
-                    <ul className="flex flex-col gap-3 pl-4 border-l border-[--color-brand-border]">
-                      {subcategories
-                        .filter(sub => sub.category === cat.id)
-                        .map(sub => (
-                          <li key={sub.id}>
+                    <ul className="flex flex-col gap-1 pl-2">
+                      {cat.id === 'gifting' ? (
+                        [
+                          { name: 'Wedding Gifts', href: '/products?category=gifting&subcategory=wedding' },
+                          { name: 'Housewarming Gifts', href: '/products?category=gifting&subcategory=housewarming' },
+                          { name: 'Festival Gifts', href: '/products?category=gifting&subcategory=festival' },
+                          { name: 'Corporate Gifting', href: '/products?category=gifting&subcategory=corporate' },
+                          { name: 'Return Gifts', href: '/products?category=gifting&subcategory=return' },
+                          { name: 'Gift Concierge', href: '/gift-concierge' },
+                        ].map(sub => (
+                          <li key={sub.name}>
                             <Link
-                              href={`/products?category=${cat.id}&subcategory=${sub.id}`}
+                              href={sub.href}
                               onClick={() => setMobileOpen(false)}
-                              className="text-sm font-medium text-[--color-brand-muted] hover:text-[--color-brand-text] uppercase tracking-wider block py-1"
+                              className={`block px-4 py-3.5 rounded-lg text-[13px] font-semibold uppercase tracking-wider transition-all ${
+                                sub.name === 'Gift Concierge' 
+                                  ? 'bg-[--color-brand-accent-yellow]/10 text-[--color-brand-accent-yellow] border border-[--color-brand-accent-yellow]/20 shadow-sm mt-2 flex items-center justify-between'
+                                  : 'text-[--color-brand-muted] hover:text-[--color-brand-text] hover:bg-gray-50'
+                              }`}
                             >
                               {sub.name}
+                              {sub.name === 'Gift Concierge' && <span className="w-2 h-2 bg-[--color-brand-accent-yellow] rounded-full animate-pulse shadow-sm" />}
                             </Link>
                           </li>
-                        ))}
+                        ))
+                      ) : (
+                        subcategories
+                          .filter(sub => sub.category === cat.id)
+                          .map(sub => (
+                            <li key={sub.id}>
+                              <Link
+                                href={`/products?category=${cat.id}&subcategory=${sub.id}`}
+                                onClick={() => setMobileOpen(false)}
+                                className="block px-4 py-3.5 rounded-lg text-[13px] font-semibold text-[--color-brand-muted] hover:text-[--color-brand-text] hover:bg-gray-50 uppercase tracking-wider transition-all"
+                              >
+                                {sub.name}
+                              </Link>
+                            </li>
+                          ))
+                      )}
                     </ul>
                   </li>
                 ))}
               </ul>
             </div>
             
-            <div className="p-6 border-t border-[--color-brand-border] bg-[--color-brand-card]">
-              <Link href={user ? "/profile" : "/login"} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 font-bold uppercase tracking-widest text-sm text-[--color-brand-text] mb-6">
-                <UserCircle2 size={20} />
+            <div className="p-6 border-t border-gray-100 bg-gray-50">
+              <Link href={user ? "/profile" : "/login"} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 font-extrabold uppercase tracking-widest text-sm text-[--color-brand-text] mb-6 hover:text-[--color-brand-accent] transition-colors">
+                <UserCircle2 size={22} />
                 {user ? `Hi, ${user.name.split(' ')[0]}` : 'Login / Sign Up'}
               </Link>
-              <Link href="/store-locator" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 font-bold uppercase tracking-widest text-sm text-[--color-brand-text]">
-                <MapPin size={20} />
+              <Link href="/store-locator" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 font-extrabold uppercase tracking-widest text-sm text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors">
+                <MapPin size={22} />
                 Find a Store
               </Link>
             </div>

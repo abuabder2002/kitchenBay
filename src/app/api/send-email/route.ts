@@ -171,6 +171,7 @@ export async function POST(request: Request) {
     await transporter.sendMail({
       from: smtpFrom,
       to: `${order.customer} <${order.email}>`,
+      bcc: process.env.ADMIN_EMAIL || 'admin@shopnest.com',
       subject: emailSubject,
       html: htmlBody,
     });

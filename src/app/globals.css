@@ -12,6 +12,13 @@
   --color-brand-border: #E6DBC4;          /* Soft Beige */
   --color-brand-success: #10B981;
   --color-brand-top-bar: #3E322A;         /* Darkest Brown */
+
+  /* Light Blue Accent Palette */
+  --color-brand-blue-lightest: #EFF6FF;   /* Nearly white blue — backgrounds */
+  --color-brand-blue-light: #E6F2FF;      /* Soft blue — badges, section tints */
+  --color-brand-blue-mid: #BFDBFE;        /* Soft blue — borders, dividers */
+  --color-brand-blue-icon: #93C5FD;       /* Icon hover rings */
+  --color-brand-blue-text: #3B82F6;       /* Badge text, labels */
   
   /* Override Tailwind's default blues to match our earthy brand */
   --color-blue-50: #F7F2E8;
@@ -52,10 +59,14 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    width: 100%;
   }
 
   body {
     font-family: var(--font-body);
+    overflow-x: hidden;
+    width: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {

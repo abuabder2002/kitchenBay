@@ -1,8 +1,65 @@
+'use client';
+
+import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Mail, MapPin, Phone, Loader2 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Your message has been sent successfully.',
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        });
+        setFormData({ firstName: '', lastName: '', email: '', message: '' });
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: data.error || 'Something went wrong. Please try again.',
+          icon: 'error',
+          confirmButtonColor: '#d33',
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to send message. Please check your connection.',
+        icon: 'error',
+        confirmButtonColor: '#d33',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-brand-bg font-sans">
       <Navbar />
@@ -18,27 +75,60 @@ export default function ContactPage() {
           <div className="grid md:grid-cols-2 gap-16">
             <div>
               <h2 className="font-serif text-3xl font-bold text-brand-text mb-8">Send a Message</h2>
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-brand-text mb-2">First Name</label>
-                    <input type="text" className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow" />
+                    <input 
+                      type="text" 
+                      name="firstName"
+                      required
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow" 
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-brand-text mb-2">Last Name</label>
-                    <input type="text" className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow" />
+                    <input 
+                      type="text" 
+                      name="lastName"
+                      required
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow" 
+                    />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-brand-text mb-2">Email Address</label>
-                  <input type="email" className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow" />
+                  <input 
+                    type="email" 
+                    name="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-brand-text mb-2">Message</label>
-                  <textarea rows={5} className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow"></textarea>
+                  <textarea 
+                    rows={5} 
+                    name="message"
+                    required
+                    value={formData.message}
+                    onChange={handleChange}
+                    className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow"
+                  ></textarea>
                 </div>
-                <button type="submit" className="bg-brand-accent hover:bg-opacity-90 text-white font-medium px-8 py-3.5 rounded transition-colors w-full sm:w-auto shadow-md">
-                  Send Message
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="flex items-center justify-center gap-2 bg-brand-accent hover:bg-opacity-90 text-white font-medium px-8 py-3.5 rounded transition-colors w-full sm:w-auto shadow-md disabled:opacity-70"
+                >
+                  {isSubmitting && <Loader2 size={18} className="animate-spin" />}
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>
@@ -61,7 +151,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-brand-text mb-1">Email Us</h3>
-                    <p className="text-brand-muted leading-relaxed">namaste@Kitchenbay the home needs.com<br />support@Kitchenbay the home needs.com</p>
+                    <p className="text-brand-muted leading-relaxed">namaste@kitchenbay.com<br />support@kitchenbay.com</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-5">

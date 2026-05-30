@@ -1,0 +1,19 @@
+[33mcommit acec4559299c93fa31162b2d73c82a86d7eeec7a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Finytive_Employee <employee.finytive@gmail.com>
+Date:   Fri May 29 22:06:00 2026 +0530
+
+    Navbar UI update
+
+PROJECT_STATUS.md
+public/artisan_kitchenware.png
+public/artisan_kitchenware_hero.png
+public/artisan_making_cookware.png
+public/journal_brass_energy.png
+public/journal_cast_iron.png
+src/app/globals.css
+src/app/layout.tsx
+src/app/page.tsx
+src/app/products/[id]/page.tsx
+src/app/products/page.tsx
+src/app/story/page.tsx
+src/components/Navbar.tsx
