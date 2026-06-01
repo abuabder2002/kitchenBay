@@ -109,8 +109,8 @@ export async function POST(req: NextRequest) {
           errors,
         });
       } else if (parsedRow) {
-        const skuLower = parsedRow.sku?.toLowerCase();
-        const nameLower = parsedRow.name.toLowerCase();
+        const skuLower = parsedRow.sku?.toLowerCase() ?? '';
+        const nameLower = parsedRow.name?.toLowerCase() ?? '';
 
         let isDuplicate = false;
         const dupReasons: string[] = [];

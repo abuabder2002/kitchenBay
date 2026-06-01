@@ -44,9 +44,9 @@ export interface ParsedProductRow {
 export function validateProductRow(row: BulkProductRow): { errors: string[]; parsedRow?: ParsedProductRow } {
   const errors: string[] = [];
   
-  const name = row.name?.toString().trim();
-  const description = row.description?.toString().trim();
-  const category = row.category?.toString().trim().toLowerCase();
+  const name = row.name?.toString().trim() || null;
+  const description = row.description?.toString().trim() || null;
+  const category = row.category?.toString().trim().toLowerCase() || '';
   const subcategory = row.subcategory?.toString().trim() || null;
   const sku = row.sku?.toString().trim() || null;
   const material = row.material?.toString().trim() || null;
