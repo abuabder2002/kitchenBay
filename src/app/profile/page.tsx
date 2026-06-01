@@ -1,4 +1,6 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
+
 import { useAuth } from '@/lib/authContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -58,7 +60,7 @@ export default function ProfilePage() {
             </div>
             {user.addresses && user.addresses.length > 0 ? (
               <ul className="space-y-4">
-                {user.addresses.map((addr: any, idx: number) => (
+                {user.addresses.map((addr: { street: string; city: string; state: string; zip: string }, idx: number) => (
                   <li key={idx} className="p-4 border rounded-xl hover:border-gray-300 transition-colors cursor-pointer">
                     <p className="font-semibold text-gray-900 mb-1">{addr.street}</p>
                     <p className="text-sm text-gray-600">{addr.city}, {addr.state} {addr.zip}</p>
@@ -68,7 +70,7 @@ export default function ProfilePage() {
             ) : (
               <div className="text-center py-6 border-2 border-dashed border-gray-200 rounded-xl">
                 <MapPin size={24} className="mx-auto text-gray-300 mb-2" />
-                <p className="text-gray-500 text-sm">You haven't saved any addresses yet.</p>
+                <p className="text-gray-500 text-sm">You haven&apos;t saved any addresses yet.</p>
               </div>
             )}
           </div>

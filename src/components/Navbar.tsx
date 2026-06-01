@@ -243,6 +243,26 @@ export default function Navbar() {
         </div>
       </header>
 
+      {/* Mobile Category UI Bar (Only visible on mobile) */}
+      <div className="lg:hidden w-full bg-white border-b border-[#E6F2FF] overflow-x-auto no-scrollbar scroll-smooth">
+        <div className="flex px-4 py-2.5 gap-3 min-w-max">
+          {categories.map(cat => (
+            <Link
+              key={cat.id}
+              href={cat.href}
+              className="text-[11px] font-extrabold uppercase tracking-widest text-[--color-brand-text] hover:text-[--color-brand-accent] flex items-center gap-1.5 whitespace-nowrap bg-[#F7F2E8] px-4 py-2 rounded-full border border-[#E6DBC4]/60 shadow-sm transition-colors"
+            >
+              {cat.name}
+              {cat.id === 'gifting' && (
+                <span className="px-1.5 py-0.5 text-[8px] font-black uppercase bg-white text-[#4A3B18] rounded-full shadow-sm">
+                  Personalized
+                </span>
+              )}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* Mobile Sidebar */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
@@ -275,26 +295,20 @@ export default function Navbar() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
-              <ul className="flex flex-col gap-8">
+              <ul className="flex flex-col gap-6">
                 {categories.map(cat => (
                   <li key={cat.name}>
-                    <div className="mb-4">
-                      <Link 
-                        href={cat.href} 
-                        onClick={() => setMobileOpen(false)} 
-                        className="font-extrabold text-[14px] uppercase tracking-widest text-[--color-brand-text] flex items-center justify-between bg-[#F7F2E8] px-4 py-3.5 rounded-xl border border-[#E6DBC4]/60 shadow-sm"
-                      >
-                        <span className="flex items-center gap-2">
-                          {cat.name}
-                          {cat.id === 'gifting' && (
-                            <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest bg-white text-[#4A3B18] rounded-full leading-none shadow-sm">
-                              Personalized
-                            </span>
-                          )}
-                        </span>
-                      </Link>
+                    <div className="mb-3 px-2">
+                      <span className="font-extrabold text-[11px] text-[--color-brand-muted] uppercase tracking-widest flex items-center gap-2">
+                        {cat.name}
+                        {cat.id === 'gifting' && (
+                          <span className="px-1.5 py-0.5 text-[8px] font-black uppercase bg-[#F5E6C8] text-[#4A3B18] rounded-full shadow-sm">
+                            Personalized
+                          </span>
+                        )}
+                      </span>
                     </div>
-                    <ul className="flex flex-col gap-1 pl-2">
+                    <ul className="flex flex-col gap-0.5">
                       {cat.id === 'gifting' ? (
                         [
                           { name: 'Wedding Gifts', href: '/products?category=gifting&subcategory=wedding' },
@@ -308,10 +322,10 @@ export default function Navbar() {
                             <Link
                               href={sub.href}
                               onClick={() => setMobileOpen(false)}
-                              className={`block px-4 py-3.5 rounded-lg text-[13px] font-semibold uppercase tracking-wider transition-all ${
+                              className={`block px-4 py-3 rounded-lg text-[13px] font-semibold uppercase tracking-wider transition-all ${
                                 sub.name === 'Gift Concierge' 
-                                  ? 'bg-[--color-brand-accent-yellow]/10 text-[--color-brand-accent-yellow] border border-[--color-brand-accent-yellow]/20 shadow-sm mt-2 flex items-center justify-between'
-                                  : 'text-[--color-brand-muted] hover:text-[--color-brand-text] hover:bg-gray-50'
+                                  ? 'bg-[--color-brand-accent-yellow]/10 text-[--color-brand-accent-yellow] border border-[--color-brand-accent-yellow]/20 shadow-sm mt-1 flex items-center justify-between'
+                                  : 'text-[--color-brand-text] hover:text-[--color-brand-accent] hover:bg-gray-50'
                               }`}
                             >
                               {sub.name}
@@ -327,7 +341,7 @@ export default function Navbar() {
                               <Link
                                 href={`/products?category=${cat.id}&subcategory=${sub.id}`}
                                 onClick={() => setMobileOpen(false)}
-                                className="block px-4 py-3.5 rounded-lg text-[13px] font-semibold text-[--color-brand-muted] hover:text-[--color-brand-text] hover:bg-gray-50 uppercase tracking-wider transition-all"
+                                className="block px-4 py-3 rounded-lg text-[13px] font-semibold text-[--color-brand-text] hover:text-[--color-brand-accent] hover:bg-gray-50 uppercase tracking-wider transition-all"
                               >
                                 {sub.name}
                               </Link>

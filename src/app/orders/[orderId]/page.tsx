@@ -1,4 +1,8 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @next/next/no-img-element */
+
 
 import React, { use } from 'react';
 import Navbar from '@/components/Navbar';

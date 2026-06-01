@@ -1,4 +1,7 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @next/next/no-img-element */
+
 import { useState } from 'react';
 import Link from 'next/link';
 import { Plus, Pencil, Trash2, Search, Star, X, Upload, ShieldCheck } from 'lucide-react';

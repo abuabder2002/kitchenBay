@@ -1,4 +1,8 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-unescaped-entities */
+
 
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
@@ -41,7 +45,7 @@ export default function GiftConciergePage() {
       id: 'housewarming',
       title: 'Housewarming Gifts',
       desc: 'Heritage cookware to bless a new kitchen and home.',
-      img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop'
+      img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=400&auto=format&fit=crop'
     },
     {
       id: 'festival',

@@ -78,7 +78,7 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
           if (Array.isArray(data)) {
             // map DB orders to app Order format
             const mappedOrders = data.map(o => {
-              const mappedItems = o.items.map((i: any) => {
+              const mappedItems = o.items.map((i: { productId: string; quantity: number; price: number }) => {
                 const prod = products.find(p => p.id === i.productId);
                 return {
                   productId: i.productId,
@@ -90,7 +90,7 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
               });
 
               // Calculate taxes dynamically
-              const subtotal = mappedItems.reduce((sum: number, i: any) => {
+              const subtotal = mappedItems.reduce((sum: number, i: { productId: string; quantity: number; price: number }) => {
                 const prod = products.find(p => p.id === i.productId);
                 const basePrice = prod ? prod.price : Math.round(i.price / 1.18);
                 return sum + basePrice * i.quantity;
@@ -125,7 +125,7 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
         })
         .catch(console.error);
     } else {
-      setOrders(loadFromStorage());
+      Promise.resolve().then(() => setOrders(loadFromStorage()));
     }
   }, [currentUser]);
 

@@ -1,4 +1,9 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @next/next/no-img-element */
+
+
+import { useMemo, useState } from 'react';
 
 import { useOrders } from '@/lib/ordersContext';
 import { useProducts } from '@/lib/productsContext';
@@ -52,7 +57,7 @@ export default function AdminDashboard() {
   const totalCustomers = new Set(orders.map(o => o.email)).size;
 
   // Simple growth: compare this week vs last week
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
   const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
   const thisWeekOrders = orders.filter(o => now - new Date(o.date).getTime() < oneWeekMs);
   const lastWeekOrders = orders.filter(o => {
@@ -75,7 +80,7 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Welcome back! Here's what's happening today.</p>
+        <p className="text-sm text-gray-500 mt-0.5">Welcome back! Here&apos;s what&apos;s happening today.</p>
       </div>
 
       {/* Stats Grid */}

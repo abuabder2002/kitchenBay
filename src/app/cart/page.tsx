@@ -1,4 +1,7 @@
 'use client';
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @next/next/no-img-element */
+
 
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';

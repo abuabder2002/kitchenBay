@@ -7,7 +7,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Admin Top Bar */}
-        <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between shadow-sm">
+        <header className="bg-white border-b border-gray-100 pl-14 pr-6 md:px-6 py-4 flex items-center justify-between shadow-sm">
           <div>
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Admin Panel</p>
             <p className="text-sm font-semibold text-gray-700">ShopNest Management</p>

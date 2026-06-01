@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
@@ -99,7 +100,7 @@ export async function POST(req: NextRequest) {
         bulkPricingTiers: rawRow['Bulk Pricing Tiers'] || rawRow['bulkPricingTiers'] || rawRow['bulk_pricing'] || '',
       };
 
-      const { errors, parsedRow } = validateProductRow(mappedRow, rowIndex);
+      const { errors, parsedRow } = validateProductRow(mappedRow);
 
       if (errors.length > 0) {
         invalidRows.push({

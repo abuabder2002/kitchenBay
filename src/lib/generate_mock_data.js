@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const xlsx = require('xlsx');
 const path = require('path');
 const fs = require('fs');
@@ -124,7 +125,7 @@ for (let i = 2; i < data.length; i++) {
 
 function addProduct(name, priceStr, category, subcategory, rowIndex) {
   if (!name) return;
-  const { originalPrice, salePrice } = parsePrices(priceStr);
+  const { salePrice } = parsePrices(priceStr);
   const gstPercent = 18; // Default standard GST
   // base price is finalPrice / (1 + gstPercent/100)
   const finalPrice = salePrice > 0 ? salePrice : 500; // fallback if zero

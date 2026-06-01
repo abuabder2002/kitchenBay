@@ -86,10 +86,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          const mapped = data.map((d: any) => ({
+          const mapped = data.map((d: { productId: string; quantity: number }) => ({
             product: products.find(p => p.id === d.productId),
             quantity: d.quantity
-          })).filter((i: any) => i.product) as CartItem[];
+          })).filter((i: { product: Product | undefined; quantity: number }) => i.product) as CartItem[];
           dispatch({ type: 'SET_ITEMS', items: mapped });
           localStorage.removeItem(storageKey); // Clear local after sync
         }

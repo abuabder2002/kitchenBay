@@ -56,17 +56,17 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          const mapped = data.map((d: any) => products.find(p => p.id === d.productId)).filter(Boolean) as Product[];
+          const mapped = data.map((d: { productId: string }) => products.find(p => p.id === d.productId)).filter(Boolean) as Product[];
           
           // Also sync any local items up to the cloud
           const local = localStorage.getItem(storageKey);
-          const localItems = local ? JSON.parse(local) : [];
+          const localItems: Product[] = local ? JSON.parse(local) : [];
           
           const itemsToSync = localItems.filter(
-            (localItem: any) => !mapped.some(m => m.id === localItem.id)
+            (localItem: Product) => !mapped.some(m => m.id === localItem.id)
           );
           
-          itemsToSync.forEach((item: any) => {
+          itemsToSync.forEach((item: Product) => {
             fetch('/api/wishlist', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

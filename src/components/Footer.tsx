@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Smartphone, Apple, Play } from 'lucide-react';
+import { Apple, Play } from 'lucide-react';
 import logoImg from '../images/logo.jpeg';
 
 const socialLinks = [
@@ -26,9 +26,6 @@ const socialLinks = [
 // Explicit correct paths — no slug-generation guessing
 const companyLinks = [
   { label: 'About Us',      href: '/about-us'      },
-  { label: 'Careers',       href: '/careers'        },
-  { label: 'Press',         href: '/press'          },
-  { label: 'Blog',          href: '/blog'           },
   { label: 'Store Locator', href: '/store-locator'  },
   { label: 'Our Story',     href: '/story'          },
 ];
@@ -74,11 +71,11 @@ export default function Footer() {
                   alt="KitchenBay Logo"
                   width={160}
                   height={40}
-                  className="object-contain h-10 w-auto invert brightness-0"
+                  className="object-contain h-10 w-auto invert mix-blend-screen"
                 />
               </Link>
               <p className="text-sm text-blue-100/80 leading-relaxed max-w-xs">
-                India's Premium Destination for Authentic Handcrafted Kitchenware,
+                India&apos;s Premium Destination for Authentic Handcrafted Kitchenware,
                 Dining &amp; Traditional Home Décor
               </p>
 

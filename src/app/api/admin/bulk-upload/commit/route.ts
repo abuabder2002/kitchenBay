@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
     );
 
     // Step 2: Perform the database inserts inside a Prisma transaction
-    let importedProducts: any[] = [];
+    const importedProducts: any[] = [];
     
     await prisma.$transaction(async (tx: TransactionClient) => {
       // To prevent duplicate products using SKU or product name during commit,

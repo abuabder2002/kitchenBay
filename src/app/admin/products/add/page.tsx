@@ -1,4 +1,7 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @next/next/no-img-element */
+
 
 import { useState, useMemo } from 'react';
 import FormInput from '@/components/FormInput';

@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-unescaped-entities */
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -14,7 +16,7 @@ export default function GiftingPage() {
         {/* Banner */}
         <section className="relative w-full h-[400px] md:h-[500px]">
           <img 
-            src="https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?q=80&w=1600&auto=format&fit=crop" 
+            src="/images/marketing/everyday_cooking.jpg"
             alt="Traditional Gifting" 
             className="w-full h-full object-cover"
           />
@@ -35,21 +37,21 @@ export default function GiftingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Link href="#" className="group block">
               <div className="aspect-[4/3] rounded-lg overflow-hidden relative mb-4 shadow-md">
-                <img src="https://images.unsplash.com/photo-1542459740-496faee28886?q=80&w=600&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Prarambha Wedding Gift Collection" />
+                <img src="/images/marketing/casserole_banner.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Prarambha Wedding Gift Collection" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
               </div>
               <h3 className="text-xl font-[family-name:var(--font-heading)] font-semibold text-center text-[--color-brand-text] group-hover:text-blue-600 transition-colors">Prarambha Wedding Gift Collection</h3>
             </Link>
             <Link href="#" className="group block">
               <div className="aspect-[4/3] rounded-lg overflow-hidden relative mb-4 shadow-md">
-                <img src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=600&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Festival & Corporate Gifting" />
+                <img src="/images/marketing/everyday_cooking_collection.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Festival & Corporate Gifting" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
               </div>
               <h3 className="text-xl font-[family-name:var(--font-heading)] font-semibold text-center text-[--color-brand-text] group-hover:text-blue-600 transition-colors">Festival & Corporate Gifting</h3>
             </Link>
             <Link href="#" className="group block">
               <div className="aspect-[4/3] rounded-lg overflow-hidden relative mb-4 shadow-md">
-                <img src="https://images.unsplash.com/photo-1512909006721-3d6018887383?q=80&w=600&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Return & Welcome Gifts" />
+                <img src="/images/marketing/culinary_prep.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Return & Welcome Gifts" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
               </div>
               <h3 className="text-xl font-[family-name:var(--font-heading)] font-semibold text-center text-[--color-brand-text] group-hover:text-blue-600 transition-colors">Return & Welcome Gifts</h3>

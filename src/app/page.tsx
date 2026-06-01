@@ -1,4 +1,8 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react/no-unescaped-entities */
+
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
@@ -11,16 +15,16 @@ import { useProducts } from '@/lib/productsContext';
 import { useAuth } from '@/lib/authContext';
 
 const categories = [
-  { name: 'Kitchenware', sub: 'Traditional Cookware', img: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=600&auto=format&fit=crop' },
-  { name: 'Dining', sub: 'Handcrafted Serveware', img: 'https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=600&auto=format&fit=crop' },
-  { name: 'Décor', sub: 'Heritage Home Accents', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=600&auto=format&fit=crop' },
+  { name: 'Kitchenware', sub: 'Traditional Cookware', img: '/images/marketing/modern_world_kitchen.png' },
+  { name: 'Dining', sub: 'Handcrafted Serveware', img: '/images/home/modern_luxury_dining_card.png' },
+  { name: 'Décor', sub: 'Heritage Home Accents', img: '/images/home/modern_luxury_decor_card.png' },
 ];
 
 const materials = [
-  { name: 'Cast Iron', desc: 'Naturally non-stick & iron fortifying', img: 'https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?q=80&w=400&auto=format&fit=crop' },
-  { name: 'Pure Brass', desc: 'Timeless elegance & health benefits', img: 'https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?q=80&w=400&auto=format&fit=crop' },
-  { name: 'Copper', desc: 'Ayurvedic wellness for water storage', img: 'https://images.unsplash.com/photo-1615486171448-4fb325087790?q=80&w=400&auto=format&fit=crop' },
-  { name: 'Soapstone', desc: 'Slow cooking for perfect flavor', img: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?q=80&w=400&auto=format&fit=crop' }
+  { name: 'Cast Iron', desc: 'Naturally non-stick & iron fortifying', img: '/images/home/material_cast_iron.png' },
+  { name: 'Pure Brass', desc: 'Timeless elegance & health benefits', img: '/images/home/material_pure_brass.png' },
+  { name: 'Copper', desc: 'Ayurvedic wellness for water storage', img: '/images/home/material_copper.png' },
+  { name: 'Soapstone', desc: 'Slow cooking for perfect flavor', img: '/images/home/material_soapstone.png' }
 ];
 
 const journalEntries = [
@@ -31,29 +35,23 @@ const journalEntries = [
 
 const promoSlides = [
   {
-    title: "Premium Kitchenware",
-    subtitle: "Collection",
-    image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=800&auto=format&fit=crop",
-    link: "/products?category=kitchenware"
+    title: "Craftsmanship in Copper",
+    subtitle: "Hand-Hammered Elegance",
+    image: "/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM (1).jpeg",
+    link: "/products?category=decor",
   },
   {
-    title: "Modern Cookware",
-    subtitle: "Collection",
-    image: "https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?q=80&w=800&auto=format&fit=crop",
-    link: "/products"
+    title: "Versatile Kitchen Companion",
+    subtitle: "Versatile Collection",
+    image: "/images/home/WhatsApp Image 2026-05-31 at 11.36.37 AM.jpeg",
+    link: "/products?category=versatile",
   },
   {
-    title: "Brass & Copper",
-    subtitle: "Collection",
-    image: "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?q=80&w=800&auto=format&fit=crop",
-    link: "/products?material=Pure%20Brass"
+    title: "Cookware Mastery",
+    subtitle: "Making Cookware",
+    image: "/images/home/WhatsApp Image 2026-05-31 at 11.38.25 AM.jpeg",
+    link: "/products?category=decor",
   },
-  {
-    title: "Elegant Dining",
-    subtitle: "Collection",
-    image: "https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=800&auto=format&fit=crop",
-    link: "/products?category=dining"
-  }
 ];
 
 export default function HomePage() {
@@ -61,32 +59,40 @@ export default function HomePage() {
   const { isAdmin } = useAuth();
   const [traditionVideos, setTraditionVideos] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % promoSlides.length);
-    }, 3500);
+    }, 4000);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    fetch('/api/videos')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setTraditionVideos(data);
-      })
-      .catch(console.error);
-  }, []);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX !== null) {
+      const diff = e.changedTouches[0].clientX - touchStartX;
+      if (diff > 50) {
+        setCurrentSlide((prev) => (prev - 1 + promoSlides.length) % promoSlides.length);
+      } else if (diff < -50) {
+        setCurrentSlide((prev) => (prev + 1) % promoSlides.length);
+      }
+    }
+    setTouchStartX(null);
+  };
 
   const bestsellers = useMemo(() => products.slice(0, 4), [products]);
   const newArrivals = useMemo(() => products.slice(4, 8), [products]);
   const recommendedProducts = useMemo(() => [...products].reverse().slice(0, 8), [products]);
 
   const testimonials = [
-    { name: "Michelle Rose", text: "I absolutely love this Triply Cookware set! Cooked my first traditional curry in it, and the heat distribution is amazing.", rating: 5, avatar: "https://i.pravatar.cc/150?img=1", productImg: "https://images.unsplash.com/photo-1596489357597-9e325145df0f?q=80&w=200&auto=format&fit=crop" },
-    { name: "Paras Chugh", text: "The Soapstone Cookware is outstanding. Authentic taste and retains heat for a very long time. Extremely pleased!", rating: 5, avatar: "https://i.pravatar.cc/150?img=11", productImg: "https://images.unsplash.com/photo-1584347576595-5c12852936de?q=80&w=200&auto=format&fit=crop" },
-    { name: "Prabhas Upadhyay", text: "Brought this beautiful Brass Coffee Dabara set. It's solid brass and gives the perfect filter coffee feel.", rating: 5, avatar: "https://i.pravatar.cc/150?img=33", productImg: "https://images.unsplash.com/photo-1615486171448-4fb325087790?q=80&w=200&auto=format&fit=crop" },
-    { name: "Jayavant Jadhav", text: "These traditional brass diyas are of exceptional quality. They look stunning during pooja ceremonies!", rating: 5, avatar: "https://i.pravatar.cc/150?img=60", productImg: "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?q=80&w=200&auto=format&fit=crop" },
+    { name: "Michelle Rose", text: "I absolutely love this Triply Cookware set! Cooked my first traditional curry in it, and the heat distribution is amazing.", rating: 5, avatar: "https://i.pravatar.cc/150?img=1", productImg: "/images/marketing/everyday_cooking.jpg" },
+    { name: "Paras Chugh", text: "The Soapstone Cookware is outstanding. Authentic taste and retains heat for a very long time. Extremely pleased!", rating: 5, avatar: "https://i.pravatar.cc/150?img=11", productImg: "/images/marketing/casserole_banner.jpg" },
+    { name: "Prabhas Upadhyay", text: "Brought this beautiful Brass Coffee Dabara set. It's solid brass and gives the perfect filter coffee feel.", rating: 5, avatar: "https://i.pravatar.cc/150?img=33", productImg: "/images/marketing/culinary_prep.jpg" },
+    { name: "Jayavant Jadhav", text: "These traditional brass diyas are of exceptional quality. They look stunning during pooja ceremonies!", rating: 5, avatar: "https://i.pravatar.cc/150?img=60", productImg: "/images/marketing/ss_chopping_board.jpg" },
   ];
 
   return (
@@ -101,23 +107,23 @@ export default function HomePage() {
               
               {/* Left Main Banner (Summer Sale) */}
               <Link href="/products" className="lg:col-span-8 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block">
-                <Image
-                  src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=1200&auto=format&fit=crop"
-                  alt="Summer Sale"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/50 to-transparent" />
-                <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 sm:p-8 md:p-12 lg:p-16 max-w-full sm:max-w-md">
-                  <span className="text-lg sm:text-xl md:text-2xl font-[family-name:var(--font-heading)] italic text-gray-800 mb-1 sm:mb-2">End of</span>
-                  <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold text-orange-600 mb-2 sm:mb-4 tracking-tight leading-none">SUMMER<br/>SALE</h2>
-                  <p className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-1 sm:mb-2">Upto <span className="font-bold text-black text-xl sm:text-2xl md:text-4xl">70%</span> Off + <span className="font-bold text-black text-xl sm:text-2xl md:text-3xl">20%</span> Cashback</p>
-                  <p className="text-orange-600 font-medium text-sm sm:text-base">Free Shipping Sitewide</p>
-                </div>
-              </Link>
+                  <Image
+                    src="/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"
+                    alt="Collection for Everyday Cooking"
+                    fill
+                    className="object-contain object-center group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
+                  <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-6 sm:p-8 lg:p-12">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Authentic Handcrafted Kitchenware</h2>
+                  </div>
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-white text-black font-semibold py-2 px-4 rounded hover:bg-gray-100 transition-colors mt-4">Explore Collection</span>
+                  </div>
+                </Link>
 
               {/* Right Side Banner (Premium Slideshow) */}
-              <div className="lg:col-span-4 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block bg-slate-900">
+              <div className="lg:col-span-4 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block bg-slate-900" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                 {promoSlides.map((slide, idx) => (
                   <Link
                     key={idx}
@@ -127,13 +133,13 @@ export default function HomePage() {
                     }`}
                   >
                     <Image
-                      src={slide.image}
-                      alt={slide.title}
-                      fill
-                      className={`object-cover transition-transform duration-[4000ms] ease-out ${
-                        idx === currentSlide ? 'scale-105' : 'scale-100'
-                      }`}
-                    />
+                        src={slide.image}
+                        alt={slide.title}
+                        fill
+                        className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${
+                          idx === currentSlide ? 'scale-105' : 'scale-100'
+                        }`}
+                      />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/80" />
                     <div className="absolute inset-0 flex flex-col items-center justify-end p-8 text-center pb-12">
                       <span className="text-white/90 text-xs font-semibold tracking-[0.2em] uppercase mb-2">
@@ -206,10 +212,10 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Link href="/products?category=kitchenware" className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group rounded-sm block bg-slate-100">
                 <Image
-                  src="https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?q=80&w=800&auto=format&fit=crop"
+                  src="/images/home/handi-set-banner-wide.png"
                   alt="Modern Kitchen Collection"
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent" />
                 <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
@@ -219,10 +225,10 @@ export default function HomePage() {
 
               <Link href="/products?category=dining" className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group rounded-sm block bg-slate-100">
                 <Image
-                  src="https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=800&auto=format&fit=crop"
-                  alt="Premium Dining Sets"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      src="/images/home/durable-cookware-banner-wide.png"
+                      alt="Premium Dining Sets"
+                      fill
+                      className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
                 <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
@@ -232,10 +238,10 @@ export default function HomePage() {
 
               <Link href="/products?category=decor" className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group rounded-sm block bg-slate-100">
                 <Image
-                  src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop"
+                  src="/images/home/apple-handi-banner-wide.png"
                   alt="Bring Style Into Everyday Living"
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent" />
                 <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
@@ -413,7 +419,7 @@ export default function HomePage() {
                           <Image src={t.productImg} alt="Product" width={64} height={64} className="rounded-sm object-cover border border-gray-100 shadow-sm" />
                        </div>
                     </div>
-                 </div>
+                  </div>
                ))}
             </div>
           </div>

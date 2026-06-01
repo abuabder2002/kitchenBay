@@ -12,7 +12,7 @@ export interface BulkProductRow {
   tags?: string | string[];
   image?: string;
   moq?: number | string;
-  bulkPricingTiers?: string | any;
+  bulkPricingTiers?: string | {qty: string | number, price: string | number}[];
 }
 
 export interface ValidationError {
@@ -24,7 +24,24 @@ export interface ValidationError {
 
 export const VALID_CATEGORIES = ['kitchenware', 'dining', 'decor'];
 
-export function validateProductRow(row: BulkProductRow, rowIndex: number): { errors: string[]; parsedRow?: any } {
+export interface ParsedProductRow {
+  name: string | null;
+  description: string | null;
+  price: number;
+  discountPrice: number | null;
+  stock: number;
+  category: string;
+  subcategory: string | null;
+  sku: string | null;
+  material: string | null;
+  dimensions: string | null;
+  tags: string[];
+  moq: number | null;
+  bulkPricingTiers: { qty: number; price: number }[] | null;
+  image: string;
+}
+
+export function validateProductRow(row: BulkProductRow): { errors: string[]; parsedRow?: ParsedProductRow } {
   const errors: string[] = [];
   
   const name = row.name?.toString().trim();
@@ -118,7 +135,7 @@ export function validateProductRow(row: BulkProductRow, rowIndex: number): { err
   // Bulk Pricing Tiers parsing
   // Expected format: "qty:price,qty:price" e.g., "50:450,100:400"
   // Where price is in Rupees, stored in paise.
-  let parsedTiers: { qty: number; price: number }[] = [];
+  const parsedTiers: { qty: number; price: number }[] = [];
   if (row.bulkPricingTiers) {
     if (typeof row.bulkPricingTiers === 'string') {
       const parts = row.bulkPricingTiers.split(',').map(p => p.trim()).filter(Boolean);
@@ -135,8 +152,8 @@ export function validateProductRow(row: BulkProductRow, rowIndex: number): { err
     } else if (Array.isArray(row.bulkPricingTiers)) {
       // If already an array (e.g., from direct JSON upload/parsing)
       for (const tier of row.bulkPricingTiers) {
-        const qty = parseInt(tier.qty, 10);
-        const price = Math.round(parseFloat(tier.price) * 100); // Assuming stored tier.price in rupees
+        const qty = parseInt(tier.qty.toString(), 10);
+        const price = Math.round(parseFloat(tier.price.toString()) * 100); // Assuming stored tier.price in rupees
         if (isNaN(qty) || qty <= 0 || isNaN(price) || price <= 0) {
           errors.push(`Invalid bulk tier format. Expected {qty, price}.`);
         } else {

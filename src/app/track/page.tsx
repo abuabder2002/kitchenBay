@@ -36,7 +36,7 @@ export default function TrackOrderPage() {
     if (!matchedOrder) {
       matchedOrder = mockOrders.find(
         o => o.id.toLowerCase() === cleanOrderId.toLowerCase()
-      ) as any;
+      ) as typeof orders[0] | undefined;
     }
 
     if (!matchedOrder) {

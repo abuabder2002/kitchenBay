@@ -24,11 +24,28 @@ const navItems: NavItem[] = [
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <aside
-      className={`${collapsed ? 'w-16' : 'w-64'} transition-all duration-300 bg-gradient-to-b from-blue-950 to-[#071120] min-h-screen flex flex-col border-r border-blue-900/30`}
-    >
+    <>
+      <button 
+        onClick={() => setMobileOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-40 p-1.5 bg-white rounded shadow-sm border border-gray-200 text-gray-700 hover:bg-gray-50"
+      >
+        <Menu size={22} />
+      </button>
+
+      {mobileOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setMobileOpen(false)} />
+      )}
+
+      <aside
+        className={`${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0 ${
+          collapsed ? 'md:w-16' : 'md:w-64'
+        } w-64 fixed md:relative z-50 transition-all duration-300 bg-gradient-to-b from-blue-950 to-[#071120] h-screen flex flex-col border-r border-blue-900/30`}
+      >
       {/* Logo Area */}
       <div className="flex items-center justify-between p-4 border-b border-blue-900/60">
         {!collapsed && (
@@ -99,5 +116,6 @@ export default function Sidebar() {
         )}
       </div>
     </aside>
+    </>
   );
 }

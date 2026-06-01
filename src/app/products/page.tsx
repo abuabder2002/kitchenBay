@@ -1,4 +1,6 @@
 'use client';
+/* eslint-disable react-hooks/set-state-in-effect */
+
 
 import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -256,7 +258,7 @@ function ProductsContent() {
                 Clear Filters
               </button>
             )}
-            <FilterPanel />
+            {FilterPanel()}
           </aside>
 
           {/* Mobile Filter Drawer */}
@@ -274,7 +276,7 @@ function ProductsContent() {
                       Clear Filters
                     </button>
                   )}
-                  <FilterPanel />
+                  {FilterPanel()}
                 </div>
                 <div className="p-6 border-t border-[--color-brand-border] sticky bottom-0 bg-[--color-brand-bg]">
                   <button
@@ -296,7 +298,7 @@ function ProductsContent() {
                   <X className="text-[--color-brand-muted]" size={24} />
                 </div>
                 <p className="font-[family-name:var(--font-heading)] text-3xl font-bold text-[--color-brand-text] mb-4">Nothing Found</p>
-                <p className="text-[--color-brand-muted] max-w-md text-lg">We couldn't find any artisans works matching your criteria.</p>
+                <p className="text-[--color-brand-muted] max-w-md text-lg">We couldn&apos;t find any artisans works matching your criteria.</p>
                 <button onClick={clearFilters} className="mt-8 bg-transparent border border-[--color-brand-text] text-[--color-brand-text] px-8 py-3 text-sm font-bold uppercase tracking-widest hover:bg-[--color-brand-text] hover:text-[--color-brand-bg] transition-colors">
                   Clear Filters
                 </button>

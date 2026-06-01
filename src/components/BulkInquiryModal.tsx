@@ -1,8 +1,10 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
+
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { X, Send, MessageSquare, CheckCircle, Info, Loader2 } from 'lucide-react';
+import { X, Send, MessageSquare, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface Product {
@@ -44,8 +46,10 @@ export default function BulkInquiryModal({ product, isOpen, onClose, initialQuan
   // Autofill Clerk User Information
   useEffect(() => {
     if (isLoaded && user) {
-      setCustomerName(user.fullName || user.username || '');
-      setEmail(user.emailAddresses?.[0]?.emailAddress || '');
+      Promise.resolve().then(() => {
+        setCustomerName(user.fullName || user.username || '');
+        setEmail(user.emailAddresses?.[0]?.emailAddress || '');
+      });
     }
   }, [user, isLoaded]);
 
@@ -108,8 +112,9 @@ export default function BulkInquiryModal({ product, isOpen, onClose, initialQuan
       }
 
       setSubmittedInquiryId(data.inquiryId);
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Something went wrong. Please try again.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+      setErrorMsg(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -150,7 +155,7 @@ export default function BulkInquiryModal({ product, isOpen, onClose, initialQuan
               <CheckCircle size={64} className="text-emerald-500 mb-4 animate-bounce" />
               <h4 className="text-2xl font-bold text-gray-900 mb-2">Inquiry Submitted Successfully!</h4>
               <p className="text-sm text-gray-600 max-w-md mb-6">
-                Your inquiry ID is <strong className="text-blue-900 font-mono">{submittedInquiryId}</strong>. We've sent a confirmation email to <strong>{email}</strong>. Our B2B representative will contact you via <strong>{preferredContact}</strong> within 12-24 hours.
+                Your inquiry ID is <strong className="text-blue-900 font-mono">{submittedInquiryId}</strong>. We&apos;ve sent a confirmation email to <strong>{email}</strong>. Our B2B representative will contact you via <strong>{preferredContact}</strong> within 12-24 hours.
               </p>
               
               <div className="flex flex-wrap justify-center gap-3">

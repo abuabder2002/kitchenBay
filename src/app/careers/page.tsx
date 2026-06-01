@@ -1,4 +1,6 @@
 'use client';
+/* eslint-disable react/no-unescaped-entities */
+
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Briefcase, Heart, Globe, Users } from 'lucide-react';

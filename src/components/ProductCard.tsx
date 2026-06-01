@@ -19,7 +19,7 @@ interface ProductCardProps {
 export default function ProductCard({ product, isHero = false }: ProductCardProps) {
   const { addItem: addToCart } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
-  const { currentUser: user, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
 
 
   const formatPrice = (price: number) => priceFormatter.format(price);
@@ -31,7 +31,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
       <div className={`relative ${isHero ? 'aspect-auto h-[300px] md:h-full' : 'aspect-square'} overflow-hidden`}>
         <Link href={`/products/${product.id}`} className="block w-full h-full relative">
           <Image 
-            src={product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=400&auto=format&fit=crop'} 
+            src={product.image || '/images/marketing/everyday_cooking.jpg'} 
             alt={product.name} 
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
@@ -56,7 +56,15 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
 
         {/* Wishlist Button */}
         <button 
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); isInWishlist(product.id) ? removeFromWishlist(product.id) : addToWishlist(product); }}
+          onClick={(e) => { 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            if (isInWishlist(product.id)) {
+              removeFromWishlist(product.id);
+            } else {
+              addToWishlist(product);
+            }
+          }}
           className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-[--color-brand-accent] transition-colors z-10 shadow"
           aria-label="Toggle wishlist"
         >

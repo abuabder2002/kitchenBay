@@ -1,4 +1,6 @@
 'use client';
+/* eslint-disable @next/next/no-html-link-for-pages */
+
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { FileText, Download } from 'lucide-react';
