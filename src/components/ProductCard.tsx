@@ -42,7 +42,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         
         {/* Discount Badge */}
         {product.discount > 0 && (
-          <div className="absolute top-0 left-0 bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-br-lg z-10 uppercase tracking-wide">
+          <div className="absolute top-0 left-0 bg-[#F4D03F] text-[#4A2C2A] text-[10px] font-bold px-2.5 py-1 rounded-br-lg z-10 uppercase tracking-wide">
             {product.discount}% OFF
           </div>
         )}

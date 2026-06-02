@@ -47,7 +47,7 @@ export const categories = [
   { id: 'kitchenware',   name: 'Kitchenware',         icon: '🍳', count: 34 },
   { id: 'dining',        name: 'Dining',              icon: '🍽️', count: 13 },
   { id: 'brass-copper',  name: 'Brass/Copper',        icon: '🫕', count: 7  },
-  { id: 'decor',         name: 'Décor',               icon: '🪔',  count: 8  },
+  { id: 'decor',         name: 'Décor',               icon: '🪔', count: 9  },
 ];
 
 // ─── SUBCATEGORIES ───────────────────────────────────────────
@@ -70,6 +70,7 @@ export const subcategories = [
   { id: 'brass-copper-cookware', name: 'All Brass/Copper',      category: 'brass-copper', icon: '🫕' },
   // Décor
   { id: 'lamp-diya',             name: 'Lamp & Diya',           category: 'decor', icon: '🪔' },
+  { id: 'pooja-essentials', name: 'Pooja Essentials', category: 'decor', icon: '🪔' },
 ];
 
 // ─── MATERIALS ───────────────────────────────────────────────

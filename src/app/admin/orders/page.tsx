@@ -21,6 +21,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [updated, setUpdated] = useState<string | null>(null);
 
   // States for live real-time email notification sending
@@ -36,22 +37,28 @@ export default function AdminOrdersPage() {
     code?: string;
   } | null>(null);
 
-  useEffect(() => {
-    async function fetchAllOrders() {
-      try {
-        const res = await fetch('/api/admin/orders');
-        if (res.ok) {
-          const data = await res.json();
-          setOrders(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch admin orders:', err);
-      } finally {
-        setLoading(false);
+  // Fetch orders function used for initial load and refresh
+  const fetchOrders = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/orders');
+      if (!res.ok) {
+        throw new Error('Failed to fetch admin orders.');
       }
+      const data = await res.json();
+      setOrders(data);
+    } catch (err: any) {
+      setError(err.message || 'Error occurred while loading data.');
+    } finally {
+      setLoading(false);
     }
-    fetchAllOrders();
+  };
+
+  useEffect(() => {
+    fetchOrders();
   }, []);
+
 
   const formatPrice = (p: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p);
@@ -175,8 +182,14 @@ export default function AdminOrdersPage() {
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           Order Management
         </h1>
-        <p className="text-sm text-gray-500 mt-0.5">{orders.length} orders total</p>
+        <button type="button" onClick={fetchOrders} className="ml-4 px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded text-sm">Refresh</button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
 
       {loading ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
@@ -333,6 +346,7 @@ export default function AdminOrdersPage() {
               <Eye size={12} /> Preview Sent Email
             </button>
             <button 
+              type="button" 
               onClick={() => setActiveNotification(null)}
               className="px-3 py-2 border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold rounded-lg text-xs transition-colors"
             >

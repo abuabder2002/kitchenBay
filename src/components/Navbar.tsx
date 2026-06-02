@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { subcategories } from '@/lib/mockData';
-import logoImg from '../images/logo.jpeg';
+import logoImg from '../images/logo1.png';
 import { ShoppingCart, Search, Menu, X, Heart, UserCircle2, MapPin, ChevronDown } from 'lucide-react';
 import { useCart } from '@/lib/cartContext';
 import { useWishlist } from '@/lib/wishlistContext';
@@ -82,9 +82,9 @@ export default function Navbar() {
             <Image 
               src={logoImg} 
               alt="Brand Logo" 
-              width={280} 
-              height={90} 
-              className={`object-contain mix-blend-multiply transition-all duration-300 ${scrolled ? 'h-12 sm:h-14 lg:h-16' : 'h-14 sm:h-20 lg:h-28'} w-auto max-w-[140px] sm:max-w-[200px] lg:max-w-none`}
+              width={540} 
+              height={190} 
+              className={`object-contain mix-blend-multiply transition-all duration-300 ${scrolled ? 'h-12 sm:h-14 lg:h-16' : 'h-14 sm:h-20 lg:h-28'} w-auto max-w-[170px] sm:max-w-[250px] lg:max-w-none`}
               priority 
             />
           </Link>

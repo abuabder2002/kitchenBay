@@ -7,6 +7,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
+import TraditionVideoSection from '@/components/TraditionVideoSection';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { Truck, RotateCcw, ShieldCheck, HeartHandshake, Leaf, Users, Star, Quote, MapPin } from 'lucide-react';
@@ -57,7 +58,6 @@ const promoSlides = [
 export default function HomePage() {
   const { products } = useProducts();
   const { isAdmin } = useAuth();
-  const [traditionVideos, setTraditionVideos] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
@@ -194,13 +194,13 @@ export default function HomePage() {
         </section>
 
         {/* ── FULL WIDTH PROMO BAR ──────────────────────────────────────── */}
-        <section className="bg-[#9c3f11] text-white py-4 relative">
+        <section className="bg-[#E8F5E9] text-black py-4 relative">
           <div className="max-w-[1600px] mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-              <span className="text-xl sm:text-2xl italic font-[family-name:var(--font-heading)] font-light">Now Serving:</span>
-              <span className="text-lg sm:text-xl md:text-2xl font-bold">Get Upto Rs.1,500 Off On Your First Order</span>
+              <span className="text-xl sm:text-2xl italic font-[family-name:var(--font-heading)] font-medium">Now Serving:</span>
+              <span className="text-lg sm:text-xl md:text-2xl font-extrabold">Get Upto Rs.1,500 Off On Your First Order</span>
             </div>
-            <Link href="/login" className="flex items-center gap-2 text-lg font-bold border-b border-white hover:text-[--color-brand-accent-yellow] hover:border-[--color-brand-accent-yellow] transition-colors">
+            <Link href="/login" className="flex items-center gap-2 text-lg font-bold border-b border-black transition-all duration-300 ease-in-out hover:text-gray-700 hover:border-gray-700 hover:scale-105">
               Sign Up Now <span className="text-xl">&gt;</span>
             </Link>
           </div>
@@ -309,7 +309,8 @@ export default function HomePage() {
           </div>
         </section>
 
-
+        {/* ── TRADITION VIDEO SECTION ────────────────────────────────────── */}
+        <TraditionVideoSection />
 
         {/* ── BESTSELLERS ───────────────────────────────────────────────── */}
         <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">

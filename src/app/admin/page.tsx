@@ -3,10 +3,9 @@
 /* eslint-disable @next/next/no-img-element */
 
 
-import { useMemo, useState } from 'react';
-
-import { useOrders } from '@/lib/ordersContext';
+import { useMemo, useState, useEffect } from 'react';
 import { useProducts } from '@/lib/productsContext';
+import { orders as mockOrders } from '@/lib/mockData';
 import {
   TrendingUp, ShoppingBag, Users, Package,
   ArrowUpRight, ArrowDownRight, DollarSign
@@ -43,8 +42,30 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
-  const { orders } = useOrders();
   const { products } = useProducts();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch('/api/admin/orders');
+        if (!res.ok) throw new Error('Failed to fetch admin orders');
+        const data = await res.json();
+        setOrders(data);
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || 'Error fetching orders');
+        // Fallback to mock data in development
+        setOrders(mockOrders);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
+
 
   const formatPrice = (p: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p);
@@ -98,43 +119,53 @@ export default function AdminDashboard() {
             <h2 className="font-bold text-gray-900">Recent Orders</h2>
             <a href="/admin/orders" className="text-xs font-medium text-blue-600 hover:text-blue-700">View all →</a>
           </div>
-          {recentOrders.length === 0 ? (
-            <div className="px-6 py-12 text-center">
-              <ShoppingBag size={32} className="text-gray-200 mx-auto mb-3" />
-              <p className="text-sm text-gray-400 font-medium">No orders yet</p>
-              <p className="text-xs text-gray-300 mt-1">Orders placed by customers will appear here.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {['Order ID', 'Customer', 'Amount', 'Status', 'Date'].map(h => (
-                      <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {recentOrders.map(o => (
-                    <tr key={o.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-3.5 text-sm font-semibold text-blue-600">{o.id}</td>
-                      <td className="px-5 py-3.5">
-                        <p className="text-sm font-medium text-gray-800">{o.customer}</p>
-                        <p className="text-xs text-gray-400">{o.email}</p>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm font-semibold text-gray-800">{formatPrice(o.total)}</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[o.status]}`}>
-                          {o.status.charAt(0).toUpperCase() + o.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-xs text-gray-500">{new Date(o.date).toLocaleDateString('en-IN')}</td>
-                    </tr>
+        {loading && (
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm text-gray-500">Loading orders...</p>
+          </div>
+        )}
+        {error && (
+          <div className="px-6 py-12 text-center text-red-600">
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+        {!loading && !error && recentOrders.length === 0 ? (
+          <div className="px-6 py-12 text-center">
+            <ShoppingBag size={32} className="text-gray-200 mx-auto mb-3" />
+            <p className="text-sm text-gray-400 font-medium">No orders yet</p>
+            <p className="text-xs text-gray-300 mt-1">Orders placed by customers will appear here.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  {['Order ID', 'Customer', 'Amount', 'Status', 'Date'].map(h => (
+                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {recentOrders.map(o => (
+                  <tr key={o.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-5 py-3.5 text-sm font-semibold text-blue-600">{o.id}</td>
+                    <td className="px-5 py-3.5">
+                      <p className="text-sm font-medium text-gray-800">{o.customer}</p>
+                      <p className="text-xs text-gray-400">{o.email}</p>
+                    </td>
+                    <td className="px-5 py-3.5 text-sm font-semibold text-gray-800">{formatPrice(o.total)}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[o.status]}`}>
+                        {o.status.charAt(0).toUpperCase() + o.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-xs text-gray-500">{new Date(o.date).toLocaleDateString('en-IN')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         </div>
 
         {/* Top Products */}

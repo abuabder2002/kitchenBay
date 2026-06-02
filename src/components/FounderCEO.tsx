@@ -6,12 +6,13 @@ export default function FounderCEO() {
     <section className="bg-white py-12" id="founder-ceo">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-8">
         {/* Founder Image */}
-        <div className="w-full md:w-1/2 relative h-80 md:h-96 rounded-xl overflow-hidden shadow-lg">
+        <div className="w-full md:w-1/2 relative rounded-xl overflow-hidden shadow-lg" style={{ aspectRatio: '4/5' }}>
           <Image
             src="/images/about/founder-arunmani.jpg"
             alt="Founder Arunmani Sellasamy"
             fill
-            className="object-cover object-center"
+            className="object-cover object-top"
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
         </div>
         {/* Content */}
