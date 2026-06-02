@@ -5,7 +5,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useProducts } from '@/lib/productsContext';
-import { orders as mockOrders } from '@/lib/mockData';
+import { orders as mockOrders, Order } from '@/lib/mockData';
 import {
   TrendingUp, ShoppingBag, Users, Package,
   ArrowUpRight, ArrowDownRight, DollarSign
@@ -43,7 +43,7 @@ const statusColors: Record<string, string> = {
 
 export default function AdminDashboard() {
   const { products } = useProducts();
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
