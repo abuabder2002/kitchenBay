@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useState } from 'react';
 import { Product, products } from './mockData';
 import { useAuth } from './authContext';
 
@@ -46,9 +46,9 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
   const [state, dispatch] = useReducer(wishlistReducer, { items: [] });
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const storageKey = 'Kitchenbay_wishlist_guest';
-  const isLoaded = useRef(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -81,7 +81,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           }
         })
         .catch(console.error)
-        .finally(() => { isLoaded.current = true; });
+        .finally(() => { setIsLoaded(true); });
     } else {
       // Load local
       const local = localStorage.getItem(storageKey);
@@ -94,16 +94,16 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       } else {
         dispatch({ type: 'SET_ITEMS', items: [] });
       }
-      isLoaded.current = true;
+      setIsLoaded(true);
     }
   }, [currentUser]);
 
   // Save to localStorage when items change, only if logged out
   useEffect(() => {
-    if (isLoaded.current && !currentUser) {
+    if (isLoaded && !currentUser) {
       localStorage.setItem(storageKey, JSON.stringify(state.items));
     }
-  }, [state.items, currentUser]);
+  }, [state.items, currentUser, isLoaded]);
 
   const addItem = useCallback(async (product: Product) => {
     dispatch({ type: 'ADD_ITEM', product });

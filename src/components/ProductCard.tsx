@@ -66,10 +66,10 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
               addToWishlist(product);
             }
           }}
-          className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-[--color-brand-accent] transition-colors z-10 shadow"
+          className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors z-10 shadow"
           aria-label="Toggle wishlist"
         >
-          <Heart size={16} className={isInWishlist(product.id) ? "fill-[--color-brand-accent] text-[--color-brand-accent]" : ""} />
+          <Heart size={16} className={isInWishlist(product.id) ? "fill-red-500 text-red-500" : ""} />
         </button>
 
         {/* Edit Pencil Icon (Admin Only) */}

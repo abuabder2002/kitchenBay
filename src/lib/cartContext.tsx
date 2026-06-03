@@ -1,8 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useState } from 'react';
 import { Product, CartItem, products } from './mockData';
 import { useAuth } from './authContext';
+import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
 
 interface CartState {
   items: CartItem[];
@@ -69,9 +71,10 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
+  const [isLoaded, setIsLoaded] = useState(false);
+  const router = useRouter();
 
   const storageKey = 'Kitchenbay_cart_guest';
-  const isLoaded = useRef(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -96,7 +99,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         })
         .catch(console.error)
-        .finally(() => { isLoaded.current = true; });
+        .finally(() => { setIsLoaded(true); });
     } else {
       // Load local
       const local = localStorage.getItem(storageKey);
@@ -109,27 +112,41 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         dispatch({ type: 'SET_ITEMS', items: [] });
       }
-      isLoaded.current = true;
+      setIsLoaded(true);
     }
   }, [currentUser]);
 
   // Save to localStorage when items change, only if logged out
   useEffect(() => {
-    if (isLoaded.current && !currentUser) {
+    if (isLoaded && !currentUser) {
       localStorage.setItem(storageKey, JSON.stringify(state.items));
     }
-  }, [state.items, currentUser]);
+  }, [state.items, currentUser, isLoaded]);
 
   const addItem = useCallback(async (product: Product) => {
-    dispatch({ type: 'ADD_ITEM', product });
-    if (currentUser) {
-      fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'ADD', productId: product.id })
-      }).catch(console.error);
+    if (!currentUser) {
+      Swal.fire({
+        title: 'Login Required',
+        text: 'Please login to add items to your cart.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Login',
+        confirmButtonColor: '#2563EB',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push('/login?redirect=/cart');
+        }
+      });
+      return;
     }
-  }, [currentUser]);
+
+    dispatch({ type: 'ADD_ITEM', product });
+    fetch('/api/cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'ADD', productId: product.id })
+    }).catch(console.error);
+  }, [currentUser, router]);
 
   const removeItem = useCallback(async (productId: string) => {
     dispatch({ type: 'REMOVE_ITEM', productId });
