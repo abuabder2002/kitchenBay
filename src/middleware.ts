@@ -39,9 +39,11 @@ export default clerkMiddleware(async (auth, request) => {
       const email = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress || user.emailAddresses[0]?.emailAddress;
       
       const adminEmailConfig = process.env.ADMIN_EMAILS || process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
-      const adminEmails = adminEmailConfig.split(',').map(e => e.trim().toLowerCase()).filter(e => e);
+      const envAdminEmails = adminEmailConfig.split(',').map(e => e.trim().toLowerCase()).filter(e => e);
+      const hardcodedAdmins = ['yousufsuhaily@gmail.com', 'kitchenbaythehomeneeds@gmail.com', 'abdershaheen4@gmail.com'];
+      const isAdminEmail = envAdminEmails.includes(email.toLowerCase()) || hardcodedAdmins.includes(email.toLowerCase());
       
-      if (!email || !adminEmails.includes(email.toLowerCase())) {
+      if (!email || !isAdminEmail) {
         // Redirect non-admin users away from /admin to the home page "/"
         return Response.redirect(new URL("/", request.url));
       }
