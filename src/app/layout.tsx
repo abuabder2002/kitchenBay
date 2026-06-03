@@ -7,6 +7,7 @@ import { ProductsProvider } from '@/lib/productsContext';
 import { AuthProvider } from '@/lib/authContext';
 import { OrdersProvider } from '@/lib/ordersContext';
 import { NextAuthProvider } from '@/components/Providers';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const playfair = Playfair_Display({ 
   weight: ['400', '500', '600', '700', '800', '900'], 
@@ -44,6 +45,7 @@ export default function RootLayout({
           </ProductsProvider>
         </AuthProvider>
         </NextAuthProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
