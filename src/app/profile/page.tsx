@@ -7,10 +7,13 @@ import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { UserCircle2, MapPin, Settings } from 'lucide-react';
+import { useClerk } from '@clerk/nextjs';
+import Swal from 'sweetalert2';
 
 export default function ProfilePage() {
   const { currentUser: user, loading } = useAuth();
   const router = useRouter();
+  const { openUserProfile } = useClerk();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -30,6 +33,15 @@ export default function ProfilePage() {
     );
   }
 
+  const handleFeatureComingSoon = () => {
+    Swal.fire({
+      title: 'Coming Soon!',
+      text: 'This feature will be available in the next update.',
+      icon: 'info',
+      confirmButtonColor: '#2563EB'
+    });
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
@@ -47,7 +59,12 @@ export default function ProfilePage() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
               <p className="text-gray-500 mb-2">{user.email}</p>
-              <button className="text-sm font-semibold text-[--color-brand-accent] hover:text-[--color-brand-accent-hover] bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">Edit Profile</button>
+              <button 
+                onClick={() => openUserProfile()}
+                className="text-sm font-semibold text-[--color-brand-accent] hover:text-[--color-brand-accent-hover] bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Edit Profile
+              </button>
             </div>
           </div>
         </div>
@@ -56,7 +73,7 @@ export default function ProfilePage() {
           <div className="bg-white rounded-2xl shadow-sm border border-[--color-brand-border] p-8">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold flex items-center gap-2 text-gray-900"><MapPin size={20} className="text-gray-400" /> Saved Addresses</h3>
-              <button className="text-sm font-semibold text-[--color-brand-accent] hover:text-[--color-brand-accent-hover]">+ Add New</button>
+              <button onClick={handleFeatureComingSoon} className="text-sm font-semibold text-[--color-brand-accent] hover:text-[--color-brand-accent-hover]">+ Add New</button>
             </div>
             {user.addresses && user.addresses.length > 0 ? (
               <ul className="space-y-4">
@@ -78,9 +95,9 @@ export default function ProfilePage() {
           <div className="bg-white rounded-2xl shadow-sm border border-[--color-brand-border] p-8">
             <h3 className="text-xl font-bold flex items-center gap-2 mb-6 text-gray-900"><Settings size={20} className="text-gray-400" /> Account Settings</h3>
             <ul className="space-y-4 text-gray-700">
-              <li><button className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Change Password</button></li>
-              <li><button className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Communication Preferences</button></li>
-              <li><button className="w-full text-left p-3 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-600 font-medium transition-colors border border-transparent hover:border-red-100">Delete Account</button></li>
+              <li><button onClick={() => openUserProfile()} className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Change Password</button></li>
+              <li><button onClick={() => openUserProfile()} className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Communication Preferences</button></li>
+              <li><button onClick={() => openUserProfile()} className="w-full text-left p-3 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-600 font-medium transition-colors border border-transparent hover:border-red-100">Delete Account</button></li>
             </ul>
           </div>
         </div>
