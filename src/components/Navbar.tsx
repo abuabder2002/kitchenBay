@@ -261,7 +261,7 @@ export default function Navbar() {
               aria-label="Open Cart"
             >
               <ShoppingCart size={24} strokeWidth={1.5} />
-              <span className={`absolute top-0 right-0 w-[18px] h-[18px] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm ${itemCount > 0 ? 'bg-[--color-brand-accent]' : 'bg-gray-400'}`}>
+              <span className={`absolute top-0 right-0 w-[18px] h-[18px] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm ${itemCount > 0 ? '' : 'bg-gray-400'}`} style={itemCount > 0 ? { backgroundColor: 'var(--color-brand-accent)' } : undefined}>
                 {itemCount > 9 ? '9+' : itemCount}
               </span>
             </button>
