@@ -16,7 +16,7 @@ export default function Navbar() {
   const router = useRouter();
   const { currentUser: user, logout, isAdmin } = useAuth();
   const { products } = useProducts();
-  const { itemCount } = useCart();
+  const { itemCount, openDrawer } = useCart();
   const { items: wishlistItems } = useWishlist();
   
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -248,23 +248,27 @@ export default function Navbar() {
 
             {/* Wishlist */}
             <Link href="/wishlist" className="relative text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Wishlist">
-              <Heart size={22} strokeWidth={1.5} />
+              <Heart size={22} strokeWidth={1.5} className={wishlistItems.length > 0 ? 'text-red-500' : ''} />
               {wishlistItems.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[--color-brand-accent] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
                   {wishlistItems.length > 9 ? '9+' : wishlistItems.length}
                 </span>
               )}
             </Link>
 
-            {/* Cart */}
-            <Link href="/cart" className="relative text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Cart">
+            {/* Cart — opens slide-out drawer */}
+            <button
+              onClick={openDrawer}
+              className="relative text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]"
+              aria-label="Open Cart"
+            >
               <ShoppingCart size={22} strokeWidth={1.5} />
               {itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[--color-brand-accent] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[--color-brand-accent] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
                   {itemCount > 9 ? '9+' : itemCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             {/* Mobile Menu Toggle */}
             <button onClick={() => setMobileOpen(true)} className="lg:hidden text-[--color-brand-text] ml-2" aria-label="Open Menu">
