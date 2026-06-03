@@ -248,12 +248,10 @@ export default function Navbar() {
 
             {/* Wishlist */}
             <Link href="/wishlist" className="relative text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Wishlist">
-              <Heart size={22} strokeWidth={1.5} className={wishlistItems.length > 0 ? 'text-red-500' : ''} />
-              {wishlistItems.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
-                  {wishlistItems.length > 9 ? '9+' : wishlistItems.length}
-                </span>
-              )}
+              <Heart size={24} strokeWidth={1.5} className={wishlistItems.length > 0 ? 'text-red-500' : ''} />
+              <span className={`absolute top-0 right-0 w-[18px] h-[18px] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm ${wishlistItems.length > 0 ? 'bg-red-500' : 'bg-gray-400'}`}>
+                {wishlistItems.length > 9 ? '9+' : wishlistItems.length}
+              </span>
             </Link>
 
             {/* Cart — opens slide-out drawer */}
@@ -262,12 +260,10 @@ export default function Navbar() {
               className="relative text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]"
               aria-label="Open Cart"
             >
-              <ShoppingCart size={22} strokeWidth={1.5} />
-              {itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[--color-brand-accent] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
-                  {itemCount > 9 ? '9+' : itemCount}
-                </span>
-              )}
+              <ShoppingCart size={24} strokeWidth={1.5} />
+              <span className={`absolute top-0 right-0 w-[18px] h-[18px] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm ${itemCount > 0 ? 'bg-[--color-brand-accent]' : 'bg-gray-400'}`}>
+                {itemCount > 9 ? '9+' : itemCount}
+              </span>
             </button>
 
             {/* Mobile Menu Toggle */}
