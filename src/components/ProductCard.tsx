@@ -20,8 +20,6 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
   const { items: cartItems, addItem: addToCart, updateQuantity, removeItem: removeFromCart } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
   const { isAdmin } = useAuth();
-
-  const { isAdmin } = useAuth();
   
   const cartItem = cartItems.find(item => item.product.id === product.id);
 
