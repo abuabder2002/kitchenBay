@@ -46,40 +46,40 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
   const [state, dispatch] = useReducer(wishlistReducer, { items: [] });
-  
-  const storageKey = 'shopnest_wishlist_guest';
+
+  const storageKey = 'Kitchenbay_wishlist_guest';
 
   useEffect(() => {
     if (currentUser) {
       // Sync from server
       fetch('/api/wishlist')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          const mapped = data.map((d: { productId: string }) => products.find(p => p.id === d.productId)).filter(Boolean) as Product[];
-          
-          // Also sync any local items up to the cloud
-          const local = localStorage.getItem(storageKey);
-          const localItems: Product[] = local ? JSON.parse(local) : [];
-          
-          const itemsToSync = localItems.filter(
-            (localItem: Product) => !mapped.some(m => m.id === localItem.id)
-          );
-          
-          itemsToSync.forEach((item: Product) => {
-            fetch('/api/wishlist', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ productId: item.id })
-            }).catch(console.error);
-            mapped.push(item);
-          });
-          
-          dispatch({ type: 'SET_ITEMS', items: mapped });
-          localStorage.removeItem(storageKey); // Clear local after sync
-        }
-      })
-      .catch(console.error);
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const mapped = data.map((d: { productId: string }) => products.find(p => p.id === d.productId)).filter(Boolean) as Product[];
+
+            // Also sync any local items up to the cloud
+            const local = localStorage.getItem(storageKey);
+            const localItems: Product[] = local ? JSON.parse(local) : [];
+
+            const itemsToSync = localItems.filter(
+              (localItem: Product) => !mapped.some(m => m.id === localItem.id)
+            );
+
+            itemsToSync.forEach((item: Product) => {
+              fetch('/api/wishlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: item.id })
+              }).catch(console.error);
+              mapped.push(item);
+            });
+
+            dispatch({ type: 'SET_ITEMS', items: mapped });
+            localStorage.removeItem(storageKey); // Clear local after sync
+          }
+        })
+        .catch(console.error);
     } else {
       // Load local
       const local = localStorage.getItem(storageKey);

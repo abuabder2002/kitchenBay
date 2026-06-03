@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     }
 
     const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-    const isAdmin = user.email.toLowerCase() === adminEmail.toLowerCase();
+    const isAdmin = [adminEmail.toLowerCase(), 'yousufsuhaily@gmail.com'].includes(user.email.toLowerCase());
 
     const url = new URL(req.url);
     const statusFilter = url.searchParams.get('status') || undefined;
@@ -245,7 +245,7 @@ export async function POST(req: NextRequest) {
       // 1. Admin Alert Email
       const adminMailOptions = {
         from: fromEmail,
-        to: adminEmail,
+        to: [adminEmail, 'yousufsuhaily@gmail.com'].join(','),
         subject: `🚨 [B2B Wholesale Lead] New Bulk Inquiry from ${customerName}`,
         html: `
           <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">

@@ -31,7 +31,11 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Signature verification ──────────────────────────────
-    const keySecret = (process.env.RAZORPAY_KEY_SECRET ?? '').replace(/"/g, '').trim();
+    let keySecret = (process.env.RAZORPAY_KEY_SECRET ?? '').replace(/"/g, '').trim();
+    const storeSettings = await prisma.storeSettings.findUnique({ where: { id: 'default' } });
+    if (storeSettings?.razorpayKeySecret) {
+      keySecret = storeSettings.razorpayKeySecret;
+    }
 
     const expectedSig = crypto
       .createHmac('sha256', keySecret)

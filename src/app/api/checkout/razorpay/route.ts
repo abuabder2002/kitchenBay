@@ -89,8 +89,14 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Razorpay credentials check ──────────────────────────
-    const keyId = (process.env.RAZORPAY_KEY_ID ?? '').replace(/"/g, '').trim();
-    const keySecret = (process.env.RAZORPAY_KEY_SECRET ?? '').replace(/"/g, '').trim();
+    let keyId = (process.env.RAZORPAY_KEY_ID ?? '').replace(/"/g, '').trim();
+    let keySecret = (process.env.RAZORPAY_KEY_SECRET ?? '').replace(/"/g, '').trim();
+
+    const storeSettings = await prisma.storeSettings.findUnique({ where: { id: 'default' } });
+    if (storeSettings?.razorpayKeyId && storeSettings?.razorpayKeySecret) {
+      keyId = storeSettings.razorpayKeyId;
+      keySecret = storeSettings.razorpayKeySecret;
+    }
 
     if (!keyId || !keySecret || keyId.includes('YOUR_KEY') || keySecret.includes('YOUR_')) {
       return NextResponse.json(

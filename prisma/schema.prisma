@@ -188,3 +188,10 @@ model BulkImportLog {
   createdAt       DateTime @default(now())
 }
 
+model StoreSettings {
+  id                String   @id @default("default")
+  razorpayKeyId     String?
+  razorpayKeySecret String?
+  updatedAt         DateTime @updatedAt
+}
+

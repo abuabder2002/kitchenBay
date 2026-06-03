@@ -68,7 +68,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   } : null;
 
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
-  const isAdmin = user?.publicMetadata?.role === 'admin' || currentUser?.email?.toLowerCase() === adminEmail.toLowerCase();
+  const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
+  const userEmail = currentUser?.email?.toLowerCase();
+  const isAdmin = user?.publicMetadata?.role === 'admin' || !!(userEmail && (adminEmails.includes(userEmail) || userEmail === 'yousufsuhaily@gmail.com'));
 
   const login = () => false;
   const signup = () => false;

@@ -8,7 +8,7 @@ import { useProducts } from '@/lib/productsContext';
 import { orders as mockOrders, Order } from '@/lib/mockData';
 import {
   TrendingUp, ShoppingBag, Users, Package,
-  ArrowUpRight, ArrowDownRight, DollarSign
+  ArrowUpRight, ArrowDownRight, DollarSign, Download
 } from 'lucide-react';
 
 function StatCard({
@@ -46,6 +46,38 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isBackingUp, setIsBackingUp] = useState(false);
+
+  const handleBackup = async () => {
+    try {
+      setIsBackingUp(true);
+      const res = await fetch('/api/admin/backup');
+      if (!res.ok) throw new Error('Backup failed');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      // Get filename from Content-Disposition if possible, or fallback
+      const disposition = res.headers.get('content-disposition');
+      let filename = `kitchenbay_backup_${new Date().toISOString().split('T')[0]}.zip`;
+      if (disposition && disposition.indexOf('filename=') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[1]) {
+          filename = matches[1].replace(/['"]/g, '');
+        }
+      }
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to generate backup.');
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -99,9 +131,19 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Welcome back! Here&apos;s what&apos;s happening today.</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Welcome back! Here&apos;s what&apos;s happening today.</p>
+        </div>
+        <button
+          onClick={handleBackup}
+          disabled={isBackingUp}
+          className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm disabled:opacity-50"
+        >
+          <Download size={16} />
+          {isBackingUp ? 'Generating Backup...' : 'Backup Data'}
+        </button>
       </div>
 
       {/* Stats Grid */}

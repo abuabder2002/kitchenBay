@@ -65,7 +65,7 @@ export default function AdminOrdersPage() {
 
   const handleStatusChange = async (orderId: string, status: OrderStatus) => {
     setUpdating(orderId);
-    
+
     // Find the current order to get its details
     const currentOrder = orders.find(o => o.id === orderId);
     if (!currentOrder) {
@@ -74,7 +74,7 @@ export default function AdminOrdersPage() {
     }
 
     const updatedOrderObj = { ...currentOrder, status };
-    
+
     // 1. Commit the status update to the PostgreSQL database
     try {
       const dbRes = await fetch('/api/admin/orders', {
@@ -118,22 +118,22 @@ export default function AdminOrdersPage() {
       });
 
       const data = await res.json();
-      
+
       if (res.ok && data.success) {
         setEmailStatus({ success: true });
       } else {
         // Email failed — status is already saved, just show warning
-        setEmailStatus({ 
-          success: false, 
+        setEmailStatus({
+          success: false,
           error: data.message || data.error,
-          code: data.error 
+          code: data.error
         });
       }
     } catch (err: any) {
       console.error('Failed to trigger email send API:', err);
-      setEmailStatus({ 
-        success: false, 
-        error: err.message || 'Network error connecting to API' 
+      setEmailStatus({
+        success: false,
+        error: err.message || 'Network error connecting to API'
       });
     }
 
@@ -302,7 +302,7 @@ export default function AdminOrdersPage() {
               <X size={16} />
             </button>
           </div>
-          
+
           <div className="text-xs text-gray-500 leading-relaxed text-left">
             Dispatching status update notification to <strong className="text-gray-700">{activeNotification.order.email}</strong> informing them that order <strong className="text-gray-700">#{activeNotification.order.id}</strong> is now <span className="font-semibold text-blue-600">{activeNotification.status}</span>...
           </div>
@@ -339,14 +339,14 @@ export default function AdminOrdersPage() {
           </div>
 
           <div className="flex gap-2">
-            <button 
+            <button
               onClick={() => setShowEmailModal(true)}
               className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
             >
               <Eye size={12} /> Preview Sent Email
             </button>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => setActiveNotification(null)}
               className="px-3 py-2 border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold rounded-lg text-xs transition-colors"
             >
@@ -378,7 +378,7 @@ export default function AdminOrdersPage() {
 
             {/* Email Headers Info */}
             <div className="bg-gray-50 px-6 py-3 border-b border-gray-200 text-xs text-gray-500 space-y-1 select-none text-left">
-              <div><span className="font-semibold text-gray-400 w-16 inline-block">From:</span> ShopNest Alerts &lt;alerts@shopnest.com&gt;</div>
+              <div><span className="font-semibold text-gray-400 w-16 inline-block">From:</span> Kitchenbay Alerts &lt;alerts@Kitchenbay.com&gt;</div>
               <div><span className="font-semibold text-gray-400 w-16 inline-block">To:</span> {activeNotification.order.customer} &lt;{activeNotification.order.email}&gt;</div>
               <div><span className="font-semibold text-gray-400 w-16 inline-block">Subject:</span> Update: Your Order #{activeNotification.order.id} is now {activeNotification.status.charAt(0).toUpperCase() + activeNotification.status.slice(1)}!</div>
             </div>
@@ -387,10 +387,10 @@ export default function AdminOrdersPage() {
             <div className="flex-1 overflow-y-auto p-6 flex justify-center bg-gray-100">
               {/* Actual Styled Email Mock */}
               <div className="bg-white w-full max-w-[550px] shadow-sm rounded-xl overflow-hidden border border-gray-200/50 flex flex-col text-gray-800 font-sans">
-                
+
                 {/* Email Logo Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6 text-center text-white select-none">
-                  <h1 className="text-2xl font-bold tracking-wide">ShopNest</h1>
+                  <h1 className="text-2xl font-bold tracking-wide">Kitchenbay</h1>
                   <p className="text-xs text-blue-200 mt-1">Authentic Indian Handicrafts</p>
                 </div>
 
@@ -404,9 +404,8 @@ export default function AdminOrdersPage() {
                   </div>
 
                   {/* Status alert card */}
-                  <div className={`p-4 rounded-xl border flex items-center gap-3 ${
-                    getEmailBodyContent(activeNotification.order, activeNotification.status).bg
-                  } border-blue-50`}>
+                  <div className={`p-4 rounded-xl border flex items-center gap-3 ${getEmailBodyContent(activeNotification.order, activeNotification.status).bg
+                    } border-blue-50`}>
                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 shadow-sm shrink-0">
                       <Package size={16} />
                     </div>
@@ -475,7 +474,7 @@ export default function AdminOrdersPage() {
 
                 {/* Email Footer Copyright */}
                 <div className="bg-gray-50 border-t border-gray-100 py-4 text-center text-[10px] text-gray-400 select-none">
-                  © 2026 ShopNest Inc. 12 MG Road, Bangalore, India.
+                  © 2026 Kitchenbay Inc. 12 MG Road, Bangalore, India.
                 </div>
 
               </div>
@@ -483,7 +482,7 @@ export default function AdminOrdersPage() {
 
             {/* Modal Actions */}
             <div className="bg-white px-6 py-4 border-t border-gray-200 flex justify-end gap-3 select-none">
-              <button 
+              <button
                 onClick={() => setShowEmailModal(false)}
                 className="px-4 py-2 border border-gray-200 hover:bg-gray-50 font-semibold rounded-xl text-sm text-gray-700 transition-colors"
               >

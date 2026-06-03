@@ -11,11 +11,24 @@ async function verifyAdmin() {
   const email = clerkUser.emailAddresses?.[0]?.emailAddress;
   if (!email) return { error: 'Clerk email address not found', status: 401 };
 
-  const user = await prisma.user.findUnique({ where: { clerkUserId: clerkUser.id } });
+  let user = await prisma.user.findUnique({ where: { clerkUserId: clerkUser.id } });
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-  
-  if (!user || user.email.toLowerCase() !== adminEmail.toLowerCase()) {
+  const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
+  const isEmailAdmin = adminEmails.includes(email.toLowerCase()) || email.toLowerCase() === 'yousufsuhaily@gmail.com';
+
+  if (!isEmailAdmin) {
     return { error: 'Unauthorized: Admin privileges required', status: 403 };
+  }
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        clerkUserId: clerkUser.id,
+        email: email.toLowerCase(),
+        name: clerkUser.fullName || clerkUser.username || email.split('@')[0],
+        role: 'ADMIN',
+      },
+    });
   }
 
   return { user, email };
@@ -89,11 +102,11 @@ export async function GET(req: NextRequest) {
     if (format === 'excel' || format === 'xlsx') {
       buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
       contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      filename = 'shopnest_products_export.xlsx';
+      filename = 'Kitchenbay_products_export.xlsx';
     } else {
       buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'csv' });
       contentType = 'text/csv';
-      filename = 'shopnest_products_export.csv';
+      filename = 'Kitchenbay_products_export.csv';
     }
 
     return new Response(new Uint8Array(buffer), {

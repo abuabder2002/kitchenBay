@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASSWORD;
-    const smtpFrom = process.env.SMTP_FROM || `"ShopNest Alerts" <alerts@shopnest.com>`;
+    const smtpFrom = process.env.SMTP_FROM || `"Kitchenbay Alerts" <alerts@Kitchenbay.com>`;
 
     if (!smtpHost || !smtpUser || !smtpPass) {
       return NextResponse.json({
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
                 <!-- Header Banner -->
                 <tr>
                   <td align="center" style="background: linear-gradient(to right, #1D4ED8, #4f46e5); padding: 30px 40px; color: #ffffff;">
-                    <h1 style="margin: 0; font-size: 26px; font-weight: bold; letter-spacing: 1px;">ShopNest</h1>
+                    <h1 style="margin: 0; font-size: 26px; font-weight: bold; letter-spacing: 1px;">Kitchenbay</h1>
                     <p style="margin: 5px 0 0 0; font-size: 13px; color: #ddd6fe;">Authentic Indian Handicrafts</p>
                   </td>
                 </tr>
@@ -158,7 +158,7 @@ export async function POST(request: Request) {
                 <!-- Footer -->
                 <tr>
                   <td align="center" style="background-color: #f9fafb; border-top: 1px solid #f1f1f1; padding: 20px 40px; font-size: 11px; color: #9ca3af;">
-                    &copy; 2026 ShopNest Inc. 12 MG Road, Bangalore, India.
+                    &copy; 2026 Kitchenbay Inc. 12 MG Road, Bangalore, India.
                   </td>
                 </tr>
               </table>
@@ -172,7 +172,7 @@ export async function POST(request: Request) {
     await transporter.sendMail({
       from: smtpFrom,
       to: `${order.customer} <${order.email}>`,
-      bcc: process.env.ADMIN_EMAIL || 'admin@shopnest.com',
+      bcc: [process.env.ADMIN_EMAIL || 'admin@Kitchenbay.com', 'yousufsuhaily@gmail.com'].join(','),
       subject: emailSubject,
       html: htmlBody,
     });

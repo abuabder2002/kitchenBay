@@ -1,4 +1,4 @@
-# ShopNest — Production E-Commerce Frontend
+# Kitchenbay — Production E-Commerce Frontend
 
 A premium, full-stack ready e-commerce frontend built with **Next.js 15 App Router**, **React**, and **Tailwind CSS v4**. Features complete customer-facing pages and an admin dashboard with transparent GST pricing.
 

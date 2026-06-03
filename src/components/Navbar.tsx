@@ -10,10 +10,12 @@ import { ShoppingCart, Search, Menu, X, Heart, UserCircle2, MapPin, ChevronDown 
 import { useCart } from '@/lib/cartContext';
 import { useWishlist } from '@/lib/wishlistContext';
 import { useAuth } from '@/lib/authContext';
+import { useProducts } from '@/lib/productsContext';
 
 export default function Navbar() {
   const router = useRouter();
   const { currentUser: user, logout, isAdmin } = useAuth();
+  const { products } = useProducts();
   const { itemCount } = useCart();
   const { items: wishlistItems } = useWishlist();
   
@@ -24,6 +26,10 @@ export default function Navbar() {
   
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+
+  const searchSuggestions = searchQuery.trim() 
+    ? products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5)
+    : [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -158,20 +164,42 @@ export default function Navbar() {
           <div className="flex items-center gap-2 sm:gap-4 lg:gap-6">
             
             {/* Search Icon / Input */}
-            <div className="hidden md:flex items-center">
+            <div className="hidden md:flex items-center relative">
               {isSearchOpen ? (
-                <div className="flex items-center border-b border-[--color-brand-text] pb-1 animate-in fade-in slide-in-from-right-4">
-                  <input 
-                    autoFocus
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && executeSearch()}
-                    className="bg-transparent outline-none text-sm text-[--color-brand-text] w-48 font-medium placeholder:font-normal placeholder:text-[--color-brand-muted]"
-                  />
-                  <X size={16} className="text-[--color-brand-muted] cursor-pointer hover:text-[--color-brand-text]" onClick={() => setIsSearchOpen(false)} />
-                </div>
+                <>
+                  <div className="flex items-center border-b border-[--color-brand-text] pb-1 animate-in fade-in slide-in-from-right-4 relative z-50 bg-white">
+                    <input 
+                      autoFocus
+                      type="text"
+                      placeholder="Search products..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && executeSearch()}
+                      className="bg-transparent outline-none text-sm text-[--color-brand-text] w-48 font-medium placeholder:font-normal placeholder:text-[--color-brand-muted]"
+                    />
+                    <X size={16} className="text-[--color-brand-muted] cursor-pointer hover:text-[--color-brand-text]" onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} />
+                  </div>
+                  {searchSuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white shadow-xl border border-gray-100 rounded-lg overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2">
+                      <ul className="flex flex-col">
+                        {searchSuggestions.map(product => (
+                          <li key={product.id}>
+                            <div 
+                              onClick={() => { router.push(`/products/${product.id}`); setIsSearchOpen(false); setSearchQuery(''); }}
+                              className="flex items-center gap-3 p-3 hover:bg-[--color-brand-blue-light] cursor-pointer transition-colors border-b border-gray-50 last:border-0"
+                            >
+                              <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded-md border border-gray-200 shrink-0" />
+                              <div className="flex flex-col overflow-hidden">
+                                <span className="text-[13px] font-bold text-[--color-brand-text] truncate">{product.name}</span>
+                                <span className="text-[11px] font-bold text-[--color-brand-muted] uppercase">₹{product.price}</span>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
               ) : (
                 <button onClick={() => setIsSearchOpen(true)} className="text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Search">
                   <Search size={22} strokeWidth={1.5} />
@@ -191,7 +219,11 @@ export default function Navbar() {
               onMouseLeave={() => setShowUserDropdown(false)}
             >
               <Link href={user ? "/profile" : "/login"} className="text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors flex items-center p-2 rounded-full hover:bg-[--color-brand-blue-light]">
-                <UserCircle2 size={22} strokeWidth={1.5} />
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="Profile" className="w-[22px] h-[22px] rounded-full object-cover" />
+                ) : (
+                  <UserCircle2 size={22} strokeWidth={1.5} />
+                )}
               </Link>
               
               {showUserDropdown && user && (
@@ -275,8 +307,8 @@ export default function Navbar() {
               </button>
             </div>
             
-            <div className="p-6 border-b border-gray-100">
-              <div className="relative flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+            <div className="p-6 border-b border-gray-100 relative">
+              <div className="relative flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50 z-50">
                 <Search size={18} className="text-[--color-brand-muted] absolute left-4" />
                 <input
                   type="text"
@@ -289,9 +321,29 @@ export default function Navbar() {
                       setMobileOpen(false);
                     }
                   }}
-                  className="w-full pl-12 pr-4 py-3 outline-none text-sm font-medium text-[--color-brand-text]"
+                  className="w-full pl-12 pr-4 py-3 outline-none text-sm font-medium text-[--color-brand-text] bg-transparent"
                 />
               </div>
+              {searchSuggestions.length > 0 && (
+                <div className="absolute top-full left-6 right-6 -mt-3 pt-4 bg-white shadow-xl border border-gray-100 rounded-b-xl overflow-hidden z-40 max-h-64 overflow-y-auto animate-in fade-in">
+                  <ul className="flex flex-col">
+                    {searchSuggestions.map(product => (
+                      <li key={product.id}>
+                        <div 
+                          onClick={() => { router.push(`/products/${product.id}`); setMobileOpen(false); setSearchQuery(''); }}
+                          className="flex items-center gap-3 p-3 hover:bg-[--color-brand-blue-light] cursor-pointer transition-colors border-b border-gray-50 last:border-0"
+                        >
+                          <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded-md border border-gray-200 shrink-0" />
+                          <div className="flex flex-col overflow-hidden">
+                            <span className="text-sm font-bold text-[--color-brand-text] truncate">{product.name}</span>
+                            <span className="text-xs font-bold text-[--color-brand-muted] uppercase">₹{product.price}</span>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
@@ -356,7 +408,11 @@ export default function Navbar() {
             
             <div className="p-6 border-t border-gray-100 bg-gray-50">
               <Link href={user ? "/profile" : "/login"} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 font-extrabold uppercase tracking-widest text-sm text-[--color-brand-text] mb-6 hover:text-[--color-brand-accent] transition-colors">
-                <UserCircle2 size={22} />
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="Profile" className="w-[22px] h-[22px] rounded-full object-cover" />
+                ) : (
+                  <UserCircle2 size={22} />
+                )}
                 {user ? `Hi, ${user.name.split(' ')[0]}` : 'Login / Sign Up'}
               </Link>
               <Link href="/store-locator" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 font-extrabold uppercase tracking-widest text-sm text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors">

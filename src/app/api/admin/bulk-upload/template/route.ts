@@ -69,7 +69,7 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': 'attachment; filename=shopnest_product_template.xlsx',
+        'Content-Disposition': 'attachment; filename=Kitchenbay_product_template.xlsx',
       },
     });
   } catch (error: any) {

@@ -10,7 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="bg-white border-b border-gray-100 px-4 py-4 flex flex-col md:flex-row items-center justify-between shadow-sm">
           <div>
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Admin Panel</p>
-            <p className="text-sm font-semibold text-gray-700">ShopNest Management</p>
+            <p className="text-sm font-semibold text-gray-700">Kitchenbay Management</p>
           </div>
           <div className="flex items-center gap-3 mt-2 md:mt-0">
             <UserButton />
