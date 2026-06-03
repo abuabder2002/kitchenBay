@@ -17,10 +17,13 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, isHero = false }: ProductCardProps) {
-  const { addItem: addToCart } = useCart();
+  const { items: cartItems, addItem: addToCart, updateQuantity, removeItem: removeFromCart } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
   const { isAdmin } = useAuth();
 
+  const { isAdmin } = useAuth();
+  
+  const cartItem = cartItems.find(item => item.product.id === product.id);
 
   const formatPrice = (price: number) => priceFormatter.format(price);
 
@@ -143,16 +146,36 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
           </span>
         </div>
 
-        {/* Add to Cart */}
-        <button 
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(product); }} 
-          className="w-full flex items-center justify-center gap-2 font-bold rounded-full py-2 text-sm transition-colors"
-          style={{backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-mid)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-light)'; }}
-        >
-          <ShoppingCart size={15} /> Add to Cart
-        </button>
+        {/* Add to Cart / Quantity Control */}
+        {cartItem ? (
+          <div className="flex items-center justify-between bg-white rounded-full border border-[--color-brand-blue-mid] overflow-hidden" style={{ height: '38px' }}>
+            <button 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (cartItem.quantity > 1) updateQuantity(product.id, cartItem.quantity - 1); else removeFromCart(product.id); }}
+              className="px-4 py-2 text-[--color-brand-text] hover:bg-gray-50 hover:text-[--color-brand-accent] transition-colors h-full flex items-center justify-center font-bold text-lg"
+            >
+              −
+            </button>
+            <span className="font-bold text-sm text-[--color-brand-text] flex-1 text-center select-none">
+              {cartItem.quantity}
+            </span>
+            <button 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateQuantity(product.id, cartItem.quantity + 1); }}
+              className="px-4 py-2 text-[--color-brand-text] hover:bg-gray-50 hover:text-[--color-brand-accent] transition-colors h-full flex items-center justify-center font-bold text-lg"
+            >
+              +
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(product); }} 
+            className="w-full flex items-center justify-center gap-2 font-bold rounded-full py-2 text-sm transition-colors"
+            style={{backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-mid)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-light)'; }}
+          >
+            <ShoppingCart size={15} /> Add to Cart
+          </button>
+        )}
       </div>
     </div>
   );

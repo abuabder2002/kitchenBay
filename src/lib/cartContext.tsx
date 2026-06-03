@@ -71,6 +71,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
 
   const storageKey = 'Kitchenbay_cart_guest';
+  const isLoaded = useRef(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -94,7 +95,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             localStorage.removeItem(storageKey); // Clear local after sync
           }
         })
-        .catch(console.error);
+        .catch(console.error)
+        .finally(() => { isLoaded.current = true; });
     } else {
       // Load local
       const local = localStorage.getItem(storageKey);
@@ -107,12 +109,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         dispatch({ type: 'SET_ITEMS', items: [] });
       }
+      isLoaded.current = true;
     }
   }, [currentUser]);
 
   // Save to localStorage when items change, only if logged out
   useEffect(() => {
-    if (!currentUser) {
+    if (isLoaded.current && !currentUser) {
       localStorage.setItem(storageKey, JSON.stringify(state.items));
     }
   }, [state.items, currentUser]);

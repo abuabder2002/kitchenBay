@@ -48,6 +48,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [state, dispatch] = useReducer(wishlistReducer, { items: [] });
 
   const storageKey = 'Kitchenbay_wishlist_guest';
+  const isLoaded = useRef(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -79,7 +80,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             localStorage.removeItem(storageKey); // Clear local after sync
           }
         })
-        .catch(console.error);
+        .catch(console.error)
+        .finally(() => { isLoaded.current = true; });
     } else {
       // Load local
       const local = localStorage.getItem(storageKey);
@@ -92,12 +94,13 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       } else {
         dispatch({ type: 'SET_ITEMS', items: [] });
       }
+      isLoaded.current = true;
     }
   }, [currentUser]);
 
   // Save to localStorage when items change, only if logged out
   useEffect(() => {
-    if (!currentUser) {
+    if (isLoaded.current && !currentUser) {
       localStorage.setItem(storageKey, JSON.stringify(state.items));
     }
   }, [state.items, currentUser]);
