@@ -41,7 +41,7 @@ export default clerkMiddleware(async (auth, request) => {
       const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@example.com";
       const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
       
-      if (!email || (!adminEmails.includes(email.toLowerCase()) && email.toLowerCase() !== 'yousufsuhaily@gmail.com')) {
+      if (!email || (!adminEmails.includes(email.toLowerCase()) && email.toLowerCase() !== 'yousufsuhaily@gmail.com' && email.toLowerCase() !== 'kitchenbaythehomeneeds@gmail.com')) {
         // Redirect non-admin users away from /admin to the home page "/"
         return Response.redirect(new URL("/", request.url));
       }

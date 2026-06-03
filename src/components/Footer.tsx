@@ -67,9 +67,9 @@ export default function Footer() {
                 <Image
                   src={logoImg}
                   alt="KitchenBay Logo"
-                  width={240}
-                  height={60}
-                  className="object-contain h-16 w-auto invert mix-blend-screen"
+                  width={360}
+                  height={90}
+                  className="object-contain h-24 w-auto invert mix-blend-screen"
                 />
               </Link>
               <p className="text-sm text-blue-100/80 leading-relaxed max-w-xs">
