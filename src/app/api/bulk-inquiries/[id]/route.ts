@@ -38,7 +38,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-    const isAdmin = [adminEmail.toLowerCase(), 'yousufsuhaily@gmail.com'].includes(user.email.toLowerCase());
+    const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
+    const isAdmin = adminEmails.includes(user.email.toLowerCase()) || ['yousufsuhaily@gmail.com', 'kitchenbaythehomeneeds@gmail.com'].includes(user.email.toLowerCase());
 
     const inquiry = await prisma.bulkInquiry.findUnique({
       where: { id },
@@ -81,7 +82,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-    const isAdmin = [adminEmail.toLowerCase(), 'yousufsuhaily@gmail.com'].includes(user.email.toLowerCase());
+    const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
+    const isAdmin = adminEmails.includes(user.email.toLowerCase()) || ['yousufsuhaily@gmail.com', 'kitchenbaythehomeneeds@gmail.com'].includes(user.email.toLowerCase());
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });

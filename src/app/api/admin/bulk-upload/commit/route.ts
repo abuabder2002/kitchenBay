@@ -19,7 +19,7 @@ async function verifyAdmin() {
   let user = await prisma.user.findUnique({ where: { clerkUserId: clerkUser.id } });
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
   const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
-  const isEmailAdmin = adminEmails.includes(email.toLowerCase()) || email.toLowerCase() === 'yousufsuhaily@gmail.com';
+  const isEmailAdmin = adminEmails.includes(email.toLowerCase()) || ['yousufsuhaily@gmail.com', 'kitchenbaythehomeneeds@gmail.com'].includes(email.toLowerCase());
 
   if (!isEmailAdmin) {
     return { error: 'Unauthorized: Admin privileges required', status: 403 };

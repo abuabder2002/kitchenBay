@@ -72,7 +72,8 @@ export async function GET(req: NextRequest) {
     }
 
     const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-    const isAdmin = [adminEmail.toLowerCase(), 'yousufsuhaily@gmail.com'].includes(user.email.toLowerCase());
+    const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
+    const isAdmin = adminEmails.includes(user.email.toLowerCase()) || ['yousufsuhaily@gmail.com', 'kitchenbaythehomeneeds@gmail.com'].includes(user.email.toLowerCase());
 
     const url = new URL(req.url);
     const statusFilter = url.searchParams.get('status') || undefined;

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
+import { PassThrough } from 'stream';
+import { ZipArchive } from 'archiver';
 
 async function verifyAdmin() {
   const clerkUser = await currentUser();
@@ -12,7 +14,7 @@ async function verifyAdmin() {
   let user = await prisma.user.findUnique({ where: { clerkUserId: clerkUser.id } });
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
   const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
-  const isEmailAdmin = adminEmails.includes(email.toLowerCase()) || email.toLowerCase() === 'yousufsuhaily@gmail.com';
+  const isEmailAdmin = adminEmails.includes(email.toLowerCase()) || ['yousufsuhaily@gmail.com', 'kitchenbaythehomeneeds@gmail.com'].includes(email.toLowerCase());
 
   if (!isEmailAdmin) {
     return { error: 'Unauthorized: Admin privileges required', status: 403 };
@@ -32,8 +34,6 @@ async function verifyAdmin() {
   return { user, email };
 }
 
-const archiver = require('archiver');
-import { PassThrough } from 'stream';
 
 export async function GET(req: NextRequest) {
   try {
@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
     const jsonString = JSON.stringify(backupData, null, 2);
 
     const passThrough = new PassThrough();
-    const archive = archiver('zip', { zlib: { level: 9 } });
+    const archive = new ZipArchive({ zlib: { level: 9 } });
 
     archive.pipe(passThrough);
 

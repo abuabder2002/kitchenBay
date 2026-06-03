@@ -9,7 +9,7 @@ export async function GET() {
     const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
     const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
 
-    if (!user || !email || (!adminEmails.includes(email.toLowerCase()) && email.toLowerCase() !== 'yousufsuhaily@gmail.com')) {
+    if (!user || !email || (!adminEmails.includes(email.toLowerCase()) && !['yousufsuhaily@gmail.com', 'kitchenbaythehomeneeds@gmail.com'].includes(email.toLowerCase()))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
     const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
 
-    if (!user || !email || (!adminEmails.includes(email.toLowerCase()) && email.toLowerCase() !== 'yousufsuhaily@gmail.com')) {
+    if (!user || !email || (!adminEmails.includes(email.toLowerCase()) && !['yousufsuhaily@gmail.com', 'kitchenbaythehomeneeds@gmail.com'].includes(email.toLowerCase()))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
