@@ -13,23 +13,27 @@ interface TraditionVideo {
   link?: string | null;
 }
 
-// ── Fade-up hook using IntersectionObserver ──────────────────────────────────
-function useFadeUp(threshold = 0.15) {
+// ── IntersectionObserver hook ──────────────────────────────────────────────
+function useIntersection(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  const [hasIntersected, setHasIntersected] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      ([entry]) => { 
+        setIsIntersecting(entry.isIntersecting);
+        if (entry.isIntersecting) setHasIntersected(true);
+      },
       { threshold }
     );
     obs.observe(el);
     return () => obs.disconnect();
   }, [threshold]);
 
-  return { ref, visible };
+  return { ref, isIntersecting, hasIntersected };
 }
 
 // ── Featured (autoplay) video card ───────────────────────────────────────────
@@ -37,15 +41,20 @@ function FeaturedVideoCard({ video }: { video: TraditionVideo }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(false);
-  const { ref: wrapRef, visible } = useFadeUp(0.2);
+  const { ref: wrapRef, isIntersecting, hasIntersected } = useIntersection(0.2);
 
-  // Autoplay when card enters viewport
+  // Play when card enters viewport, pause when it leaves
   useEffect(() => {
     const el = videoRef.current;
-    if (!el || !visible) return;
-    el.muted = true;
-    el.play().then(() => setPlaying(true)).catch(() => {});
-  }, [visible]);
+    if (!el) return;
+    if (isIntersecting) {
+      el.muted = muted; // keep user's mute preference
+      el.play().then(() => setPlaying(true)).catch(() => {});
+    } else {
+      el.pause();
+      setPlaying(false);
+    }
+  }, [isIntersecting, muted]);
 
   const toggleMute = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -63,8 +72,8 @@ function FeaturedVideoCard({ video }: { video: TraditionVideo }) {
         border: '1px solid rgba(193,154,107,0.45)',
         boxShadow: '0 8px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(193,154,107,0.2)',
         transition: 'transform 0.5s ease, box-shadow 0.5s ease, filter 0.5s ease',
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(40px)',
+        opacity: hasIntersected ? 1 : 0,
+        transform: hasIntersected ? 'translateY(0)' : 'translateY(40px)',
       }}
     >
       {/* Inner hover glow */}
@@ -154,7 +163,7 @@ function FeaturedVideoCard({ video }: { video: TraditionVideo }) {
 function SupportingVideoCard({ video, delay = 0 }: { video: TraditionVideo; delay?: number }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const { ref: wrapRef, visible } = useFadeUp(0.15);
+  const { ref: wrapRef, hasIntersected } = useIntersection(0.15);
 
   const handlePlay = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -178,8 +187,8 @@ function SupportingVideoCard({ video, delay = 0 }: { video: TraditionVideo; dela
         border: '1px solid rgba(193,154,107,0.35)',
         boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
         transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms, box-shadow 0.4s ease`,
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(36px)',
+        opacity: hasIntersected ? 1 : 0,
+        transform: hasIntersected ? 'translateY(0)' : 'translateY(36px)',
       }}
       onMouseEnter={e => {
         (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1.5px rgba(193,154,107,0.55)';
@@ -264,7 +273,7 @@ function SupportingVideoCard({ video, delay = 0 }: { video: TraditionVideo; dela
 export default function TraditionVideoSection() {
   const [videos, setVideos] = useState<TraditionVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const { ref: headingRef, visible: headingVisible } = useFadeUp(0.2);
+  const { ref: headingRef, hasIntersected: headingVisible } = useIntersection(0.2);
 
   useEffect(() => {
     fetch('/api/videos')
