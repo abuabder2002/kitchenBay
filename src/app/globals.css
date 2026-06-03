@@ -106,3 +106,13 @@
 .animate-marquee {
   animation: marquee 20s linear infinite;
 }
+
+/* Hide Clerk watermark and development mode badge */
+.cl-watermark,
+.cl-internal-b3al4t,
+.cl-internal-1dauvpw,
+.cl-internal-phgxyj,
+.cl-footer > div:not(.cl-footerAction),
+.cl-footer > div:nth-child(2) {
+  display: none !important;
+}
