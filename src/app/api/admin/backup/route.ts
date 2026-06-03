@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
 import { PassThrough } from 'stream';
-import archiver from 'archiver';
+const archiver = require('archiver');
 
 async function verifyAdmin() {
   const clerkUser = await currentUser();
