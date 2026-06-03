@@ -30,6 +30,7 @@ export default function LoginPage() {
                 formButtonPrimary: 'w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-200',
                 formFieldInput: 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all text-sm',
                 footerActionLink: 'text-blue-600 font-semibold hover:underline',
+                watermark: 'hidden',
               }
             }}
           />
