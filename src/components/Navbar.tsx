@@ -41,7 +41,7 @@ export default function Navbar() {
   }, []);
 
   const topBarLinks = [
-    { label: "Sell on ArtisanCraft (Coming Soon)", href: "#" },
+    { label: "Bulk & Corporate Orders", href: "/orders/bulk" },
     { label: "Gift Concierge", href: "/gift-concierge" },
     { label: "Track Your Order", href: "/track" },
     { label: "Contact Us", href: "/contact" }
@@ -67,7 +67,7 @@ export default function Navbar() {
       {/* TIER 1: Top Utility Bar (Minimal) */}
       <div className="bg-[--color-brand-top-bar] text-[--color-brand-bg] h-8 text-[11px] flex items-center px-4 sm:px-6 lg:px-8 justify-between z-50 relative tracking-widest font-medium uppercase">
         <div className="w-full text-center md:w-auto md:text-left truncate px-2">
-          Sign Up & Get ₹500 off on your First Purchase
+          🎉 We're New! Get ₹500 off on Your First Order — Use Code: WELCOME500
         </div>
         <div className="hidden md:flex items-center gap-6">
           {topBarLinks.map((link) => (

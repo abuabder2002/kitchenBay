@@ -179,11 +179,11 @@ export default function HomePage() {
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
                 <ShieldCheck className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">11 Million Happy Deliveries</span>
+                <span className="text-sm md:text-base font-bold text-gray-800">100% Authentic Handcrafted Products</span>
               </div>
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
-                <Users className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">150+ Stores Across 100+ Cities</span>
+                <Leaf className="text-gray-600" size={28} />
+                <span className="text-sm md:text-base font-bold text-gray-800">Sourced Directly From Indian Artisans</span>
               </div>
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
                 <RotateCcw className="text-gray-600" size={28} />
@@ -399,9 +399,9 @@ export default function HomePage() {
             <div className="bg-[#F8F9FE] rounded-sm p-12 flex flex-col justify-center relative overflow-hidden border border-[#EBEFFA]">
                <Quote size={120} className="absolute top-[-20px] left-[-20px] text-blue-50 opacity-50" />
                <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[#1E3A8A] mb-4 relative z-10 leading-tight">
-                 See Why<br/>They Love Us
+                 What Our Early<br/>Customers Say
                </h2>
-               <p className="text-sm font-semibold uppercase tracking-widest text-[#475569] relative z-10">Trusted By Over 11 Million Customers</p>
+               <p className="text-sm font-semibold uppercase tracking-widest text-[#475569] relative z-10">Real Reviews From Our Happy Customers</p>
                <Quote size={120} className="absolute bottom-[-20px] right-[-20px] text-blue-50 opacity-50 rotate-180" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -444,21 +444,21 @@ export default function HomePage() {
             <div className="flex items-center gap-5 flex-1 justify-center w-full">
               <Truck size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
-                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">11 Million</h4>
-                <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Happy Deliveries</p>
+                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">Pan-India</h4>
+                <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Doorstep Delivery</p>
               </div>
             </div>
             <div className="flex items-center gap-5 flex-1 justify-center w-full pt-10 md:pt-0">
-              <MapPin size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
+              <HeartHandshake size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
-                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">150+ Stores</h4>
-                <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Across 100+ Cities</p>
+                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">Artisan-Direct</h4>
+                <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Ethically Sourced Products</p>
               </div>
             </div>
             <div className="flex items-center gap-5 flex-1 justify-center w-full pt-10 md:pt-0">
               <RotateCcw size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
-                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">7 Day Easy</h4>
+                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">7-Day Easy</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Return Policy</p>
               </div>
             </div>
@@ -469,17 +469,17 @@ export default function HomePage() {
         <section className="bg-[#F8F9FA] py-16 border-t border-[#E5E7EB]">
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 text-center md:text-left">
             <h2 className="text-lg font-bold text-gray-900 mb-4">
-              India's Premium Destination for Authentic Handcrafted Kitchenware, Dining &amp; Traditional Home Décor
+              India's New-Age Destination for Authentic Handcrafted Kitchenware, Dining &amp; Traditional Home Décor
             </h2>
             <div className="text-[13px] text-gray-600 space-y-4 leading-relaxed max-w-full">
               <p>
-                Welcome to KitchenBay, your one-stop shop for premium handcrafted kitchenware, fine dining essentials, and traditional Indian home décor online. Whether you are setting up an authentic traditional kitchen, seeking elegant brass and copper utensils, or decorating your home with beautiful diyas and pooja essentials, our extensive collection caters to every style. From durable cast iron cookware and traditional soapstone vessels to exquisite brass coffee dabaras and dining plates, our curated selection guarantees premium quality and unmatched longevity.
+                Welcome to KitchenBay — a brand born from a love for India's rich culinary heritage. We are a passionate startup on a mission to connect you directly with skilled Indian artisans, bringing you authentic handcrafted kitchenware, fine dining essentials, and traditional home décor. Whether you seek elegant brass and copper utensils, durable cast iron cookware, traditional soapstone vessels, or beautiful brass diyas, every product in our collection is chosen for its authenticity and quality.
               </p>
               <p>
-                Shopping for kitchenware and décor online in India has never been easier. Benefit from our seasonal mega sales, offering up to 50% off along with exclusive cashback deals and free sitewide shipping. Experience the joy of a hassle-free shopping journey backed by a 7-day easy return policy and secure payment gateways. Our expert buying guides will help you choose the right cast iron skillet, soapstone pot, or pooja essentials perfectly tailored to your home.
+                We believe that the best kitchen tools are ones made with care, skill, and generations of knowledge. That's why we work directly with artisans across India — from the Kansa makers of West Bengal to the cast-iron craftsmen of Tamil Nadu — to bring you products that are not just functional, but meaningful. Shopping with us means supporting real makers and preserving a tradition that deserves to thrive.
               </p>
               <p>
-                Join over 11 million happy customers and step into a world of traditional, premium, and handcrafted living spaces today!
+                We're just getting started, but our commitment to quality and craftsmanship is unwavering. Join us on this journey and be part of the KitchenBay story from the very beginning!
               </p>
             </div>
           </div>
