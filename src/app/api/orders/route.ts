@@ -84,6 +84,38 @@ export async function POST(req: NextRequest) {
        return NextResponse.json({ error: 'Order must contain items' }, { status: 400 });
     }
 
+    // ── Recalculate and Verify Total Amount Server-side ──
+    const dbProducts = await prisma.product.findMany({
+      where: { id: { in: items.map((i: any) => i.productId) } }
+    });
+    const productMap = new Map(dbProducts.map(p => [p.id, p]));
+
+    let calculatedTotalAmount = 0;
+    const verifiedItems = [];
+
+    for (const item of items) {
+      const dbProduct = productMap.get(item.productId);
+      if (!dbProduct) {
+        return NextResponse.json({ error: `Product not found: ${item.productId}` }, { status: 400 });
+      }
+
+      const basePrice = dbProduct.price / 100;
+      const gstAmount = Math.round(basePrice * dbProduct.gstPercent / 100);
+      const finalPrice = basePrice + gstAmount;
+
+      calculatedTotalAmount += finalPrice * item.quantity;
+      verifiedItems.push({
+        productId: dbProduct.id,
+        quantity: item.quantity,
+        price: finalPrice
+      });
+    }
+
+    // Optional: Log if there's a discrepancy, but always use server calculated amount
+    if (Math.abs(calculatedTotalAmount - totalAmount) > 1) {
+      console.warn(`[Order] Price mismatch. Client sent: ${totalAmount}, Server calculated: ${calculatedTotalAmount}`);
+    }
+
     // ── Handle address: accept either shippingAddrId or an address object ──
     let finalAddrId: string | null = shippingAddrId || null;
 
@@ -108,13 +140,13 @@ export async function POST(req: NextRequest) {
       data: {
         id: numericId,
         userId: user.id,
-        totalAmount,
+        totalAmount: calculatedTotalAmount,
         status: 'PENDING',
         paymentStatus: paymentStatus || 'PENDING',
         razorpayId: razorpayId || null,
         shippingAddrId: finalAddrId,
         items: {
-          create: items.map((item: any) => ({
+          create: verifiedItems.map(item => ({
             productId: item.productId,
             quantity: item.quantity,
             price: item.price

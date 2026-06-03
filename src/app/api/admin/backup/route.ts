@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
 import { PassThrough } from 'stream';
-import { ZipArchive } from 'archiver';
+import archiver from 'archiver';
 
 async function verifyAdmin() {
   const clerkUser = await currentUser();
@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
     const jsonString = JSON.stringify(backupData, null, 2);
 
     const passThrough = new PassThrough();
-    const archive = new ZipArchive({ zlib: { level: 9 } });
+    const archive = archiver('zip', { zlib: { level: 9 } });
 
     archive.pipe(passThrough);
 

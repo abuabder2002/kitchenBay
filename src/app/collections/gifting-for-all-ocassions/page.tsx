@@ -37,7 +37,7 @@ export default function GiftingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Link href="#" className="group block">
               <div className="aspect-[4/3] rounded-lg overflow-hidden relative mb-4 shadow-md">
-                <img src="/images/marketing/casserole_banner.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Prarambha Wedding Gift Collection" />
+                <img src="/artisan_kitchenware.png" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Prarambha Wedding Gift Collection" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
               </div>
               <h3 className="text-xl font-[family-name:var(--font-heading)] font-semibold text-center text-[--color-brand-text] group-hover:text-blue-600 transition-colors">Prarambha Wedding Gift Collection</h3>
@@ -51,7 +51,7 @@ export default function GiftingPage() {
             </Link>
             <Link href="#" className="group block">
               <div className="aspect-[4/3] rounded-lg overflow-hidden relative mb-4 shadow-md">
-                <img src="/images/marketing/culinary_prep.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Return & Welcome Gifts" />
+                <img src="/journal_cast_iron.png" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Return & Welcome Gifts" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
               </div>
               <h3 className="text-xl font-[family-name:var(--font-heading)] font-semibold text-center text-[--color-brand-text] group-hover:text-blue-600 transition-colors">Return & Welcome Gifts</h3>

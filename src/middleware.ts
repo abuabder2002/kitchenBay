@@ -13,8 +13,8 @@ const isPublicRoute = createRouteMatcher([
   "/track(.*)",
   "/cart(.*)",
   "/wishlist(.*)",
-  "/api/videos(.*)",
-  "/api/send-email(.*)",
+  "/api/contact(.*)",
+  "/api/products(.*)",
   "/api/bulk-inquiries(.*)"
 ]);
 
@@ -38,10 +38,10 @@ export default clerkMiddleware(async (auth, request) => {
       const user = await client.users.getUser(session.userId);
       const email = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress || user.emailAddresses[0]?.emailAddress;
       
-      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@example.com";
-      const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
+      const adminEmailConfig = process.env.ADMIN_EMAILS || process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
+      const adminEmails = adminEmailConfig.split(',').map(e => e.trim().toLowerCase()).filter(e => e);
       
-      if (!email || (!adminEmails.includes(email.toLowerCase()) && email.toLowerCase() !== 'yousufsuhaily@gmail.com' && email.toLowerCase() !== 'kitchenbaythehomeneeds@gmail.com')) {
+      if (!email || !adminEmails.includes(email.toLowerCase())) {
         // Redirect non-admin users away from /admin to the home page "/"
         return Response.redirect(new URL("/", request.url));
       }

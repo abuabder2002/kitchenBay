@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import fs from 'fs/promises';
 import path from 'path';
+import { isAdminUser } from '@/lib/adminAuth';
 
 // ── DELETE ─────────────────────────────────────────────────────────────────
 export async function DELETE(
@@ -10,6 +11,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await isAdminUser())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const { id } = await params;
     await prisma.traditionVideo.delete({ where: { id } });
     return NextResponse.json({ success: true });
@@ -24,6 +28,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await isAdminUser())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const { id }          = await params;
     const contentType     = req.headers.get('content-type') || '';
 

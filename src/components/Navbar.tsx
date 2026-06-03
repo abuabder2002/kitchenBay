@@ -33,18 +33,15 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 60) {
-        setScrolled(true);
-      } else if (window.scrollY < 20) {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 20);
     };
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const topBarLinks = [
-    { label: "Sell on ArtisanCraft", href: "#" },
+    { label: "Sell on ArtisanCraft (Coming Soon)", href: "#" },
     { label: "Gift Concierge", href: "/gift-concierge" },
     { label: "Track Your Order", href: "/track" },
     { label: "Contact Us", href: "/contact" }
@@ -81,20 +78,20 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Main Navbar */}
+      {/* Main Navbar — fixed height so scroll shrink does not reflow the page */}
       <header 
-        className={`z-40 w-full transition-all duration-500 backdrop-blur-md sticky top-0 ${scrolled ? 'shadow-sm py-2' : 'py-4'} border-b border-[#E6F2FF] bg-white`}
+        className={`z-40 w-full sticky top-0 border-b border-[#E6F2FF] bg-white backdrop-blur-md transition-shadow duration-300 ${scrolled ? 'shadow-sm' : ''}`}
       >
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between min-h-[64px] sm:min-h-[72px] lg:min-h-[80px] py-3">
           
           {/* LEFT: Logo */}
-          <Link href="/" className="flex items-center shrink-0 mr-2 sm:mr-8">
+          <Link href="/" className="flex items-center shrink-0 mr-2 sm:mr-8 h-14 sm:h-16 lg:h-20">
             <Image 
               src={logoImg} 
               alt="Brand Logo" 
               width={540} 
               height={190} 
-              className={`object-contain mix-blend-multiply transition-all duration-300 ${scrolled ? 'h-12 sm:h-14 lg:h-16' : 'h-14 sm:h-20 lg:h-28'} w-auto max-w-[170px] sm:max-w-[250px] lg:max-w-none`}
+              className={`object-contain mix-blend-multiply h-full w-auto max-w-[170px] sm:max-w-[250px] lg:max-w-none origin-left transition-transform duration-300 ${scrolled ? 'scale-[0.92]' : 'scale-100'}`}
               priority 
             />
           </Link>
@@ -238,7 +235,6 @@ export default function Navbar() {
                     </div>
                     <Link href="/profile" className="block px-5 py-2.5 text-sm font-medium text-[--color-brand-text] hover:bg-[--color-brand-card]">My Profile</Link>
                     <Link href="/orders" className="block px-5 py-2.5 text-sm font-medium text-[--color-brand-text] hover:bg-[--color-brand-card]">My Orders</Link>
-                    <Link href="/wallet" className="block px-5 py-2.5 text-sm font-medium text-[--color-brand-text] hover:bg-[--color-brand-card]">My Wallet</Link>
                     {isAdmin && (
                       <Link href="/admin" className="block px-5 py-2.5 text-sm font-bold text-[--color-brand-accent] hover:bg-[--color-brand-card]">Admin Dashboard</Link>
                     )}

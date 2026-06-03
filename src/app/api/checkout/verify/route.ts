@@ -55,6 +55,14 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Find & update order ─────────────────────────────────
+    const user = await prisma.user.findUnique({
+      where: { clerkUserId: clerkUser.id },
+    });
+    
+    if (!user) {
+      return NextResponse.json({ error: 'User not found in database' }, { status: 401 });
+    }
+
     const order = await prisma.order.findUnique({
       where: { razorpayId: razorpay_order_id },
       include: { items: true },
@@ -62,6 +70,10 @@ export async function POST(req: NextRequest) {
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+    
+    if (order.userId !== user.id) {
+      return NextResponse.json({ error: 'Forbidden: You do not own this order' }, { status: 403 });
     }
 
     const updated = await prisma.order.update({
@@ -71,14 +83,9 @@ export async function POST(req: NextRequest) {
     });
 
     // ── Clear user's cart ───────────────────────────────────
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId: clerkUser.id },
-    });
-    if (user) {
-      const cart = await prisma.cart.findUnique({ where: { userId: user.id } });
-      if (cart) {
-        await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
-      }
+    const cart = await prisma.cart.findUnique({ where: { userId: user.id } });
+    if (cart) {
+      await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
     }
 
     // ── Fetch address for response ──────────────────────────

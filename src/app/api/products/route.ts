@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { isAdminUser } from '@/lib/adminAuth';
 
 export async function GET() {
   try {
@@ -46,6 +47,10 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!(await isAdminUser())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const data = await req.json();
 
     const priceInPaise = Math.round(data.price * 100);

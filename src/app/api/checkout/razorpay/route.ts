@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
-import { products as productCatalog } from '@/lib/mockData';
 
 // ── Helper: Get or create DB user from Clerk session ────────
 async function getDbUser() {
@@ -51,7 +50,12 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Calculate total from server-side product catalog ────
-    const catalogMap = new Map(productCatalog.map(p => [p.id, p]));
+    // ── Calculate total from server-side product catalog ────
+    const dbProducts = await prisma.product.findMany({
+      where: { id: { in: items.map((i: any) => i.productId) } }
+    });
+    const catalogMap = new Map(dbProducts.map(p => [p.id, p]));
+    
     let totalRupees = 0;
     const orderItems: { productId: string; quantity: number; price: number }[] = [];
 
@@ -63,7 +67,9 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      const unitPrice = product.finalPrice; // What the customer pays (rupees)
+      const basePrice = product.price / 100;
+      const gstAmount = Math.round(basePrice * product.gstPercent / 100);
+      const unitPrice = basePrice + gstAmount;
       totalRupees += unitPrice * item.quantity;
       orderItems.push({
         productId: item.productId,

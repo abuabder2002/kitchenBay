@@ -1,9 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { isAdminUser } from '@/lib/adminAuth';
 
 export async function POST(request: Request) {
   try {
+    if (!(await isAdminUser())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { order, status } = await request.json();
 
     if (!order || !status) {
