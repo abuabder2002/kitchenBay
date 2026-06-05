@@ -18,7 +18,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, isHero = false }: ProductCardProps) {
   const { addItem: addToCart } = useCart();
-  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist, isItemLoading } = useWishlist();
   const { isAdmin } = useAuth();
 
 
@@ -58,17 +58,23 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         <button 
           onClick={(e) => { 
             e.preventDefault(); 
-            e.stopPropagation(); 
+            e.stopPropagation();
+            if (isItemLoading(product.id)) return;
             if (isInWishlist(product.id)) {
               removeFromWishlist(product.id);
             } else {
               addToWishlist(product);
             }
           }}
-          className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-[--color-brand-accent] transition-colors z-10 shadow"
+          disabled={isItemLoading(product.id)}
+          className={`absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow z-10 transition-all duration-300 ${
+            isItemLoading(product.id)
+              ? 'opacity-50 cursor-wait text-gray-400'
+              : 'hover:scale-110 cursor-pointer text-gray-400 hover:text-red-500'
+          }`}
           aria-label="Toggle wishlist"
         >
-          <Heart size={16} className={isInWishlist(product.id) ? "fill-[--color-brand-accent] text-[--color-brand-accent]" : ""} />
+          <Heart size={16} className={`transition-colors duration-300 ${isInWishlist(product.id) ? "fill-red-500 text-red-500" : ""}`} />
         </button>
 
         {/* Edit Pencil Icon (Admin Only) */}

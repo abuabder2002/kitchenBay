@@ -10,8 +10,9 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/lib/productsContext';
 import { useCart } from '@/lib/cartContext';
+import { useWishlist } from '@/lib/wishlistContext';
 import {
-  Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus
+  Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus, Heart
 } from 'lucide-react';
 import Link from 'next/link';
 import BulkInquiryModal from '@/components/BulkInquiryModal';
@@ -22,6 +23,7 @@ export default function ProductDetailPage() {
   const { products } = useProducts();
   const product = products.find(p => p.id === id);
   const { addItem, items } = useCart();
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist, isItemLoading } = useWishlist();
 
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -177,6 +179,29 @@ export default function ProductDetailPage() {
                         }`}
                       >
                         {added ? <><Check size={18} /> Added</> : 'Add to Cart'}
+                      </button>
+
+                      {/* Wishlist Button */}
+                      <button 
+                        onClick={(e) => { 
+                          e.preventDefault(); 
+                          if (isItemLoading(product.id)) return;
+                          if (isInWishlist(product.id)) {
+                            removeFromWishlist(product.id);
+                          } else {
+                            addToWishlist(product);
+                          }
+                        }}
+                        disabled={isItemLoading(product.id)}
+                        className={`flex items-center justify-center px-6 py-4 border-2 border-[--color-brand-border] rounded-sm transition-all duration-300 ${
+                          isItemLoading(product.id)
+                            ? 'opacity-50 cursor-wait text-gray-400 bg-gray-50'
+                            : 'hover:scale-110 cursor-pointer text-gray-400 hover:text-red-500 hover:border-red-200'
+                        }`}
+                        aria-label="Toggle wishlist"
+                        title={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                      >
+                        <Heart size={20} className={`transition-colors duration-300 ${isInWishlist(product.id) ? "fill-red-500 text-red-500" : ""}`} />
                       </button>
                     </div>
 

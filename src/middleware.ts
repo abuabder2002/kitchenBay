@@ -15,7 +15,8 @@ const isPublicRoute = createRouteMatcher([
   "/wishlist(.*)",
   "/api/videos(.*)",
   "/api/send-email(.*)",
-  "/api/bulk-inquiries(.*)"
+  "/api/bulk-inquiries(.*)",
+  "/api/products(.*)"
 ]);
 
 const isAdminRoute = createRouteMatcher([
