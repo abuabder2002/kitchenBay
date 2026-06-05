@@ -20,7 +20,6 @@ export default function SitemapPage() {
       links: [
         { label: 'My Profile', href: '/profile' },
         { label: 'My Orders', href: '/orders' },
-        { label: 'My Wallet', href: '/wallet' },
         { label: 'Wishlist', href: '/wishlist' },
         { label: 'Cart', href: '/cart' },
       ]

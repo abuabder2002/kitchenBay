@@ -118,45 +118,28 @@ export default function Navbar() {
                       Personalized
                     </span>
                   )}
-                  <ChevronDown size={14} className={`transition-transform duration-200 ${activeMenu === cat.name ? 'rotate-180' : 'opacity-60'}`} />
+                  {cat.id !== 'gifting' && (
+                    <ChevronDown size={14} className={`transition-transform duration-200 ${activeMenu === cat.name ? 'rotate-180' : 'opacity-60'}`} />
+                  )}
                 </Link>
                 
                 {/* Minimal Dropdown Menu */}
-                {activeMenu === cat.name && (
+                {activeMenu === cat.name && cat.id !== 'gifting' && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 bg-[#F7F2E8] shadow-2xl border border-[--color-brand-border] py-3 min-w-[280px] z-50 rounded-sm animate-in fade-in zoom-in-95 duration-200">
                     <ul className="flex flex-col">
-                      {cat.id === 'gifting' ? (
-                        [
-                          { name: 'Wedding Gifts', href: '/products?category=gifting&subcategory=wedding' },
-                          { name: 'Housewarming Gifts', href: '/products?category=gifting&subcategory=housewarming' },
-                          { name: 'Festival Gifts', href: '/products?category=gifting&subcategory=festival' },
-                          { name: 'Corporate Gifting', href: '/products?category=gifting&subcategory=corporate' },
-                          { name: 'Return Gifts', href: '/products?category=gifting&subcategory=return' },
-                          { name: 'Gift Concierge', href: '/gift-concierge' },
-                        ].map(sub => (
-                          <li key={sub.name}>
+                      {subcategories
+                        .filter(sub => sub.category === cat.id)
+                        .map(sub => (
+                          <li key={sub.id}>
                             <Link
-                              href={sub.href}
+                              href={`/products?category=${cat.id}&subcategory=${sub.id}`}
                               className="text-[12px] font-semibold text-[--color-brand-text] hover:bg-[--color-brand-blue-light] hover:text-[--color-brand-accent] transition-colors block px-6 py-3 uppercase tracking-widest border-l-2 border-transparent hover:border-[--color-brand-blue-text]"
                             >
                               {sub.name}
                             </Link>
                           </li>
                         ))
-                      ) : (
-                        subcategories
-                          .filter(sub => sub.category === cat.id)
-                          .map(sub => (
-                            <li key={sub.id}>
-                              <Link
-                                href={`/products?category=${cat.id}&subcategory=${sub.id}`}
-                                className="text-[12px] font-semibold text-[--color-brand-text] hover:bg-[--color-brand-blue-light] hover:text-[--color-brand-accent] transition-colors block px-6 py-3 uppercase tracking-widest border-l-2 border-transparent hover:border-[--color-brand-blue-text]"
-                              >
-                                {sub.name}
-                              </Link>
-                            </li>
-                          ))
-                      )}
+                      }
                     </ul>
                   </div>
                 )}
@@ -238,7 +221,6 @@ export default function Navbar() {
                     </div>
                     <Link href="/profile" className="block px-5 py-2.5 text-sm font-medium text-[--color-brand-text] hover:bg-[--color-brand-card]">My Profile</Link>
                     <Link href="/orders" className="block px-5 py-2.5 text-sm font-medium text-[--color-brand-text] hover:bg-[--color-brand-card]">My Orders</Link>
-                    <Link href="/wallet" className="block px-5 py-2.5 text-sm font-medium text-[--color-brand-text] hover:bg-[--color-brand-card]">My Wallet</Link>
                     {isAdmin && (
                       <Link href="/admin" className="block px-5 py-2.5 text-sm font-bold text-[--color-brand-accent] hover:bg-[--color-brand-card]">Admin Dashboard</Link>
                     )}
@@ -355,42 +337,18 @@ export default function Navbar() {
                 {categories.map(cat => (
                   <li key={cat.name}>
                     <div className="mb-3 px-2">
-                      <span className="font-extrabold text-[11px] text-[--color-brand-muted] uppercase tracking-widest flex items-center gap-2">
+                      <Link href={cat.href} onClick={() => setMobileOpen(false)} className="font-extrabold text-[11px] text-[--color-brand-muted] hover:text-[--color-brand-accent] uppercase tracking-widest flex items-center gap-2">
                         {cat.name}
                         {cat.id === 'gifting' && (
                           <span className="px-1.5 py-0.5 text-[8px] font-black uppercase bg-[#F5E6C8] text-[#4A3B18] rounded-full shadow-sm">
                             Personalized
                           </span>
                         )}
-                      </span>
+                      </Link>
                     </div>
-                    <ul className="flex flex-col gap-0.5">
-                      {cat.id === 'gifting' ? (
-                        [
-                          { name: 'Wedding Gifts', href: '/products?category=gifting&subcategory=wedding' },
-                          { name: 'Housewarming Gifts', href: '/products?category=gifting&subcategory=housewarming' },
-                          { name: 'Festival Gifts', href: '/products?category=gifting&subcategory=festival' },
-                          { name: 'Corporate Gifting', href: '/products?category=gifting&subcategory=corporate' },
-                          { name: 'Return Gifts', href: '/products?category=gifting&subcategory=return' },
-                          { name: 'Gift Concierge', href: '/gift-concierge' },
-                        ].map(sub => (
-                          <li key={sub.name}>
-                            <Link
-                              href={sub.href}
-                              onClick={() => setMobileOpen(false)}
-                              className={`block px-4 py-3 rounded-lg text-[13px] font-semibold uppercase tracking-wider transition-all ${
-                                sub.name === 'Gift Concierge' 
-                                  ? 'bg-[--color-brand-accent-yellow]/10 text-[--color-brand-accent-yellow] border border-[--color-brand-accent-yellow]/20 shadow-sm mt-1 flex items-center justify-between'
-                                  : 'text-[--color-brand-text] hover:text-[--color-brand-accent] hover:bg-gray-50'
-                              }`}
-                            >
-                              {sub.name}
-                              {sub.name === 'Gift Concierge' && <span className="w-2 h-2 bg-[--color-brand-accent-yellow] rounded-full animate-pulse shadow-sm" />}
-                            </Link>
-                          </li>
-                        ))
-                      ) : (
-                        subcategories
+                    {cat.id !== 'gifting' && (
+                      <ul className="flex flex-col gap-0.5">
+                        {subcategories
                           .filter(sub => sub.category === cat.id)
                           .map(sub => (
                             <li key={sub.id}>
@@ -403,8 +361,9 @@ export default function Navbar() {
                               </Link>
                             </li>
                           ))
-                      )}
-                    </ul>
+                        }
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>

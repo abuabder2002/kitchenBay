@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     name: user.fullName || user.username || user.primaryEmailAddress?.emailAddress?.split('@')[0] || 'User',
     email: user.primaryEmailAddress?.emailAddress || '',
     avatar: user.imageUrl,
-    addresses: [],
+    addresses: (user.unsafeMetadata?.addresses as Address[]) || [],
     orders: [],
     recentSearches: [],
     recentlyViewed: []

@@ -252,14 +252,7 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
               </span>
             </div>
 
-            <a
-              href="#"
-              onClick={(e) => e.preventDefault()}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
-            >
-              Download CGST/SGST Invoice
-              <ChevronRight size={16} />
-            </a>
+
           </div>
         </div>
       </main>

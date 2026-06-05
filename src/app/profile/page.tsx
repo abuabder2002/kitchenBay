@@ -3,20 +3,44 @@
 
 import { useAuth } from '@/lib/authContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { UserCircle2, MapPin, Settings } from 'lucide-react';
+import { UserCircle2, MapPin, Settings, X } from 'lucide-react';
+import { useClerk, useUser } from '@clerk/nextjs';
 
 export default function ProfilePage() {
   const { currentUser: user, loading } = useAuth();
+  const { user: clerkUser } = useUser();
+  const clerk = useClerk();
   const router = useRouter();
+
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [newAddress, setNewAddress] = useState({ street: '', city: '', state: '', zip: '' });
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login?redirect=/profile');
     }
   }, [user, loading, router]);
+
+  const handleSaveAddress = async () => {
+    if (!clerkUser) return;
+    setIsSaving(true);
+    try {
+      const currentAddresses = (clerkUser.unsafeMetadata?.addresses as any[]) || [];
+      const updatedAddresses = [...currentAddresses, { id: Date.now().toString(), ...newAddress, country: 'India' }];
+      await clerkUser.update({ unsafeMetadata: { ...clerkUser.unsafeMetadata, addresses: updatedAddresses } });
+      setIsAddressModalOpen(false);
+      setNewAddress({ street: '', city: '', state: '', zip: '' });
+      window.location.reload();
+    } catch (error) {
+      console.error('Error saving address:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (loading || !user) {
     return (
@@ -47,7 +71,7 @@ export default function ProfilePage() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
               <p className="text-gray-500 mb-2">{user.email}</p>
-              <button className="text-sm font-semibold text-[--color-brand-accent] hover:text-[--color-brand-accent-hover] bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">Edit Profile</button>
+              <button onClick={() => clerk.openUserProfile()} className="text-sm font-semibold text-[--color-brand-accent] hover:text-[--color-brand-accent-hover] bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">Edit Profile</button>
             </div>
           </div>
         </div>
@@ -56,7 +80,7 @@ export default function ProfilePage() {
           <div className="bg-white rounded-2xl shadow-sm border border-[--color-brand-border] p-8">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold flex items-center gap-2 text-gray-900"><MapPin size={20} className="text-gray-400" /> Saved Addresses</h3>
-              <button className="text-sm font-semibold text-[--color-brand-accent] hover:text-[--color-brand-accent-hover]">+ Add New</button>
+              <button onClick={() => setIsAddressModalOpen(true)} className="text-sm font-semibold text-[--color-brand-accent] hover:text-[--color-brand-accent-hover]">+ Add New</button>
             </div>
             {user.addresses && user.addresses.length > 0 ? (
               <ul className="space-y-4">
@@ -78,14 +102,54 @@ export default function ProfilePage() {
           <div className="bg-white rounded-2xl shadow-sm border border-[--color-brand-border] p-8">
             <h3 className="text-xl font-bold flex items-center gap-2 mb-6 text-gray-900"><Settings size={20} className="text-gray-400" /> Account Settings</h3>
             <ul className="space-y-4 text-gray-700">
-              <li><button className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Change Password</button></li>
-              <li><button className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Communication Preferences</button></li>
-              <li><button className="w-full text-left p-3 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-600 font-medium transition-colors border border-transparent hover:border-red-100">Delete Account</button></li>
+              <li><button onClick={() => clerk.openUserProfile()} className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Change Password</button></li>
+              <li><button onClick={() => clerk.openUserProfile()} className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Communication Preferences</button></li>
+              <li><button onClick={() => clerk.openUserProfile()} className="w-full text-left p-3 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-600 font-medium transition-colors border border-transparent hover:border-red-100">Delete Account</button></li>
             </ul>
           </div>
         </div>
       </main>
       <Footer />
+
+      {isAddressModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Add New Address</h2>
+              <button onClick={() => setIsAddressModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+                <input type="text" value={newAddress.street} onChange={e => setNewAddress({...newAddress, street: e.target.value})} className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-[--color-brand-accent]" placeholder="123 Main St" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <input type="text" value={newAddress.city} onChange={e => setNewAddress({...newAddress, city: e.target.value})} className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-[--color-brand-accent]" placeholder="City" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                  <input type="text" value={newAddress.state} onChange={e => setNewAddress({...newAddress, state: e.target.value})} className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-[--color-brand-accent]" placeholder="State" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                <input type="text" value={newAddress.zip} onChange={e => setNewAddress({...newAddress, zip: e.target.value})} className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-[--color-brand-accent]" placeholder="ZIP" />
+              </div>
+              <button 
+                onClick={handleSaveAddress}
+                disabled={isSaving || !newAddress.street || !newAddress.city || !newAddress.state || !newAddress.zip}
+                className="w-full mt-4 bg-[--color-brand-accent] text-white py-3 rounded-xl font-bold hover:bg-[--color-brand-accent-hover] transition-colors disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save Address'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
