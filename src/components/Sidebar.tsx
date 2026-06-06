@@ -48,7 +48,7 @@ export default function Sidebar() {
         <div className="flex items-center justify-between p-4 border-b border-blue-900/60">
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <Image src={logoImg} alt="Kitchenbay Logo" width={120} height={40} className="object-contain h-8 w-auto rounded-md invert brightness-0" />
+              <Image src={logoImg} alt="Kitchenbay Logo" width={120} height={40} className="object-contain h-8 w-auto invert mix-blend-screen" />
             </div>
           )}
           <button
