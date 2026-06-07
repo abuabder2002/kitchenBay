@@ -3,25 +3,45 @@
 /* eslint-disable @next/next/no-img-element */
 
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import FormInput from '@/components/FormInput';
-import { categories, subcategories } from '@/lib/mockData';
 import { useProducts } from '@/lib/productsContext';
 import { Package, Calculator, Check, Upload, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
+interface DbCategory { id: string; name: string; slug: string; }
+interface DbSubcategory { id: string; name: string; categoryId: string; }
 
 export default function AddProductPage() {
   const router = useRouter();
   const { addProduct } = useProducts();
   const [form, setForm] = useState({
     name: '', description: '', price: '', originalPrice: '', gstPercent: '18',
-    stock: '', category: '', subcategory: '', material: '', image: '', rating: '5.0', reviewCount: '0'
+    stock: '', category: '', subcategory: '', categoryId: '', subcategoryId: '',
+    material: '', image: '', rating: '5.0', reviewCount: '0'
   });
   const [saved, setSaved] = useState(false);
 
-  const availableSubcategories = useMemo(() => {
-    return subcategories.filter(s => s.category === form.category);
-  }, [form.category]);
+  // Dynamic categories/subcategories from DB
+  const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
+  const [dbSubcategories, setDbSubcategories] = useState<DbSubcategory[]>([]);
+
+  useEffect(() => {
+    fetch('/api/admin/categories?limit=100&isActive=true')
+      .then(r => r.json())
+      .then(d => setDbCategories(d.categories || []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!form.categoryId) { setDbSubcategories([]); return; }
+    fetch(`/api/admin/subcategories?categoryId=${form.categoryId}&limit=100`)
+      .then(r => r.json())
+      .then(d => setDbSubcategories(d.subcategories || []))
+      .catch(() => {});
+  }, [form.categoryId]);
+
+  const availableSubcategories = useMemo(() => dbSubcategories, [dbSubcategories]);
 
   const isCategoryValid = !!form.category;
   const isSubcategoryValid = !!form.subcategory;
@@ -38,7 +58,17 @@ export default function AddProductPage() {
   const allValid = validCount === 8;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setForm(prev => ({ ...prev, [e.target.id]: e.target.value }));
+    const { id, value } = e.target;
+    if (id === 'category') {
+      // Find the selected DB category to get both name/slug and id
+      const selected = dbCategories.find(c => c.id === value);
+      setForm(prev => ({ ...prev, category: selected?.slug || value, categoryId: value, subcategory: '', subcategoryId: '' }));
+    } else if (id === 'subcategory') {
+      const selected = dbSubcategories.find(s => s.id === value);
+      setForm(prev => ({ ...prev, subcategory: selected?.name || value, subcategoryId: value }));
+    } else {
+      setForm(prev => ({ ...prev, [id]: value }));
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,14 +169,14 @@ export default function AddProductPage() {
             <FormInput id="description" label="Description" as="textarea" rows={4} placeholder="Describe the product in detail..." value={form.description} onChange={handleChange} required />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <FormInput id="stock" label="Stock Quantity" type="number" placeholder="e.g. 50" value={form.stock} onChange={handleChange} required />
-              <FormInput id="category" label="Category" as="select" value={form.category} onChange={handleChange} required>
+              <FormInput id="category" label="Category" as="select" value={form.categoryId} onChange={handleChange} required>
                 <option value="">Select a category</option>
-                {categories.map(c => (
+                {dbCategories.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </FormInput>
-              <FormInput id="subcategory" label="Subcategory" as="select" value={form.subcategory} onChange={handleChange} required>
-                <option value="">Select a subcategory</option>
+              <FormInput id="subcategory" label="Subcategory" as="select" value={form.subcategoryId} onChange={handleChange} required>
+                <option value="">{form.categoryId ? 'Select subcategory' : 'Select category first'}</option>
                 {availableSubcategories.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}

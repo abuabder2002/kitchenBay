@@ -41,20 +41,50 @@ model Address {
   updatedAt DateTime @updatedAt
 }
 
+model Category {
+  id            String        @id @default(cuid())
+  name          String        @unique
+  slug          String        @unique
+  image         String?
+  isActive      Boolean       @default(true)
+  subcategories Subcategory[]
+  products      Product[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Subcategory {
+  id         String    @id @default(cuid())
+  name       String
+  slug       String
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  isActive   Boolean   @default(true)
+  products   Product[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([slug, categoryId])
+}
+
 model Product {
-  id               String            @id @default(cuid())
+  id               String       @id @default(cuid())
   name             String
   description      String
   price            Int               // Stored in paise (currency * 100)
   discountPrice    Int?              // Optional discounted price in paise
   gstPercent       Int               @default(18)
   stock            Int               @default(0)
-  category         String
-  subcategory      String?           // Optional sub‑category
+  category         String            // Legacy string field — kept for backward compat
+  subcategory      String?           // Legacy string field — kept for backward compat
+  categoryId       String?           // New relational FK
+  subcategoryId    String?           // New relational FK
+  categoryRel      Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subcategoryRel   Subcategory?      @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
   sku              String?           @unique // Stock‑keeping unit, unique if present
   material         String?           // Material description
   dimensions       String?           // e.g., "10x20x5 cm"
-  tags             String[] // Array of tags/keywords
+  tags             String[]          // Array of tags/keywords
   moq              Int?              // Minimum Order Quantity for bulk
   bulkPricingTiers Json?             // [{ qty: number, price: number }]
   image            String
