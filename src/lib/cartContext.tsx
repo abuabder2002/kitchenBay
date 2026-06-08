@@ -63,6 +63,9 @@ interface CartContextType {
   cgstAmount: number;
   sgstAmount: number;
   total: number;
+  isDrawerOpen: boolean;
+  openDrawer: () => void;
+  closeDrawer: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -74,6 +77,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { products } = useProducts();
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
   const [serverData, setServerData] = useState<{productId: string, quantity: number}[] | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Track whether we have loaded from localStorage yet
   const hasHydrated = useRef(false);
@@ -162,6 +166,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addItem = useCallback(async (product: Product) => {
     dispatch({ type: 'ADD_ITEM', product });
+    setIsDrawerOpen(true); // Open drawer when item added
     if (currentUser) {
       fetch('/api/cart', {
         method: 'POST',
@@ -208,8 +213,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const sgstAmount = gstAmount - cgstAmount;
   const total = subtotal + gstAmount;
 
+  const openDrawer = useCallback(() => setIsDrawerOpen(true), []);
+  const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
+
   return (
-    <CartContext.Provider value={{ items: state.items, addItem, removeItem, updateQuantity, clearCart, itemCount, subtotal, gstAmount, cgstAmount, sgstAmount, total }}>
+    <CartContext.Provider value={{ 
+      items: state.items, addItem, removeItem, updateQuantity, clearCart, 
+      itemCount, subtotal, gstAmount, cgstAmount, sgstAmount, total,
+      isDrawerOpen, openDrawer, closeDrawer
+    }}>
       {children}
     </CartContext.Provider>
   );

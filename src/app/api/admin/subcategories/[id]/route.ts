@@ -6,11 +6,11 @@ function slugify(name: string) {
 }
 
 // PUT: Update a subcategory
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const body = await req.json();
     const { name, categoryId, isActive } = body;
-    const { id } = params;
+    const { id } = await params;
 
     if (!name?.trim()) return NextResponse.json({ error: 'Subcategory name is required' }, { status: 400 });
     if (!categoryId) return NextResponse.json({ error: 'Parent category is required' }, { status: 400 });
@@ -38,9 +38,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE: Delete a subcategory
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     await prisma.subcategory.delete({ where: { id } });
     return NextResponse.json({ message: 'Subcategory deleted successfully' });
   } catch (error) {

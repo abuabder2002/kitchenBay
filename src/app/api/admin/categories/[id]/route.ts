@@ -6,11 +6,11 @@ function slugify(name: string) {
 }
 
 // PUT: Update a category
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const body = await req.json();
     const { name, image, isActive } = body;
-    const { id } = params;
+    const { id } = await params;
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Category name is required' }, { status: 400 });
@@ -41,9 +41,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE: Delete a category
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     await prisma.category.delete({ where: { id } });
     return NextResponse.json({ message: 'Category deleted successfully' });
   } catch (error) {
