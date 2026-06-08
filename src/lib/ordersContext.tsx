@@ -43,7 +43,7 @@ interface OrdersContextType {
 
 const OrdersContext = createContext<OrdersContextType | null>(null);
 
-const STORAGE_KEY = 'Kitchenbaycraft_orders';
+const STORAGE_KEY = 'Kitchenbay_orders';
 
 function loadFromStorage(): Order[] {
   if (typeof window === 'undefined') return [];

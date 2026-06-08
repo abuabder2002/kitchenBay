@@ -70,7 +70,7 @@ export default function SitemapPage() {
         <div className="bg-blue-950 text-white py-16 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <h1 className="text-4xl font-bold font-[family-name:var(--font-heading)] mb-4">Sitemap</h1>
-            <p className="text-blue-200 text-lg">A complete directory of all pages on KitchenbayCraft.</p>
+            <p className="text-blue-200 text-lg">A complete directory of all pages on Kitchenbay.</p>
           </div>
         </div>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

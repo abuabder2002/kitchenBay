@@ -37,7 +37,7 @@ export default function AboutUsPage() {
             <p className="text-yellow-400 font-semibold uppercase tracking-widest text-sm mb-4">Our Story</p>
             <h1 className="text-5xl font-bold font-[family-name:var(--font-heading)] mb-6">Celebrating India&apos;s<br />Kitchenbay Heritage</h1>
             <p className="text-blue-200 text-xl max-w-2xl mx-auto leading-relaxed">
-              KitchenbayCraft was born from a simple belief — that the finest kitchenware and home décor isn&apos;t manufactured in factories, but crafted by hand, with skill and soul.
+              Kitchenbay was born from a simple belief — that the finest kitchenware and home décor isn&apos;t manufactured in factories, but crafted by hand, with skill and soul.
             </p>
           </div>
         </div>

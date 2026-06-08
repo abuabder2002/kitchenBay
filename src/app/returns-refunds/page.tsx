@@ -26,7 +26,7 @@ export default function ReturnsPage() {
         <div className="bg-blue-950 text-white py-16 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <h1 className="text-4xl font-bold font-[family-name:var(--font-heading)] mb-4">Returns & Refunds</h1>
-            <p className="text-blue-200 text-lg max-w-2xl mx-auto">We want you to love every KitchenbayCraft purchase. If something isn&apos;t right, we&apos;ll make it right.</p>
+            <p className="text-blue-200 text-lg max-w-2xl mx-auto">We want you to love every Kitchenbay purchase. If something isn&apos;t right, we&apos;ll make it right.</p>
           </div>
         </div>
 

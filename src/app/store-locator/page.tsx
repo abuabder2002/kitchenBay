@@ -10,7 +10,7 @@ export default function StoreLocatorPage() {
   const stores = [
     {
       id: 1,
-      name: "KitchenbayCraft Flagship - Delhi",
+      name: "Kitchenbay Flagship - Delhi",
       address: "123 Heritage Marg, Connaught Place, New Delhi 110001",
       phone: "+91 11 2345 6789",
       hours: "Mon-Sun: 10:00 AM - 9:00 PM",
@@ -18,7 +18,7 @@ export default function StoreLocatorPage() {
     },
     {
       id: 2,
-      name: "KitchenbayCraft Studio - Mumbai",
+      name: "Kitchenbay Studio - Mumbai",
       address: "45 Kitchenbay Avenue, Kala Ghoda, Mumbai 400001",
       phone: "+91 22 9876 5432",
       hours: "Mon-Sat: 10:30 AM - 8:30 PM",
@@ -26,7 +26,7 @@ export default function StoreLocatorPage() {
     },
     {
       id: 3,
-      name: "KitchenbayCraft Experience - Bangalore",
+      name: "Kitchenbay Experience - Bangalore",
       address: "78 Craft Road, Indiranagar, Bengaluru 560038",
       phone: "+91 80 1234 5678",
       hours: "Mon-Sun: 11:00 AM - 9:30 PM",
@@ -131,7 +131,7 @@ export default function StoreLocatorPage() {
             {/* Iframe */}
             <div className="flex-1 relative w-full" style={{ minHeight: '500px' }}>
               <iframe
-                title="KitchenbayCraft Store Location"
+                title="Kitchenbay Store Location"
                 src={`https://maps.google.com/maps?q=${encodeURIComponent(activeStore.address)}&output=embed&z=15`}
                 width="100%"
                 height="100%"

@@ -29,9 +29,9 @@ const materials = [
 ];
 
 const journalEntries = [
-  { title: 'The Lost Art of Hand-Hammered Cookware', category: 'Craftsmanship', img: '/Kitchenbay_hammering_copper.png' },
-  { title: 'Why Traditional Brass Adds Positive Energy', category: 'Heritage', img: '/Kitchenbay_crafting_brass.png' },
-  { title: 'Seasoning Your Cast Iron: A Masterclass', category: 'Care Guide', img: '/Kitchenbay_forging_cast_iron.png' }
+  { title: 'The Lost Art of Hand-Hammered Cookware', category: 'Craftsmanship', img: '/artisan_hammering_copper.png' },
+  { title: 'Why Traditional Brass Adds Positive Energy', category: 'Heritage', img: '/artisan_crafting_brass.png' },
+  { title: 'Seasoning Your Cast Iron: A Masterclass', category: 'Care Guide', img: '/artisan_forging_cast_iron.png' }
 ];
 
 const promoSlides = [
@@ -296,7 +296,7 @@ export default function HomePage() {
               </div>
               <div className="flex-1 relative w-full aspect-square max-w-lg mx-auto lg:max-w-none">
                 <Image
-                  src="/Kitchenbay_kitchenware.png"
+                  src="/artisan_kitchenware.png"
                   alt="Traditional Indian handcrafted kitchenware"
                   fill
                   className="object-cover rounded-t-full shadow-2xl"

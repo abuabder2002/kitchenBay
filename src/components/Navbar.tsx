@@ -44,7 +44,7 @@ export default function Navbar() {
   }, []);
 
   const topBarLinks = [
-    { label: "Sell on KitchenbayCraft", href: "#" },
+    { label: "Sell on Kitchenbay", href: "#" },
     { label: "Gift Concierge", href: "/gift-concierge" },
     { label: "Track Your Order", href: "/track" },
     { label: "Contact Us", href: "/contact" }

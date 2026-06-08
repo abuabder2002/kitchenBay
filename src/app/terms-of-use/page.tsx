@@ -4,8 +4,8 @@ import Footer from '@/components/Footer';
 
 export default function TermsOfUsePage() {
   const sections = [
-    { title: '1. Acceptance of Terms', content: 'By accessing and using the KitchenbayCraft website, you agree to be bound by these Terms of Use and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using this site.' },
-    { title: '2. Use License', content: 'Permission is granted to temporarily download one copy of the materials on KitchenbayCraft\'s website for personal, non-commercial viewing only. This is the grant of a license, not a transfer of title.' },
+    { title: '1. Acceptance of Terms', content: 'By accessing and using the Kitchenbay website, you agree to be bound by these Terms of Use and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using this site.' },
+    { title: '2. Use License', content: 'Permission is granted to temporarily download one copy of the materials on Kitchenbay\'s website for personal, non-commercial viewing only. This is the grant of a license, not a transfer of title.' },
     { title: '3. Account Responsibility', content: 'You are responsible for maintaining the confidentiality of your account and password. You agree to accept responsibility for all activities that occur under your account.' },
     { title: '4. Product Descriptions', content: 'We strive to ensure that all product descriptions, images, and prices are accurate. However, we do not warrant that product descriptions or other content is accurate, complete, or error-free.' },
     { title: '5. Pricing & Payments', content: 'All prices are listed in Indian Rupees (INR) and are inclusive of applicable taxes unless stated otherwise. We reserve the right to modify pricing at any time without prior notice.' },
@@ -26,7 +26,7 @@ export default function TermsOfUsePage() {
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16">
           <p className="text-gray-600 text-lg leading-relaxed mb-12">
-            Please read these Terms of Use carefully before using the KitchenbayCraft website. These terms govern your use of our website and services.
+            Please read these Terms of Use carefully before using the Kitchenbay website. These terms govern your use of our website and services.
           </p>
           <div className="space-y-6">
             {sections.map((section, idx) => (
