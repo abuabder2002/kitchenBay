@@ -82,42 +82,42 @@ export default function ContactPage() {
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-brand-text mb-2">First Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       name="firstName"
                       required
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow" 
+                      className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-brand-text mb-2">Last Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       name="lastName"
                       required
                       value={formData.lastName}
                       onChange={handleChange}
-                      className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow" 
+                      className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow"
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-brand-text mb-2">Email Address</label>
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     name="email"
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow" 
+                    className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-brand-text mb-2">Message</label>
-                  <textarea 
-                    rows={5} 
+                  <textarea
+                    rows={5}
                     name="message"
                     required
                     value={formData.message}
@@ -125,8 +125,8 @@ export default function ContactPage() {
                     className="w-full bg-brand-card border border-gray-100 rounded px-4 py-3 focus:ring-2 focus:ring-brand-accent outline-none transition-shadow"
                   ></textarea>
                 </div>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isSubmitting}
                   className="flex items-center justify-center gap-2 bg-brand-accent hover:bg-opacity-90 text-white font-medium px-8 py-3.5 rounded transition-colors w-full sm:w-auto shadow-md disabled:opacity-70"
                 >
@@ -145,7 +145,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-brand-text mb-1">Our Studio</h3>
-                    <p className="text-brand-muted leading-relaxed">123 Artisan Village Road<br />Jayanagar, Bangalore<br />Karnataka 560041</p>
+                    <p className="text-brand-muted leading-relaxed">123 Kitchenbay Village Road<br />Jayanagar, Bangalore<br />Karnataka 560041</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-5">

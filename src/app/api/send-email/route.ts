@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const getEmailMessage = (status: string) => {
       switch (status.toLowerCase()) {
         case 'processing':
-          return 'Excellent choice! Our master artisans are now preparing your hand-crafted items. We are making sure everything is checked and packed with the utmost care.';
+          return 'Excellent choice! Our master Kitchenbays are now preparing your hand-crafted items. We are making sure everything is checked and packed with the utmost care.';
         case 'shipped':
           return 'Great news! Your order has been handed over to our courier partner and is now in transit. A tracking number has been generated and your shipment is moving.';
         case 'delivered':

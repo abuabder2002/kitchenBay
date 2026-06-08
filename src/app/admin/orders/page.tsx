@@ -146,7 +146,7 @@ export default function AdminOrdersPage() {
       case 'processing':
         return {
           headline: 'Your order is being processed!',
-          message: 'Excellent choice! Our master artisans are now preparing your hand-crafted items. We are making sure everything is checked and packed with the utmost care.',
+          message: 'Excellent choice! Our master Kitchenbays are now preparing your hand-crafted items. We are making sure everything is checked and packed with the utmost care.',
           bg: 'bg-blue-50/50',
         };
       case 'shipped':
@@ -170,7 +170,7 @@ export default function AdminOrdersPage() {
       default:
         return {
           headline: 'Thank you for your order!',
-          message: 'Your order has been successfully received. We will update you as soon as our artisans begin preparing your items.',
+          message: 'Your order has been successfully received. We will update you as soon as our Kitchenbays begin preparing your items.',
           bg: 'bg-amber-50/50',
         };
     }

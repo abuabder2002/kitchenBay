@@ -1,11 +1,11 @@
-# Project Status: KitchenBay (Artisan Craft)
+# Project Status: KitchenBay (Kitchenbay Craft)
 
 > **Single Source of Truth** for AI agents, developers, deployment engineers, and future maintainers.
 
 ## 1. Project Overview
 
-*   **Project Name:** KitchenBay / Artisan Craft
-*   **Business Purpose:** Premium e-commerce storefront for artisan crafts.
+*   **Project Name:** KitchenBay / Kitchenbay Craft
+*   **Business Purpose:** Premium e-commerce storefront for Kitchenbay crafts.
 *   **Ecommerce Domain:** Retail & Wholesale Handmade Crafts.
 *   **Target Users:** B2C (Retail customers) and B2B (Wholesale buyers/distributors).
 *   **B2B/B2C Features:** Standard shopping cart/checkout for B2C; Bulk Inquiry system and tailored pricing for B2B.

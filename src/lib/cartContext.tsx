@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { Product, CartItem, products } from './mockData';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef, useState } from 'react';
+import { Product, CartItem } from './mockData';
 import { useAuth } from './authContext';
+import { useProducts } from './productsContext';
 
 interface CartState {
   items: CartItem[];
@@ -58,64 +59,106 @@ interface CartContextType {
   clearCart: () => void;
   itemCount: number;
   subtotal: number;
-  gstAmount: number;   // Total GST (CGST + SGST)
-  cgstAmount: number;  // Central GST = gstAmount / 2
-  sgstAmount: number;  // State GST  = gstAmount / 2
+  gstAmount: number;
+  cgstAmount: number;
+  sgstAmount: number;
   total: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'Kitchenbay_cart_guest';
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
+  const { products } = useProducts();
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
+  const [serverData, setServerData] = useState<{productId: string, quantity: number}[] | null>(null);
 
-  const storageKey = 'Kitchenbay_cart_guest';
+  // Track whether we have loaded from localStorage yet
+  const hasHydrated = useRef(false);
+  const didServerSync = useRef(false);
 
+  // ── STEP 1: On client mount, load from localStorage ──
   useEffect(() => {
-    // Unconditionally load from localStorage first for resilience
-    const local = localStorage.getItem(storageKey);
-    const localItems = local ? JSON.parse(local) : [];
-    
-    if (localItems.length > 0) {
-      try {
-        dispatch({ type: 'SET_ITEMS', items: localItems });
-      } catch (e) {
-        console.error(e);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          dispatch({ type: 'SET_ITEMS', items: parsed });
+        }
       }
+    } catch {
+      // corrupted — ignore
     }
+    // Mark hydration complete — now future saves are safe
+    hasHydrated.current = true;
+  }, []); // runs once on client mount
 
-    if (currentUser) {
-      // Sync from server
-      fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'SYNC', items: localItems })
-      })
-        .then(res => {
-          if (!res.ok) throw new Error('API failed');
-          return res.json();
-        })
-        .then(data => {
-          if (Array.isArray(data)) {
-            const mapped = data.map((d: { productId: string; quantity: number }) => ({
-              product: products.find(p => p.id === d.productId),
-              quantity: d.quantity
-            })).filter((i: { product: Product | undefined; quantity: number }) => i.product) as CartItem[];
-            dispatch({ type: 'SET_ITEMS', items: mapped });
-          }
-        })
-        .catch(err => {
-          console.error('Failed to sync initial cart:', err);
-          // Fallback to local storage is already handled by the unconditional load above
-        });
+  // ── STEP 2: Save to localStorage on every state change, but SKIP the initial empty state ──
+  useEffect(() => {
+    if (!hasHydrated.current) return; // Don't save until we've loaded
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+    } catch {
+      // quota exceeded — ignore
     }
+  }, [state.items]);
+
+  // ── STEP 3: Server sync when user logs in ──
+  useEffect(() => {
+    if (!currentUser) {
+      didServerSync.current = false;
+      return;
+    }
+    if (didServerSync.current) return;
+    didServerSync.current = true;
+
+    // Read fresh from localStorage to guarantee we have latest data
+    let localItems: CartItem[] = [];
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) localItems = parsed;
+      }
+    } catch { /* ignore */ }
+
+    fetch('/api/cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'SYNC', items: localItems }),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Cart sync failed');
+        return res.json();
+      })
+      .then(data => {
+        if (!Array.isArray(data) || data.length === 0) return; // keep local
+        setServerData(data);
+      })
+      .catch(err => {
+        console.warn('[Cart] Server sync failed, using local data:', err.message);
+      });
   }, [currentUser]);
 
-  // Save to localStorage when items change unconditionally
+  // ── STEP 4: Map server data when products finish loading ──
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(state.items));
-  }, [state.items]);
+    if (!serverData) return;
+    
+    // Check if we have mapped all products
+    const mapped = serverData.map((d) => ({
+      product: products.find(p => p.id === d.productId),
+      quantity: d.quantity,
+    })).filter((i): i is CartItem => !!i.product);
+
+    // Only update if we found at least some products. 
+    // This will naturally re-run and find more if 'products' updates asynchronously from DB.
+    if (mapped.length > 0) {
+      dispatch({ type: 'SET_ITEMS', items: mapped });
+    }
+  }, [serverData, products]);
 
   const addItem = useCallback(async (product: Product) => {
     dispatch({ type: 'ADD_ITEM', product });
@@ -123,17 +166,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       fetch('/api/cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'ADD', productId: product.id })
-      }).catch(console.error);
+        body: JSON.stringify({ action: 'ADD', productId: product.id }),
+      }).catch(err => console.warn('[Cart] Add sync failed:', err.message));
     }
   }, [currentUser]);
 
   const removeItem = useCallback(async (productId: string) => {
     dispatch({ type: 'REMOVE_ITEM', productId });
     if (currentUser) {
-      fetch(`/api/cart?productId=${productId}`, {
-        method: 'DELETE',
-      }).catch(console.error);
+      fetch(`/api/cart?productId=${productId}`, { method: 'DELETE' })
+        .catch(err => console.warn('[Cart] Remove sync failed:', err.message));
     }
   }, [currentUser]);
 
@@ -143,15 +185,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       fetch('/api/cart', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity })
-      }).catch(console.error);
+        body: JSON.stringify({ productId, quantity }),
+      }).catch(err => console.warn('[Cart] Update sync failed:', err.message));
     }
   }, [currentUser]);
 
   const clearCart = useCallback(async () => {
     dispatch({ type: 'CLEAR_CART' });
     if (currentUser) {
-      fetch('/api/cart', { method: 'DELETE' }).catch(console.error);
+      fetch('/api/cart', { method: 'DELETE' })
+        .catch(err => console.warn('[Cart] Clear sync failed:', err.message));
     }
   }, [currentUser]);
 
@@ -161,9 +204,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     (sum, i) => sum + Math.round((i.product.price * i.product.gstPercent / 100) * i.quantity),
     0
   );
-  // Intra-state supply: GST splits equally into CGST + SGST
   const cgstAmount = Math.floor(gstAmount / 2);
-  const sgstAmount = gstAmount - cgstAmount; // handles odd rupee rounding
+  const sgstAmount = gstAmount - cgstAmount;
   const total = subtotal + gstAmount;
 
   return (

@@ -18,16 +18,16 @@ export default function Navbar() {
   const { products } = useProducts();
   const { itemCount } = useCart();
   const { items: wishlistItems } = useWishlist();
-  
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  
+
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  const searchSuggestions = searchQuery.trim() 
+  const searchSuggestions = searchQuery.trim()
     ? products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5)
     : [];
 
@@ -44,7 +44,7 @@ export default function Navbar() {
   }, []);
 
   const topBarLinks = [
-    { label: "Sell on ArtisanCraft", href: "#" },
+    { label: "Sell on KitchenbayCraft", href: "#" },
     { label: "Gift Concierge", href: "/gift-concierge" },
     { label: "Track Your Order", href: "/track" },
     { label: "Contact Us", href: "/contact" }
@@ -82,33 +82,33 @@ export default function Navbar() {
       </div>
 
       {/* Main Navbar */}
-      <header 
+      <header
         className={`z-40 w-full transition-all duration-500 backdrop-blur-md sticky top-0 ${scrolled ? 'shadow-sm py-2' : 'py-4'} border-b border-[#E6F2FF] bg-white`}
       >
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          
+
           {/* LEFT: Logo */}
           <Link href="/" className="flex items-center shrink-0 mr-2 sm:mr-8">
-            <Image 
-              src={logoImg} 
-              alt="Brand Logo" 
-              width={540} 
-              height={190} 
+            <Image
+              src={logoImg}
+              alt="Brand Logo"
+              width={540}
+              height={190}
               className={`object-contain mix-blend-multiply transition-all duration-300 ${scrolled ? 'h-20 sm:h-24 lg:h-28' : 'h-24 sm:h-32 lg:h-44'} w-auto max-w-[300px] sm:max-w-[400px] lg:max-w-none`}
-              priority 
+              priority
             />
           </Link>
 
           {/* CENTER: Desktop Categories */}
           <nav className="hidden lg:flex items-center gap-10 h-full">
             {categories.map((cat) => (
-              <div 
+              <div
                 key={cat.name}
                 className="h-full flex items-center relative group cursor-pointer"
                 onMouseEnter={() => setActiveMenu(cat.name)}
                 onMouseLeave={() => setActiveMenu(null)}
               >
-                <Link 
+                <Link
                   href={cat.href}
                   className="text-[13px] font-bold uppercase tracking-widest text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors flex items-center gap-1.5 px-3 py-1 rounded-full hover:bg-[--color-brand-blue-light]"
                 >
@@ -122,7 +122,7 @@ export default function Navbar() {
                     <ChevronDown size={14} className={`transition-transform duration-200 ${activeMenu === cat.name ? 'rotate-180' : 'opacity-60'}`} />
                   )}
                 </Link>
-                
+
                 {/* Minimal Dropdown Menu */}
                 {activeMenu === cat.name && cat.id !== 'gifting' && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 bg-[#F7F2E8] shadow-2xl border border-[--color-brand-border] py-3 min-w-[280px] z-50 rounded-sm animate-in fade-in zoom-in-95 duration-200">
@@ -149,13 +149,13 @@ export default function Navbar() {
 
           {/* RIGHT: Actions */}
           <div className="flex items-center gap-2 sm:gap-4 lg:gap-6">
-            
+
             {/* Search Icon / Input */}
             <div className="hidden md:flex items-center relative">
               {isSearchOpen ? (
                 <>
                   <div className="flex items-center border-b border-[--color-brand-text] pb-1 animate-in fade-in slide-in-from-right-4 relative z-50 bg-white">
-                    <input 
+                    <input
                       autoFocus
                       type="text"
                       placeholder="Search products..."
@@ -171,7 +171,7 @@ export default function Navbar() {
                       <ul className="flex flex-col">
                         {searchSuggestions.map(product => (
                           <li key={product.id}>
-                            <div 
+                            <div
                               onClick={() => { router.push(`/products/${product.id}`); setIsSearchOpen(false); setSearchQuery(''); }}
                               className="flex items-center gap-3 p-3 hover:bg-[--color-brand-blue-light] cursor-pointer transition-colors border-b border-gray-50 last:border-0"
                             >
@@ -200,7 +200,7 @@ export default function Navbar() {
             </Link>
 
             {/* Profile */}
-            <div 
+            <div
               className="relative hidden sm:block"
               onMouseEnter={() => setShowUserDropdown(true)}
               onMouseLeave={() => setShowUserDropdown(false)}
@@ -212,7 +212,7 @@ export default function Navbar() {
                   <UserCircle2 size={22} strokeWidth={1.5} />
                 )}
               </Link>
-              
+
               {showUserDropdown && user && (
                 <div className="absolute right-0 top-full pt-4 w-56 z-50">
                   <div className="bg-white border border-[--color-brand-border] shadow-xl py-2 rounded-sm">
@@ -292,7 +292,7 @@ export default function Navbar() {
                 <X size={26} strokeWidth={1.5} />
               </button>
             </div>
-            
+
             <div className="p-6 border-b border-gray-100 relative">
               <div className="relative flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50 z-50">
                 <Search size={18} className="text-[--color-brand-muted] absolute left-4" />
@@ -315,7 +315,7 @@ export default function Navbar() {
                   <ul className="flex flex-col">
                     {searchSuggestions.map(product => (
                       <li key={product.id}>
-                        <div 
+                        <div
                           onClick={() => { router.push(`/products/${product.id}`); setMobileOpen(false); setSearchQuery(''); }}
                           className="flex items-center gap-3 p-3 hover:bg-[--color-brand-blue-light] cursor-pointer transition-colors border-b border-gray-50 last:border-0"
                         >
@@ -368,7 +368,7 @@ export default function Navbar() {
                 ))}
               </ul>
             </div>
-            
+
             <div className="p-6 border-t border-gray-100 bg-gray-50">
               <Link href={user ? "/profile" : "/login"} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 font-extrabold uppercase tracking-widest text-sm text-[--color-brand-text] mb-6 hover:text-[--color-brand-accent] transition-colors">
                 {user?.avatar ? (

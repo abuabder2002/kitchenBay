@@ -27,7 +27,7 @@ export default function CookiePolicyPage() {
             </div>
           ))}
           <div className="mt-4 p-6 bg-blue-50 border border-blue-100 rounded-2xl">
-            <p className="text-gray-700">For questions about our Cookie Policy, please email <a href="mailto:privacy@artisancraft.in" className="text-blue-600 hover:underline font-medium">privacy@artisancraft.in</a></p>
+            <p className="text-gray-700">For questions about our Cookie Policy, please email <a href="mailto:privacy@Kitchenbaycraft.in" className="text-blue-600 hover:underline font-medium">privacy@Kitchenbaycraft.in</a></p>
           </div>
         </div>
       </main>

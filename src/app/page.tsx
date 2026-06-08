@@ -29,9 +29,9 @@ const materials = [
 ];
 
 const journalEntries = [
-  { title: 'The Lost Art of Hand-Hammered Cookware', category: 'Craftsmanship', img: '/artisan_hammering_copper.png' },
-  { title: 'Why Traditional Brass Adds Positive Energy', category: 'Heritage', img: '/artisan_crafting_brass.png' },
-  { title: 'Seasoning Your Cast Iron: A Masterclass', category: 'Care Guide', img: '/artisan_forging_cast_iron.png' }
+  { title: 'The Lost Art of Hand-Hammered Cookware', category: 'Craftsmanship', img: '/Kitchenbay_hammering_copper.png' },
+  { title: 'Why Traditional Brass Adds Positive Energy', category: 'Heritage', img: '/Kitchenbay_crafting_brass.png' },
+  { title: 'Seasoning Your Cast Iron: A Masterclass', category: 'Care Guide', img: '/Kitchenbay_forging_cast_iron.png' }
 ];
 
 const promoSlides = [
@@ -104,23 +104,23 @@ export default function HomePage() {
         <section className="bg-white">
           <div className="max-w-[1600px] mx-auto p-4">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              
+
               {/* Left Main Banner (Summer Sale) */}
               <Link href="/products" className="lg:col-span-8 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block">
-                  <Image
-                    src="/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"
-                    alt="Collection for Everyday Cooking"
-                    fill
-                    className="object-contain object-center group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
-                  <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-6 sm:p-8 lg:p-12">
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Authentic Handcrafted Kitchenware</h2>
-                  </div>
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-white text-black font-semibold py-2 px-4 rounded hover:bg-gray-100 transition-colors mt-4">Explore Collection</span>
-                  </div>
-                </Link>
+                <Image
+                  src="/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"
+                  alt="Collection for Everyday Cooking"
+                  fill
+                  className="object-contain object-center group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
+                <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-6 sm:p-8 lg:p-12">
+                  <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Authentic Handcrafted Kitchenware</h2>
+                </div>
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-white text-black font-semibold py-2 px-4 rounded hover:bg-gray-100 transition-colors mt-4">Explore Collection</span>
+                </div>
+              </Link>
 
               {/* Right Side Banner (Premium Slideshow) */}
               <div className="lg:col-span-4 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block bg-slate-900" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
@@ -128,18 +128,16 @@ export default function HomePage() {
                   <Link
                     key={idx}
                     href={slide.link}
-                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                      idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-                    }`}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                      }`}
                   >
                     <Image
-                        src={slide.image}
-                        alt={slide.title}
-                        fill
-                        className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${
-                          idx === currentSlide ? 'scale-105' : 'scale-100'
+                      src={slide.image}
+                      alt={slide.title}
+                      fill
+                      className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentSlide ? 'scale-105' : 'scale-100'
                         }`}
-                      />
+                    />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/80" />
                     <div className="absolute inset-0 flex flex-col items-center justify-end p-8 text-center pb-12">
                       <span className="text-white/90 text-xs font-semibold tracking-[0.2em] uppercase mb-2">
@@ -154,16 +152,15 @@ export default function HomePage() {
                     </div>
                   </Link>
                 ))}
-                
+
                 {/* Navigation Dots */}
                 <div className="absolute bottom-5 left-0 right-0 z-20 flex justify-center gap-2">
                   {promoSlides.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentSlide(idx)}
-                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                        idx === currentSlide ? 'bg-white w-5' : 'bg-white/40 hover:bg-white/80'
-                      }`}
+                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === currentSlide ? 'bg-white w-5' : 'bg-white/40 hover:bg-white/80'
+                        }`}
                       aria-label={`Go to slide ${idx + 1}`}
                     />
                   ))}
@@ -219,20 +216,20 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent" />
                 <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
-                  <h4 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">Modern Kitchen<br/>Collection &rarr;</h4>
+                  <h4 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">Modern Kitchen<br />Collection &rarr;</h4>
                 </div>
               </Link>
 
               <Link href="/products?category=dining" className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group rounded-sm block bg-slate-100">
                 <Image
-                      src="/images/home/durable-cookware-banner-wide.png"
-                      alt="Premium Dining Sets"
-                      fill
-                      className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                  src="/images/home/durable-cookware-banner-wide.png"
+                  alt="Premium Dining Sets"
+                  fill
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
                 <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
-                  <h4 className="text-lg md:text-xl font-bold text-white leading-tight">Premium Dining &amp;<br/>Serveware &rarr;</h4>
+                  <h4 className="text-lg md:text-xl font-bold text-white leading-tight">Premium Dining &amp;<br />Serveware &rarr;</h4>
                 </div>
               </Link>
 
@@ -245,7 +242,7 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent" />
                 <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
-                  <h4 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">Bring Style Into<br/>Everyday Living &rarr;</h4>
+                  <h4 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">Bring Style Into<br />Everyday Living &rarr;</h4>
                 </div>
               </Link>
             </div>
@@ -278,7 +275,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── ARTISAN STORY SECTION ─────────────────────────────────────── */}
+        {/* ── Kitchenbay STORY SECTION ─────────────────────────────────────── */}
         <section className="bg-[--color-brand-top-bar] text-[--color-brand-bg] py-24">
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-center gap-16">
@@ -288,7 +285,7 @@ export default function HomePage() {
                   Reviving Ancient Kitchen Wisdom
                 </h2>
                 <p className="text-lg text-[--color-brand-bg]/80 mb-6 leading-relaxed">
-                  We journey to traditional clusters across India, from the Kansa makers of West Bengal to the cast-iron artisans of Tamil Nadu. By bringing their authentic, handcrafted cookware directly to your home, we help preserve generational skills that modern manufacturing has left behind.
+                  We journey to traditional clusters across India, from the Kansa makers of West Bengal to the cast-iron Kitchenbays of Tamil Nadu. By bringing their authentic, handcrafted cookware directly to your home, we help preserve generational skills that modern manufacturing has left behind.
                 </p>
                 <p className="text-lg text-[--color-brand-bg]/80 mb-10 leading-relaxed">
                   Every utensil is forged with purpose—designed not just to cook food, but to nourish the body according to timeless Ayurvedic principles.
@@ -299,7 +296,7 @@ export default function HomePage() {
               </div>
               <div className="flex-1 relative w-full aspect-square max-w-lg mx-auto lg:max-w-none">
                 <Image
-                  src="/artisan_kitchenware.png"
+                  src="/Kitchenbay_kitchenware.png"
                   alt="Traditional Indian handcrafted kitchenware"
                   fill
                   className="object-cover rounded-t-full shadow-2xl"
@@ -377,7 +374,7 @@ export default function HomePage() {
         {/* ── THE JOURNAL / BLOG ────────────────────────────────────────── */}
         <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <span className="text-[--color-brand-accent] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">The Artisan Journal</span>
+            <span className="text-[--color-brand-accent] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">The Kitchenbay Journal</span>
             <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Wisdom &amp; Stories</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -397,31 +394,31 @@ export default function HomePage() {
         <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_2.5fr] gap-8">
             <div className="bg-[#F8F9FE] rounded-sm p-12 flex flex-col justify-center relative overflow-hidden border border-[#EBEFFA]">
-               <Quote size={120} className="absolute top-[-20px] left-[-20px] text-blue-50 opacity-50" />
-               <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[#1E3A8A] mb-4 relative z-10 leading-tight">
-                 See Why<br/>They Love Us
-               </h2>
-               <p className="text-sm font-semibold uppercase tracking-widest text-[#475569] relative z-10">Trusted By Over 11 Million Customers</p>
-               <Quote size={120} className="absolute bottom-[-20px] right-[-20px] text-blue-50 opacity-50 rotate-180" />
+              <Quote size={120} className="absolute top-[-20px] left-[-20px] text-blue-50 opacity-50" />
+              <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[#1E3A8A] mb-4 relative z-10 leading-tight">
+                See Why<br />They Love Us
+              </h2>
+              <p className="text-sm font-semibold uppercase tracking-widest text-[#475569] relative z-10">Trusted By Over 11 Million Customers</p>
+              <Quote size={120} className="absolute bottom-[-20px] right-[-20px] text-blue-50 opacity-50 rotate-180" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               {testimonials.map((t, idx) => (
-                 <div key={idx} className="bg-white p-6 rounded-sm shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-[--color-brand-border] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex items-start gap-5">
-                       <Image src={t.avatar} alt={t.name} width={50} height={50} className="rounded-full object-cover shrink-0 shadow-sm border border-gray-100" />
-                       <div className="flex-1">
-                         <p className="text-[13px] text-gray-600 italic mb-3 leading-relaxed">"{t.text}"</p>
-                         <h4 className="text-[13px] font-bold text-gray-900">- {t.name}</h4>
-                         <div className="flex text-[--color-brand-accent-yellow] mt-1.5 gap-0.5">
-                           {[...Array(t.rating)].map((_, i) => <Star key={i} size={11} fill="currentColor" />)}
-                         </div>
-                       </div>
-                       <div className="shrink-0">
-                          <Image src={t.productImg} alt="Product" width={64} height={64} className="rounded-sm object-cover border border-gray-100 shadow-sm" />
-                       </div>
+              {testimonials.map((t, idx) => (
+                <div key={idx} className="bg-white p-6 rounded-sm shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-[--color-brand-border] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+                  <div className="flex items-start gap-5">
+                    <Image src={t.avatar} alt={t.name} width={50} height={50} className="rounded-full object-cover shrink-0 shadow-sm border border-gray-100" />
+                    <div className="flex-1">
+                      <p className="text-[13px] text-gray-600 italic mb-3 leading-relaxed">"{t.text}"</p>
+                      <h4 className="text-[13px] font-bold text-gray-900">- {t.name}</h4>
+                      <div className="flex text-[--color-brand-accent-yellow] mt-1.5 gap-0.5">
+                        {[...Array(t.rating)].map((_, i) => <Star key={i} size={11} fill="currentColor" />)}
+                      </div>
+                    </div>
+                    <div className="shrink-0">
+                      <Image src={t.productImg} alt="Product" width={64} height={64} className="rounded-sm object-cover border border-gray-100 shadow-sm" />
                     </div>
                   </div>
-               ))}
+                </div>
+              ))}
             </div>
           </div>
         </section>

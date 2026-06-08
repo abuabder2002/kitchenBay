@@ -587,8 +587,8 @@ export default function CheckoutPage() {
           {timerActive && (
             <div
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-bold animate-pulse ${countdown <= 60
-                  ? 'bg-red-50 border-red-200 text-red-700'
-                  : 'bg-amber-50 border-amber-200 text-amber-700'
+                ? 'bg-red-50 border-red-200 text-red-700'
+                : 'bg-amber-50 border-amber-200 text-amber-700'
                 }`}
             >
               <Timer size={16} />
@@ -664,8 +664,8 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setPaymentMethod('RAZORPAY')}
                     className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'RAZORPAY'
-                        ? 'border-blue-600 bg-blue-50/50'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                      ? 'border-blue-600 bg-blue-50/50'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                   >
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'RAZORPAY' ? 'border-blue-600' : 'border-gray-300'}`}>
@@ -684,8 +684,8 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setPaymentMethod('COD')}
                     className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'COD'
-                        ? 'border-blue-600 bg-blue-50/50'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                      ? 'border-blue-600 bg-blue-50/50'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                   >
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'COD' ? 'border-blue-600' : 'border-gray-300'}`}>
@@ -804,7 +804,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-gray-500">
                     <Award size={12} className="text-blue-500 shrink-0" />
-                    <span>Authorized artisan craft products with standard warranty</span>
+                    <span>Authorized Kitchenbay craft products with standard warranty</span>
                   </div>
                 </div>
               </div>

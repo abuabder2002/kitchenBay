@@ -67,12 +67,12 @@ function getProductImage(subcategory, index) {
 }
 
 function getProductDescription(name, subcategory) {
-  return `Premium handcrafted ${name} from our exclusive ${subcategory} collection. Created by master artisans using traditional techniques combined with modern safety and quality standards. Durable, functional, and rich with cultural heritage. Perfect for daily kitchen use or festive decor.`;
+  return `Premium handcrafted ${name} from our exclusive ${subcategory} collection. Created by master Kitchenbays using traditional techniques combined with modern safety and quality standards. Durable, functional, and rich with cultural heritage. Perfect for daily kitchen use or festive decor.`;
 }
 
 function parsePrices(priceStr) {
   if (!priceStr) return { originalPrice: 0, salePrice: 0 };
-  
+
   const matches = priceStr.match(/₹\s*([0-9,]+(?:\.[0-9]+)?)/g);
   if (!matches) {
     return { originalPrice: 0, salePrice: 0 };
@@ -90,7 +90,7 @@ function parsePrices(priceStr) {
     const p = cleanNum(matches[0]);
     return { originalPrice: p, salePrice: p };
   }
-  
+
   return { originalPrice: 0, salePrice: 0 };
 }
 

@@ -5,9 +5,9 @@ Date:   Fri May 29 22:06:00 2026 +0530
     Navbar UI update
 
 PROJECT_STATUS.md
-public/artisan_kitchenware.png
-public/artisan_kitchenware_hero.png
-public/artisan_making_cookware.png
+public/Kitchenbay_kitchenware.png
+public/Kitchenbay_kitchenware_hero.png
+public/Kitchenbay_making_cookware.png
 public/journal_brass_energy.png
 public/journal_cast_iron.png
 src/app/globals.css

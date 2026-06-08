@@ -1,5 +1,5 @@
 # Technical Stack & Design Architecture Blueprint
-## E-commerce Storefront: Artisan Craft / Kitchenbay
+## E-commerce Storefront: Kitchenbay Craft / Kitchenbay
 
 This document provides a highly detailed explanation of the website's tech stack, directory structure, data models, state flows, and design system. **You can copy-paste this document directly into another LLM** to teach it the application context, making it extremely easy to request design changes later.
 

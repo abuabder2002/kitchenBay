@@ -56,14 +56,26 @@ export async function POST(req: NextRequest) {
     const orderItems: { productId: string; quantity: number; price: number }[] = [];
 
     for (const item of items) {
-      const product = catalogMap.get(item.productId);
-      if (!product) {
-        return NextResponse.json(
-          { error: `Product "${item.productId}" not found in catalog` },
-          { status: 400 }
-        );
+      let product = catalogMap.get(item.productId);
+      let unitPrice = 0;
+
+      if (product) {
+        unitPrice = product.finalPrice;
+      } else {
+        // Fallback to database product
+        const dbProduct = await prisma.product.findUnique({ where: { id: item.productId } });
+        if (dbProduct) {
+          const basePrice = dbProduct.price / 100;
+          const gstAmount = Math.round(basePrice * dbProduct.gstPercent / 100);
+          unitPrice = basePrice + gstAmount;
+        } else {
+          return NextResponse.json(
+            { error: `Product "${item.productId}" not found in catalog` },
+            { status: 400 }
+          );
+        }
       }
-      const unitPrice = product.finalPrice; // What the customer pays (rupees)
+
       totalRupees += unitPrice * item.quantity;
       orderItems.push({
         productId: item.productId,

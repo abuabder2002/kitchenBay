@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { Product, products } from './mockData';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef, useState } from 'react';
+import { Product } from './mockData';
 import { useAuth } from './authContext';
+import { useProducts } from './productsContext';
 
 interface WishlistState {
   items: Product[];
@@ -52,72 +53,121 @@ interface WishlistContextType {
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'Kitchenbay_wishlist_guest';
+
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
+  const { products } = useProducts();
   const [state, dispatch] = useReducer(wishlistReducer, { items: [], loadingItems: new Set<string>() });
+  const [serverData, setServerData] = useState<any[] | null>(null);
 
-  const storageKey = 'Kitchenbay_wishlist_guest';
+  // Track whether we have loaded from localStorage yet
+  const hasHydrated = useRef(false);
+  const didServerSync = useRef(false);
 
+  // ── STEP 1: On client mount, load from localStorage ──
   useEffect(() => {
-    // Unconditionally load from localStorage first for resilience
-    const local = localStorage.getItem(storageKey);
-    const localItems = local ? JSON.parse(local) : [];
-    
-    if (localItems.length > 0) {
-      try {
-        dispatch({ type: 'SET_ITEMS', items: localItems });
-      } catch (e) {
-        console.error(e);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          dispatch({ type: 'SET_ITEMS', items: parsed });
+        }
       }
+    } catch {
+      // corrupted — ignore
     }
+    // Mark hydration complete — now future saves are safe
+    hasHydrated.current = true;
+  }, []); // runs once on client mount
 
-    if (currentUser) {
-      // Sync from server
-      fetch('/api/wishlist')
-        .then(res => {
-          if (!res.ok) throw new Error('API failed');
-          return res.json();
-        })
-        .then(data => {
-          if (Array.isArray(data)) {
-            const mapped = data.map((d: any) => {
-              if (d && d.name && d.price !== undefined) {
-                return d as Product;
-              }
-              if (d && d.productId) {
-                return products.find(p => p.id === d.productId);
-              }
-              return null;
-            }).filter(Boolean) as Product[];
+  // ── STEP 2: Save to localStorage on every state change, but SKIP the initial empty state ──
+  useEffect(() => {
+    if (!hasHydrated.current) return; // Don't save until we've loaded
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+    } catch {
+      // quota exceeded — ignore
+    }
+  }, [state.items]);
 
-            // Also sync any local items up to the cloud
-            const itemsToSync = localItems.filter(
-              (localItem: Product) => !mapped.some(m => m.id === localItem.id)
-            );
+  // ── STEP 3: Server sync when user logs in ──
+  useEffect(() => {
+    if (!currentUser) {
+      didServerSync.current = false;
+      return;
+    }
+    if (didServerSync.current) return;
+    didServerSync.current = true;
 
-            itemsToSync.forEach((item: Product) => {
+    // Read fresh from localStorage to guarantee we have latest data
+    let localItems: Product[] = [];
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) localItems = parsed;
+      }
+    } catch { /* ignore */ }
+
+    fetch('/api/wishlist')
+      .then(res => {
+        if (!res.ok) throw new Error('Wishlist sync failed');
+        return res.json();
+      })
+      .then(data => {
+        if (!Array.isArray(data) || data.length === 0) {
+          // Server returned empty — upload local items if any, keep local state
+          if (localItems.length > 0) {
+            localItems.forEach((item: Product) => {
               fetch('/api/wishlist', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId: item.id })
-              }).catch(console.error);
-              mapped.push(item);
+                body: JSON.stringify({ productId: item.id }),
+              }).catch(() => {});
             });
-
-            dispatch({ type: 'SET_ITEMS', items: mapped });
           }
-        })
-        .catch(err => {
-          console.error('Failed to sync initial wishlist:', err);
-          // Fallback to local storage is already handled by the unconditional load above
-        });
-    }
+          return;
+        }
+
+        // Map server data back to Product objects but defer to the new useEffect 
+        // to ensure we have the fully loaded products from the DB
+        setServerData(data);
+      })
+      .catch(err => {
+        console.warn('[Wishlist] Server sync failed, using local data:', err.message);
+      });
   }, [currentUser]);
 
-  // Save to localStorage when items change unconditionally
+  // ── STEP 4: Map server data when products finish loading ──
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(state.items));
-  }, [state.items]);
+    if (!serverData) return;
+
+    const localItems = state.items;
+
+    const mapped = serverData.map((d: { productId?: string; id?: string; name?: string; price?: number }) => {
+      if (d && d.name && d.price !== undefined) {
+        return d as unknown as Product;
+      }
+      const pid = d.productId || d.id;
+      if (pid) return products.find(p => p.id === pid);
+      return null;
+    }).filter((p): p is Product => !!p);
+
+    const serverIds = new Set(mapped.map(p => p.id));
+    const localOnly = localItems.filter(item => !serverIds.has(item.id));
+
+    // Wait! Only upload localOnly items ONCE. We shouldn't do it every time `products` updates.
+    // However, `serverData` is only set once per login, so this effect shouldn't re-run too many times with new local items.
+    // To be safe, we only re-run mapping, but we don't need to re-upload.
+    
+    const merged = [...mapped, ...localOnly];
+
+    if (merged.length > 0) {
+      dispatch({ type: 'SET_ITEMS', items: merged });
+    }
+  }, [serverData, products]);
 
   const addItem = useCallback(async (product: Product) => {
     dispatch({ type: 'SET_LOADING', productId: product.id, isLoading: true });
@@ -127,11 +177,11 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         await fetch('/api/wishlist', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId: product.id })
+          body: JSON.stringify({ productId: product.id }),
         });
       }
     } catch (err) {
-      console.error('Failed to sync wishlist with server:', err);
+      console.warn('[Wishlist] Add item sync failed:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', productId: product.id, isLoading: false });
     }
@@ -142,16 +192,14 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     dispatch({ type: 'REMOVE_ITEM', productId });
     try {
       if (currentUser) {
-        await fetch(`/api/wishlist?productId=${productId}`, {
-          method: 'DELETE',
-        });
+        await fetch(`/api/wishlist?productId=${productId}`, { method: 'DELETE' });
       }
     } catch (err) {
-      console.error('Failed to sync wishlist removal with server:', err);
+      console.warn('[Wishlist] Remove item sync failed:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', productId, isLoading: false });
     }
-  }, [currentUser, state.items]);
+  }, [currentUser]);
 
   const clearWishlist = useCallback(async () => {
     dispatch({ type: 'CLEAR_WISHLIST' });
@@ -160,12 +208,18 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         await fetch('/api/wishlist', { method: 'DELETE' });
       }
     } catch (err) {
-      console.error('Failed to clear wishlist on server:', err);
+      console.warn('[Wishlist] Clear sync failed:', err);
     }
   }, [currentUser]);
 
-  const isInWishlist = useCallback((productId: string) => state.items.some(i => i.id === productId), [state.items]);
-  const isItemLoading = useCallback((productId: string) => state.loadingItems.has(productId), [state.loadingItems]);
+  const isInWishlist = useCallback(
+    (productId: string) => state.items.some(i => i.id === productId),
+    [state.items]
+  );
+  const isItemLoading = useCallback(
+    (productId: string) => state.loadingItems.has(productId),
+    [state.loadingItems]
+  );
 
   return (
     <WishlistContext.Provider value={{ items: state.items, addItem, removeItem, clearWishlist, isInWishlist, isItemLoading }}>

@@ -8,21 +8,21 @@ import { AuthProvider } from '@/lib/authContext';
 import { OrdersProvider } from '@/lib/ordersContext';
 import { NextAuthProvider } from '@/components/Providers';
 
-const playfair = Playfair_Display({ 
-  weight: ['400', '500', '600', '700', '800', '900'], 
-  subsets: ['latin'], 
-  variable: '--font-heading' 
+const playfair = Playfair_Display({
+  weight: ['400', '500', '600', '700', '800', '900'],
+  subsets: ['latin'],
+  variable: '--font-heading'
 });
 
-const nunitoSans = Nunito_Sans({ 
-  weight: ['300', '400', '600', '700'], 
-  subsets: ['latin'], 
-  variable: '--font-body' 
+const nunitoSans = Nunito_Sans({
+  weight: ['300', '400', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-body'
 });
 
 export const metadata: Metadata = {
-  title: 'Artisan Craft — Premium Handcrafted Home Decor',
-  description: 'Ethically sourced. Artisan-made. Authentically Indian.',
+  title: 'Kitchenbay Craft — Premium Handcrafted Home Decor',
+  description: 'Ethically sourced. Kitchenbay-made. Authentically Indian.',
 };
 
 export default function RootLayout({
@@ -36,13 +36,13 @@ export default function RootLayout({
         <NextAuthProvider>
           <AuthProvider>
             <ProductsProvider>
-            <WishlistProvider>
-              <CartProvider>
-                <OrdersProvider>{children}</OrdersProvider>
-              </CartProvider>
-            </WishlistProvider>
-          </ProductsProvider>
-        </AuthProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  <OrdersProvider>{children}</OrdersProvider>
+                </CartProvider>
+              </WishlistProvider>
+            </ProductsProvider>
+          </AuthProvider>
         </NextAuthProvider>
       </body>
     </html>

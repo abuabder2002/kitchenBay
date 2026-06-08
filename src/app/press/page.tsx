@@ -7,17 +7,17 @@ import { Newspaper, Download } from 'lucide-react';
 
 export default function PressPage() {
   const pressReleases = [
-    { date: 'May 15, 2026', title: 'ArtisanCraft Crosses 50,000 Customers Milestone', desc: 'ArtisanCraft, India\'s leading handcrafted homeware platform, announced today that it has surpassed 50,000 happy customers, reflecting growing consumer demand for authentic artisan products.' },
-    { date: 'March 2, 2026', title: 'ArtisanCraft Partners with 200+ New Artisans from Northeast India', desc: 'In a landmark expansion, ArtisanCraft onboarded over 200 artisans from the states of Assam, Manipur, and Meghalaya, bringing rare bamboo and cane craft to a nationwide audience.' },
-    { date: 'January 10, 2026', title: 'ArtisanCraft Wins "Best D2C Brand" at India Retail Excellence Awards 2026', desc: 'ArtisanCraft was honoured with the prestigious "Best D2C Brand" award at the India Retail Excellence Awards ceremony held in Mumbai.' },
-    { date: 'October 20, 2025', title: 'ArtisanCraft Launches Express Delivery in 15 Tier-1 Cities', desc: 'Following strong demand, ArtisanCraft launched same-day and next-day delivery services across Delhi, Mumbai, Bangalore, Chennai, Hyderabad, Pune, and 9 other major cities.' },
+    { date: 'May 15, 2026', title: 'KitchenbayCraft Crosses 50,000 Customers Milestone', desc: 'KitchenbayCraft, India\'s leading handcrafted homeware platform, announced today that it has surpassed 50,000 happy customers, reflecting growing consumer demand for authentic Kitchenbay products.' },
+    { date: 'March 2, 2026', title: 'KitchenbayCraft Partners with 200+ New Kitchenbays from Northeast India', desc: 'In a landmark expansion, KitchenbayCraft onboarded over 200 Kitchenbays from the states of Assam, Manipur, and Meghalaya, bringing rare bamboo and cane craft to a nationwide audience.' },
+    { date: 'January 10, 2026', title: 'KitchenbayCraft Wins "Best D2C Brand" at India Retail Excellence Awards 2026', desc: 'KitchenbayCraft was honoured with the prestigious "Best D2C Brand" award at the India Retail Excellence Awards ceremony held in Mumbai.' },
+    { date: 'October 20, 2025', title: 'KitchenbayCraft Launches Express Delivery in 15 Tier-1 Cities', desc: 'Following strong demand, KitchenbayCraft launched same-day and next-day delivery services across Delhi, Mumbai, Bangalore, Chennai, Hyderabad, Pune, and 9 other major cities.' },
   ];
 
   const mediaMentions = [
-    { outlet: 'The Economic Times', quote: '"ArtisanCraft is redefining how urban India connects with its artisan heritage."' },
-    { outlet: 'YourStory', quote: '"A startup that truly puts the artisan first — and it shows in every product."' },
+    { outlet: 'The Economic Times', quote: '"KitchenbayCraft is redefining how urban India connects with its Kitchenbay heritage."' },
+    { outlet: 'YourStory', quote: '"A startup that truly puts the Kitchenbay first — and it shows in every product."' },
     { outlet: 'Vogue India', quote: '"The go-to destination for curated, authentic Indian homeware."' },
-    { outlet: 'Inc42', quote: '"ArtisanCraft\'s growth story is one of the most inspiring in India\'s D2C landscape."' },
+    { outlet: 'Inc42', quote: '"KitchenbayCraft\'s growth story is one of the most inspiring in India\'s D2C landscape."' },
   ];
 
   return (
@@ -39,7 +39,7 @@ export default function PressPage() {
               <p className="text-gray-600">For press inquiries, interviews, and media kits, please reach out to our PR team.</p>
             </div>
             <div className="shrink-0 space-y-2">
-              <p className="text-sm font-semibold text-gray-700">📧 <a href="mailto:press@artisancraft.in" className="text-blue-600 hover:underline">press@artisancraft.in</a></p>
+              <p className="text-sm font-semibold text-gray-700">📧 <a href="mailto:press@Kitchenbaycraft.in" className="text-blue-600 hover:underline">press@Kitchenbaycraft.in</a></p>
               <button suppressHydrationWarning className="flex items-center gap-2 bg-blue-950 text-white font-semibold px-5 py-2.5 rounded-full hover:bg-blue-900 transition-colors text-sm">
                 <Download size={16} /> Download Media Kit
               </button>

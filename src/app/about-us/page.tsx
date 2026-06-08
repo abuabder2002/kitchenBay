@@ -9,17 +9,17 @@ import JourneyPreview from '@/components/JourneyPreview';
 
 export default function AboutUsPage() {
   const stats = [
-    { value: '5,000+', label: 'Artisans Empowered' },
+    { value: '5,000+', label: 'Kitchenbays Empowered' },
     { value: '50,000+', label: 'Happy Customers' },
     { value: '28', label: 'States Reached' },
     { value: '200+', label: 'Unique Products' },
   ];
 
   const values = [
-    { icon: <Award size={28} className="text-yellow-500" />, title: 'Authentic Craftsmanship', desc: 'Every product is made by certified artisans using traditional methods passed down through generations.' },
+    { icon: <Award size={28} className="text-yellow-500" />, title: 'Authentic Craftsmanship', desc: 'Every product is made by certified Kitchenbays using traditional methods passed down through generations.' },
     { icon: <Leaf size={28} className="text-green-600" />, title: 'Sustainable Materials', desc: 'We use only natural, eco-friendly materials — clay, brass, cast iron, copper, and soapstone.' },
-    { icon: <Users size={28} className="text-blue-600" />, title: 'Community First', desc: 'Our platform directly empowers rural artisan communities by ensuring fair wages and ethical trade.' },
-    { icon: <Heart size={28} className="text-red-500" />, title: 'Made With Love', desc: 'Each item carries the soul and story of the artisan who made it. We\'re proud to share those stories with you.' },
+    { icon: <Users size={28} className="text-blue-600" />, title: 'Community First', desc: 'Our platform directly empowers rural Kitchenbay communities by ensuring fair wages and ethical trade.' },
+    { icon: <Heart size={28} className="text-red-500" />, title: 'Made With Love', desc: 'Each item carries the soul and story of the Kitchenbay who made it. We\'re proud to share those stories with you.' },
   ];
 
   return (
@@ -35,9 +35,9 @@ export default function AboutUsPage() {
           <div className="absolute inset-0 opacity-20 bg-[url('/images/marketing/everyday_cooking_collection.jpg')] bg-cover bg-center" />
           <div className="relative max-w-4xl mx-auto text-center">
             <p className="text-yellow-400 font-semibold uppercase tracking-widest text-sm mb-4">Our Story</p>
-            <h1 className="text-5xl font-bold font-[family-name:var(--font-heading)] mb-6">Celebrating India&apos;s<br />Artisan Heritage</h1>
+            <h1 className="text-5xl font-bold font-[family-name:var(--font-heading)] mb-6">Celebrating India&apos;s<br />Kitchenbay Heritage</h1>
             <p className="text-blue-200 text-xl max-w-2xl mx-auto leading-relaxed">
-              ArtisanCraft was born from a simple belief — that the finest kitchenware and home décor isn&apos;t manufactured in factories, but crafted by hand, with skill and soul.
+              KitchenbayCraft was born from a simple belief — that the finest kitchenware and home décor isn&apos;t manufactured in factories, but crafted by hand, with skill and soul.
             </p>
           </div>
         </div>

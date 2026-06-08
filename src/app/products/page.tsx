@@ -212,12 +212,12 @@ function ProductsContent() {
   return (
     <div className="min-h-screen flex flex-col bg-[--color-brand-bg] font-sans">
       <Navbar />
-      
+
       {/* Page Header */}
       <div className="bg-[--color-brand-card] py-20 border-b border-[--color-brand-border] text-center">
         <span className="text-[--color-brand-accent] text-sm font-semibold tracking-[0.2em] uppercase mb-4 block">The Collection</span>
-        <h1 className="font-[family-name:var(--font-heading)] text-5xl font-bold text-[--color-brand-text] mb-4">Artisan Crafted</h1>
-        <p className="text-[--color-brand-muted] max-w-2xl mx-auto text-lg">Authentic materials shaped by generations of master artisans.</p>
+        <h1 className="font-[family-name:var(--font-heading)] text-5xl font-bold text-[--color-brand-text] mb-4">Kitchenbay Crafted</h1>
+        <p className="text-[--color-brand-muted] max-w-2xl mx-auto text-lg">Authentic materials shaped by generations of master Kitchenbays.</p>
       </div>
 
       <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-[1600px]">
@@ -238,7 +238,7 @@ function ProductsContent() {
               </select>
               <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-[--color-brand-text] pointer-events-none" />
             </div>
-            
+
             <button
               onClick={() => setFiltersOpen(!filtersOpen)}
               className="md:hidden flex items-center gap-2 text-[--color-brand-text] text-sm font-medium px-4 py-2 border border-[--color-brand-text] transition-colors hover:bg-[--color-brand-text] hover:text-white uppercase tracking-widest"
@@ -250,7 +250,7 @@ function ProductsContent() {
         </div>
 
         <div className="flex flex-col md:flex-row gap-12">
-          
+
           {/* Left Sidebar (Desktop) */}
           <aside className="hidden md:block w-64 flex-shrink-0">
             {hasFilters && (
@@ -298,7 +298,7 @@ function ProductsContent() {
                   <X className="text-[--color-brand-muted]" size={24} />
                 </div>
                 <p className="font-[family-name:var(--font-heading)] text-3xl font-bold text-[--color-brand-text] mb-4">Nothing Found</p>
-                <p className="text-[--color-brand-muted] max-w-md text-lg">We couldn&apos;t find any artisans works matching your criteria.</p>
+                <p className="text-[--color-brand-muted] max-w-md text-lg">We couldn&apos;t find any Kitchenbays works matching your criteria.</p>
                 <button onClick={clearFilters} className="mt-8 bg-transparent border border-[--color-brand-text] text-[--color-brand-text] px-8 py-3 text-sm font-bold uppercase tracking-widest hover:bg-[--color-brand-text] hover:text-[--color-brand-bg] transition-colors">
                   Clear Filters
                 </button>

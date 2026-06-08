@@ -43,7 +43,7 @@ interface OrdersContextType {
 
 const OrdersContext = createContext<OrdersContextType | null>(null);
 
-const STORAGE_KEY = 'artisancraft_orders';
+const STORAGE_KEY = 'Kitchenbaycraft_orders';
 
 function loadFromStorage(): Order[] {
   if (typeof window === 'undefined') return [];
@@ -58,7 +58,7 @@ function loadFromStorage(): Order[] {
 function saveToStorage(orders: Order[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
-  } catch {}
+  } catch { }
 }
 
 function generateOrderId(): string {
@@ -83,7 +83,7 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
                 return {
                   productId: i.productId,
                   name: prod ? prod.name : i.productId,
-                  image: prod ? prod.image : '', 
+                  image: prod ? prod.image : '',
                   quantity: i.quantity,
                   price: i.price,
                 };

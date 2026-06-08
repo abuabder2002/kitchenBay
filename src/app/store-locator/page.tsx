@@ -10,7 +10,7 @@ export default function StoreLocatorPage() {
   const stores = [
     {
       id: 1,
-      name: "ArtisanCraft Flagship - Delhi",
+      name: "KitchenbayCraft Flagship - Delhi",
       address: "123 Heritage Marg, Connaught Place, New Delhi 110001",
       phone: "+91 11 2345 6789",
       hours: "Mon-Sun: 10:00 AM - 9:00 PM",
@@ -18,15 +18,15 @@ export default function StoreLocatorPage() {
     },
     {
       id: 2,
-      name: "ArtisanCraft Studio - Mumbai",
-      address: "45 Artisan Avenue, Kala Ghoda, Mumbai 400001",
+      name: "KitchenbayCraft Studio - Mumbai",
+      address: "45 Kitchenbay Avenue, Kala Ghoda, Mumbai 400001",
       phone: "+91 22 9876 5432",
       hours: "Mon-Sat: 10:30 AM - 8:30 PM",
       mapsLink: "https://maps.app.goo.gl/FZV6UQXnDwivVp1o9",
     },
     {
       id: 3,
-      name: "ArtisanCraft Experience - Bangalore",
+      name: "KitchenbayCraft Experience - Bangalore",
       address: "78 Craft Road, Indiranagar, Bengaluru 560038",
       phone: "+91 80 1234 5678",
       hours: "Mon-Sun: 11:00 AM - 9:30 PM",
@@ -44,7 +44,7 @@ export default function StoreLocatorPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-4">Find a Store</h1>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            Experience our handcrafted collections in person. Visit one of our experiential studios to feel the authentic quality of our artisan-made kitchenware and décor.
+            Experience our handcrafted collections in person. Visit one of our experiential studios to feel the authentic quality of our Kitchenbay-made kitchenware and décor.
           </p>
         </div>
 
@@ -131,7 +131,7 @@ export default function StoreLocatorPage() {
             {/* Iframe */}
             <div className="flex-1 relative w-full" style={{ minHeight: '500px' }}>
               <iframe
-                title="ArtisanCraft Store Location"
+                title="KitchenbayCraft Store Location"
                 src={`https://maps.google.com/maps?q=${encodeURIComponent(activeStore.address)}&output=embed&z=15`}
                 width="100%"
                 height="100%"

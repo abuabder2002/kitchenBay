@@ -29,7 +29,7 @@ export default function ProductDetailPage() {
   const [added, setAdded] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   
-  const [activeTab, setActiveTab] = useState<'story' | 'artisan' | 'care'>('story');
+  const [activeTab, setActiveTab] = useState<'story' | 'Kitchenbay' | 'care'>('story');
 
   if (!product) return notFound();
 
@@ -260,12 +260,12 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* ── Tabs Section: Story / Artisan / Care ──────────────────────── */}
+        {/* ── Tabs Section: Story / Kitchenbay / Care ──────────────────────── */}
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 py-24">
            <div className="flex items-center justify-center gap-8 md:gap-16 border-b border-[--color-brand-border] mb-12">
               {[
                 { id: 'story', label: 'The Story' },
-                { id: 'artisan', label: 'The Maker' },
+                { id: 'Kitchenbay', label: 'The Maker' },
                 { id: 'care', label: 'Care & Use' }
               ].map(tab => (
                  <button 
@@ -288,9 +288,9 @@ export default function ProductDetailPage() {
                   Rooted in centuries-old traditions, this {product.material} piece is shaped exactly as it was during the eras of ancient Indian kingdoms. The craft has survived through generations, passing from father to son, preserving not just a technique, but a way of life that celebrates slow, intentional creation.
                 </p>
               )}
-              {activeTab === 'artisan' && (
+              {activeTab === 'Kitchenbay' && (
                 <p>
-                  Crafted by master artisans in rural clusters who have dedicated their entire lives to perfecting the art of working with {product.material}. Every hammer mark and curve is a testament to human hands. By bringing this to your home, you directly support their livelihood and help keep this dying art alive.
+                  Crafted by master Kitchenbays in rural clusters who have dedicated their entire lives to perfecting the art of working with {product.material}. Every hammer mark and curve is a testament to human hands. By bringing this to your home, you directly support their livelihood and help keep this dying art alive.
                 </p>
               )}
               {activeTab === 'care' && (

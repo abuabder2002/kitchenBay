@@ -12,7 +12,7 @@ export default function ReturnsPage() {
   ];
 
   const faqs = [
-    { q: 'How many days do I have to return a product?', a: '7 days from the date of delivery for most items. Festive décor and limited-edition artisan pieces have a 3-day return window.' },
+    { q: 'How many days do I have to return a product?', a: '7 days from the date of delivery for most items. Festive décor and limited-edition Kitchenbay pieces have a 3-day return window.' },
     { q: 'Are handcrafted items returnable?', a: 'Yes, but minor variations in colour, texture, or finish are inherent to handmade products and are not considered defects. Only items with manufacturing defects qualify for return.' },
     { q: 'What items are non-returnable?', a: 'Perishable goods, customised/personalised items, items used or damaged by the customer, and items without original packaging are not eligible for return.' },
     { q: 'How long does the refund take?', a: 'Refunds are processed within 2-3 business days of receiving the returned item. It may take an additional 3-5 business days to reflect in your account.' },
@@ -26,7 +26,7 @@ export default function ReturnsPage() {
         <div className="bg-blue-950 text-white py-16 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <h1 className="text-4xl font-bold font-[family-name:var(--font-heading)] mb-4">Returns & Refunds</h1>
-            <p className="text-blue-200 text-lg max-w-2xl mx-auto">We want you to love every ArtisanCraft purchase. If something isn&apos;t right, we&apos;ll make it right.</p>
+            <p className="text-blue-200 text-lg max-w-2xl mx-auto">We want you to love every KitchenbayCraft purchase. If something isn&apos;t right, we&apos;ll make it right.</p>
           </div>
         </div>
 

@@ -44,7 +44,7 @@ function FeaturedVideoCard({ video }: { video: TraditionVideo }) {
     const el = videoRef.current;
     if (!el || !visible) return;
     el.muted = true;
-    el.play().then(() => setPlaying(true)).catch(() => {});
+    el.play().then(() => setPlaying(true)).catch(() => { });
   }, [visible]);
 
   const toggleMute = (e: React.MouseEvent) => {
@@ -165,7 +165,7 @@ function SupportingVideoCard({ video, delay = 0 }: { video: TraditionVideo; dela
       setIsPlaying(false);
     } else {
       el.muted = true;
-      el.play().then(() => setIsPlaying(true)).catch(() => {});
+      el.play().then(() => setIsPlaying(true)).catch(() => { });
     }
   }, [isPlaying]);
 
@@ -326,7 +326,7 @@ export default function TraditionVideoSection() {
           </h2>
 
           <p className="text-base md:text-lg max-w-2xl mx-auto leading-relaxed" style={{ color: '#8C7B6D' }}>
-            From ancient artisan workshops to your kitchen — witness the craft, passion and heritage
+            From ancient Kitchenbay workshops to your kitchen — witness the craft, passion and heritage
             that make every KitchenBay piece extraordinary.
           </p>
         </div>

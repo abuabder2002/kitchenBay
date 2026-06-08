@@ -44,32 +44,32 @@ export interface Order {
 
 // ─── CATEGORIES ─────────────────────────────────────────────
 export const categories = [
-  { id: 'kitchenware',   name: 'Kitchenware',         icon: '🍳', count: 34 },
-  { id: 'dining',        name: 'Dining',              icon: '🍽️', count: 13 },
-  { id: 'brass-copper',  name: 'Brass/Copper',        icon: '🫕', count: 7  },
-  { id: 'decor',         name: 'Décor',               icon: '🪔', count: 9  },
+  { id: 'kitchenware', name: 'Kitchenware', icon: '🍳', count: 34 },
+  { id: 'dining', name: 'Dining', icon: '🍽️', count: 13 },
+  { id: 'brass-copper', name: 'Brass/Copper', icon: '🫕', count: 7 },
+  { id: 'decor', name: 'Décor', icon: '🪔', count: 9 },
 ];
 
 // ─── SUBCATEGORIES ───────────────────────────────────────────
 export const subcategories = [
   // Kitchenware
-  { id: 'cast-iron-cookwares',   name: 'Cast Iron Cookwares',   category: 'kitchenware', icon: '🥘' },
-  { id: 'triply-cookwares',      name: 'Triply Cookwares',      category: 'kitchenware', icon: '🍲' },
-  { id: 'soapstone-cookware',    name: 'Soapstone Cookware',    category: 'kitchenware', icon: '🪨' },
-  { id: 'kitchen-food-storage',  name: 'Kitchen / Food Storage',category: 'kitchenware', icon: '🫙' },
-  { id: 'kitchen-accessories',   name: 'Kitchen Accessories',   category: 'kitchenware', icon: '🥄' },
+  { id: 'cast-iron-cookwares', name: 'Cast Iron Cookwares', category: 'kitchenware', icon: '🥘' },
+  { id: 'triply-cookwares', name: 'Triply Cookwares', category: 'kitchenware', icon: '🍲' },
+  { id: 'soapstone-cookware', name: 'Soapstone Cookware', category: 'kitchenware', icon: '🪨' },
+  { id: 'kitchen-food-storage', name: 'Kitchen / Food Storage', category: 'kitchenware', icon: '🫙' },
+  { id: 'kitchen-accessories', name: 'Kitchen Accessories', category: 'kitchenware', icon: '🥄' },
   // Dining
-  { id: 'coffee-tea-maker',      name: 'Coffee & Tea Maker',    category: 'dining', icon: '☕' },
-  { id: 'tray-bowls',            name: 'Tray & Bowls',          category: 'dining', icon: '🥗' },
-  { id: 'pitcher-cups-glass',    name: 'Pitcher, Cups & Glass', category: 'dining', icon: '🥛' },
-  { id: 'dining-plates',         name: 'Dining Plates',         category: 'dining', icon: '🍽️' },
+  { id: 'coffee-tea-maker', name: 'Coffee & Tea Maker', category: 'dining', icon: '☕' },
+  { id: 'tray-bowls', name: 'Tray & Bowls', category: 'dining', icon: '🥗' },
+  { id: 'pitcher-cups-glass', name: 'Pitcher, Cups & Glass', category: 'dining', icon: '🥛' },
+  { id: 'dining-plates', name: 'Dining Plates', category: 'dining', icon: '🍽️' },
   // Brass / Copper
-  { id: 'brass-cookware',        name: 'Brass Cookware',        category: 'brass-copper', icon: '🍯' },
-  { id: 'copper-cookware',       name: 'Copper Cookware',       category: 'brass-copper', icon: '🫖' },
-  { id: 'brass-dining',          name: 'Brass Dining & Serving',category: 'brass-copper', icon: '🥘' },
-  { id: 'brass-copper-cookware', name: 'All Brass/Copper',      category: 'brass-copper', icon: '🫕' },
+  { id: 'brass-cookware', name: 'Brass Cookware', category: 'brass-copper', icon: '🍯' },
+  { id: 'copper-cookware', name: 'Copper Cookware', category: 'brass-copper', icon: '🫖' },
+  { id: 'brass-dining', name: 'Brass Dining & Serving', category: 'brass-copper', icon: '🥘' },
+  { id: 'brass-copper-cookware', name: 'All Brass/Copper', category: 'brass-copper', icon: '🫕' },
   // Décor
-  { id: 'lamp-diya',             name: 'Lamp & Diya',           category: 'decor', icon: '🪔' },
+  { id: 'lamp-diya', name: 'Lamp & Diya', category: 'decor', icon: '🪔' },
   { id: 'pooja-essentials', name: 'Pooja Essentials', category: 'decor', icon: '🪔' },
 ];
 
@@ -514,7 +514,7 @@ export const products: Product[] = [
   {
     id: 'ss-002',
     name: 'Soapstone/Kalchatti Kadai (Treated) Small',
-    description: 'Small treated soapstone kadai for everyday frying and sautéing. Alkaline minerals in the stone balance food pH naturally. Zero chemical coating — 100% natural and safe. Slow heat absorption gives food a rich, deep flavour. Handcrafted by traditional artisans in Tamil Nadu.',
+    description: 'Small treated soapstone kadai for everyday frying and sautéing. Alkaline minerals in the stone balance food pH naturally. Zero chemical coating — 100% natural and safe. Slow heat absorption gives food a rich, deep flavour. Handcrafted by traditional Kitchenbays in Tamil Nadu.',
     price: 1355,
     originalPrice: 2400,
     finalPrice: 1599,
@@ -956,7 +956,7 @@ export const products: Product[] = [
   {
     id: 'dp-002',
     name: 'Pure Bronze Kansa Thali / Plate',
-    description: 'Traditional pure Kansa (bell metal bronze) thali — the Ayurvedic metal plate. Kansa/bronze is known to be auspicious and health-promoting. Alkaline metal that neutralises food acidity. Destroys harmful bacteria. Improves digestion. Handcrafted by skilled artisans. A true heirloom piece that gets better with age.',
+    description: 'Traditional pure Kansa (bell metal bronze) thali — the Ayurvedic metal plate. Kansa/bronze is known to be auspicious and health-promoting. Alkaline metal that neutralises food acidity. Destroys harmful bacteria. Improves digestion. Handcrafted by skilled Kitchenbays. A true heirloom piece that gets better with age.',
     price: 3898,
     originalPrice: 5900,
     finalPrice: 4600,

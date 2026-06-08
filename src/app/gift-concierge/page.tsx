@@ -9,13 +9,13 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  Gift, 
-  MessageCircle, 
-  Mail, 
-  ShieldCheck, 
-  PackageCheck, 
-  Headset, 
+import {
+  Gift,
+  MessageCircle,
+  Mail,
+  ShieldCheck,
+  PackageCheck,
+  Headset,
   Award,
   ChevronRight,
   Sparkles,
@@ -56,7 +56,7 @@ export default function GiftConciergePage() {
     {
       id: 'corporate',
       title: 'Corporate Gifting',
-      desc: 'Premium artisan gifts for clients and employees.',
+      desc: 'Premium Kitchenbay gifts for clients and employees.',
       img: 'https://images.unsplash.com/photo-1556761175-5973dc0f32b7?q=80&w=800&auto=format&fit=crop'
     },
     {
@@ -109,7 +109,7 @@ export default function GiftConciergePage() {
   ];
 
   const features = [
-    { title: 'Handcrafted by Artisans', icon: <Star size={24} />, desc: 'Authentic techniques passed down through generations.' },
+    { title: 'Handcrafted by Kitchenbays', icon: <Star size={24} />, desc: 'Authentic techniques passed down through generations.' },
     { title: 'Heritage Inspired', icon: <Gem size={24} />, desc: 'Products deeply rooted in traditional Indian culture.' },
     { title: 'Premium Packaging', icon: <PackageCheck size={24} />, desc: 'Elegant and secure unboxing experience for every gift.' },
     { title: 'Personalized Recommendations', icon: <Sparkles size={24} />, desc: 'Curated specifically for your occasion and budget.' },
@@ -127,7 +127,7 @@ export default function GiftConciergePage() {
   return (
     <div className="min-h-screen bg-white font-sans relative">
       <Navbar />
-      
+
       {/* FLOATING WHATSAPP BUTTON */}
       <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" className="fixed bottom-8 right-8 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 z-50 flex items-center justify-center cursor-pointer group">
         <MessageCircle size={32} className="group-hover:animate-bounce" />
@@ -197,7 +197,7 @@ export default function GiftConciergePage() {
             <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-4">Curated Gifting Collections</h2>
             <div className="w-24 h-1 bg-[--color-brand-accent-yellow] mx-auto"></div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {categories.map(cat => (
               <div key={cat.id} className="group cursor-pointer rounded-xl overflow-hidden bg-white shadow-md hover:shadow-2xl transition-all duration-500 border border-[--color-brand-border] hover:-translate-y-2">
@@ -218,7 +218,7 @@ export default function GiftConciergePage() {
         <section className="py-24 bg-[#E6F2FF] relative overflow-hidden border-y border-[#BFDBFE]">
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#BFDBFE]/30 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
-          
+
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
               <div>
@@ -277,7 +277,7 @@ export default function GiftConciergePage() {
               <div>
                 <span className="text-blue-200 text-sm font-bold tracking-[0.2em] uppercase mb-4 block">The Presentation</span>
                 <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] mb-6 leading-tight">
-                  Premium Packaging <br/>Preview
+                  Premium Packaging <br />Preview
                 </h2>
                 <p className="text-blue-200 text-lg mb-8 leading-relaxed">
                   A gift's first impression is just as important as what's inside. We offer luxury packaging options including handcrafted wooden boxes, pure silk wrapping, and custom-engraved brass nameplates.
@@ -316,14 +316,14 @@ export default function GiftConciergePage() {
             <p className="text-[--color-brand-muted] mb-12 text-lg">Let us help you find the perfect match for your requirements.</p>
 
             <div className="bg-[#EFF6FF] p-8 md:p-12 rounded-2xl shadow-xl border border-[#BFDBFE]">
-              
+
               <div className="mb-10 text-left">
                 <label className="block text-[--color-brand-text] font-bold uppercase tracking-widest text-sm mb-4">Step 1: Choose Occasion</label>
                 <div className="flex flex-wrap gap-3">
                   {['Wedding', 'Housewarming', 'Festival', 'Corporate', 'Return Gift'].map(occ => (
-                    <button 
+                    <button
                       key={occ}
-                      onClick={() => setFinderState(p => ({...p, occasion: occ}))}
+                      onClick={() => setFinderState(p => ({ ...p, occasion: occ }))}
                       className={`px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 border ${finderState.occasion === occ ? 'bg-[--color-brand-accent] text-white border-[--color-brand-accent] shadow-md scale-105' : 'bg-white text-[--color-brand-text] border-[--color-brand-border] hover:border-[--color-brand-accent] hover:shadow-sm'}`}
                     >
                       {occ}
@@ -336,9 +336,9 @@ export default function GiftConciergePage() {
                 <label className="block text-[--color-brand-text] font-bold uppercase tracking-widest text-sm mb-4">Step 2: Choose Budget (Per Gift)</label>
                 <div className="flex flex-wrap gap-3">
                   {['₹500–1000', '₹1000–2500', '₹2500–5000', 'Premium'].map(bud => (
-                    <button 
+                    <button
                       key={bud}
-                      onClick={() => setFinderState(p => ({...p, budget: bud}))}
+                      onClick={() => setFinderState(p => ({ ...p, budget: bud }))}
                       className={`px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 border ${finderState.budget === bud ? 'bg-[--color-brand-accent] text-white border-[--color-brand-accent] shadow-md scale-105' : 'bg-white text-[--color-brand-text] border-[--color-brand-border] hover:border-[--color-brand-accent] hover:shadow-sm'}`}
                     >
                       {bud}
@@ -351,9 +351,9 @@ export default function GiftConciergePage() {
                 <label className="block text-[--color-brand-text] font-bold uppercase tracking-widest text-sm mb-4">Step 3: Choose Quantity</label>
                 <div className="flex flex-wrap gap-3">
                   {['10+', '50+', '100+', '500+'].map(qty => (
-                    <button 
+                    <button
                       key={qty}
-                      onClick={() => setFinderState(p => ({...p, quantity: qty}))}
+                      onClick={() => setFinderState(p => ({ ...p, quantity: qty }))}
                       className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 border ${finderState.quantity === qty ? 'bg-[--color-brand-accent] text-white border-[--color-brand-accent] shadow-md scale-105' : 'bg-white text-[--color-brand-text] border-[--color-brand-border] hover:border-[--color-brand-accent] hover:shadow-sm'}`}
                     >
                       {qty}
@@ -373,22 +373,22 @@ export default function GiftConciergePage() {
         {/* SECTION 4 - WHY CHOOSE KITCHENBAY GIFTS */}
         <section className="py-24 bg-[#E6F2FF] max-w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-[1600px] mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-4">Why Choose Kitchenbay Gifts</h2>
-            <div className="w-24 h-1 bg-[--color-brand-accent-yellow] mx-auto"></div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
-            {features.map((feat, idx) => (
-              <div key={idx} className="bg-white p-10 rounded-xl border border-[#BFDBFE] hover:-translate-y-2 hover:shadow-xl transition-all duration-300 group">
-                <div className="w-16 h-16 bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center rounded-2xl mb-8 group-hover:scale-110 transition-transform duration-300 group-hover:bg-[#2563EB] group-hover:text-white">
-                  {feat.icon}
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-4">Why Choose Kitchenbay Gifts</h2>
+              <div className="w-24 h-1 bg-[--color-brand-accent-yellow] mx-auto"></div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+              {features.map((feat, idx) => (
+                <div key={idx} className="bg-white p-10 rounded-xl border border-[#BFDBFE] hover:-translate-y-2 hover:shadow-xl transition-all duration-300 group">
+                  <div className="w-16 h-16 bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center rounded-2xl mb-8 group-hover:scale-110 transition-transform duration-300 group-hover:bg-[#2563EB] group-hover:text-white">
+                    {feat.icon}
+                  </div>
+                  <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-4">{feat.title}</h3>
+                  <p className="text-[--color-brand-muted] leading-relaxed text-lg">{feat.desc}</p>
                 </div>
-                <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-4">{feat.title}</h3>
-                <p className="text-[--color-brand-muted] leading-relaxed text-lg">{feat.desc}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -398,7 +398,7 @@ export default function GiftConciergePage() {
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl translate-y-1/2 translate-x-1/3"></div>
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
             <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] mb-20 text-white">The Gifting Journey</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12 relative">
               {/* Desktop Connecting Line */}
               <div className="hidden md:block absolute top-12 left-[12.5%] right-[12.5%] h-0.5 bg-white/20"></div>
@@ -421,7 +421,7 @@ export default function GiftConciergePage() {
           <div className="bg-white rounded-3xl p-12 md:p-20 text-center shadow-2xl border border-[#BFDBFE] relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-[#E6F2FF] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#BFDBFE]/40 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
-            
+
             <div className="relative z-10">
               <Headset size={64} className="mx-auto text-[#2563EB] mb-8" />
               <h2 className="text-4xl md:text-6xl font-bold font-[family-name:var(--font-heading)] text-[#1E3A8A] mb-6">
@@ -430,7 +430,7 @@ export default function GiftConciergePage() {
               <p className="text-xl text-[--color-brand-muted] max-w-3xl mx-auto mb-12 leading-relaxed">
                 Our gifting experts will help you choose the right products based on occasion, budget, and quantity. Let us handle the details while you take the credit.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                 <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-10 py-5 bg-[#25D366] text-white font-bold rounded-lg hover:bg-[#1DA851] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl text-lg">
                   <MessageCircle size={24} />
@@ -463,7 +463,7 @@ export default function GiftConciergePage() {
             </div>
           </div>
         </section>
-        
+
       </main>
 
       <Footer />

@@ -21,12 +21,12 @@ export default function GSTInvoicePage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">About GST Invoices</h2>
           <p className="text-gray-600 leading-relaxed mb-4">
-            ArtisanCraft is a GST-registered business. A GST-compliant invoice is automatically generated for every order placed on our platform. You can download your invoices from the <strong>My Orders</strong> section of your account.
+            KitchenbayCraft is a GST-registered business. A GST-compliant invoice is automatically generated for every order placed on our platform. You can download your invoices from the <strong>My Orders</strong> section of your account.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
             <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
               <p className="text-xs text-gray-500 mb-1">Business Name</p>
-              <p className="font-semibold text-gray-900">ArtisanCraft India Pvt. Ltd.</p>
+              <p className="font-semibold text-gray-900">KitchenbayCraft India Pvt. Ltd.</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
               <p className="text-xs text-gray-500 mb-1">GSTIN</p>
