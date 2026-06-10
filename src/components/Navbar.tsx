@@ -92,9 +92,9 @@ export default function Navbar() {
             <Image
               src={logoImg}
               alt="Brand Logo"
-              width={540}
-              height={190}
-              className={`object-contain mix-blend-multiply transition-all duration-300 ${scrolled ? 'h-20 sm:h-24 lg:h-28' : 'h-24 sm:h-32 lg:h-44'} w-auto max-w-[300px] sm:max-w-[400px] lg:max-w-none`}
+              width={180}
+              height={63}
+              className={`object-contain mix-blend-multiply transition-all duration-300 ${scrolled ? 'h-10 sm:h-12 lg:h-14' : 'h-12 sm:h-14 lg:h-18'} w-auto`}
               priority
             />
           </Link>

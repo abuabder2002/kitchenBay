@@ -3,7 +3,7 @@
 
 
 import { useState, useEffect } from 'react';
-import { Check, ChevronDown, ShoppingBag, Mail, X, Eye, ExternalLink, Package } from 'lucide-react';
+import { Check, ChevronDown, ShoppingBag, Mail, X, Eye, ExternalLink, Package, MessageSquare, FileText } from 'lucide-react';
 
 export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
@@ -23,6 +23,7 @@ export default function AdminOrdersPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [updated, setUpdated] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
   // States for live real-time email notification sending
   const [activeNotification, setActiveNotification] = useState<{
@@ -208,7 +209,7 @@ export default function AdminOrdersPage() {
             <table className="w-full min-w-[900px]">
               <thead className="bg-gray-50">
                 <tr>
-                  {['Order ID', 'Customer', 'Items', 'Subtotal', 'GST (CGST + SGST)', 'Total', 'Payment', 'Current Status', 'Update Status'].map(h => (
+                  {['Order ID', 'Customer', 'Items', 'Subtotal', 'GST (CGST + SGST)', 'Total', 'Payment', 'Current Status', 'Actions'].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       {h}
                     </th>
@@ -253,28 +254,36 @@ export default function AdminOrdersPage() {
                       <p className="text-xs text-gray-300 mt-1">{new Date(order.date).toLocaleDateString('en-IN')}</p>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <select
-                            value={order.status}
-                            onChange={e => handleStatusChange(order.id, e.target.value as OrderStatus)}
-                            disabled={updating === order.id}
-                            className="appearance-none bg-white border border-gray-200 text-xs text-gray-700 pl-2.5 pr-7 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 cursor-pointer disabled:opacity-50"
-                          >
-                            {statusOptions.map(s => (
-                              <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-                            ))}
-                          </select>
-                          <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="px-3 py-1.5 border border-blue-600 hover:bg-blue-600 hover:text-white text-blue-600 font-semibold rounded-xl text-xs transition-all cursor-pointer shadow-sm text-center"
+                        >
+                          Review Order
+                        </button>
+                        <div className="flex items-center gap-2">
+                          <div className="relative w-full">
+                            <select
+                              value={order.status}
+                              onChange={e => handleStatusChange(order.id, e.target.value as OrderStatus)}
+                              disabled={updating === order.id}
+                              className="appearance-none w-full bg-white border border-gray-200 text-xs text-gray-700 pl-2.5 pr-7 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 cursor-pointer disabled:opacity-50"
+                            >
+                              {statusOptions.map(s => (
+                                <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                              ))}
+                            </select>
+                            <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                          </div>
+                          {updating === order.id && (
+                            <span className="w-4 h-4 border-2 border-violet-300 border-t-blue-600 rounded-full animate-spin shrink-0" />
+                          )}
+                          {updated === order.id && (
+                            <span className="w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center shrink-0">
+                              <Check size={10} className="text-emerald-600" />
+                            </span>
+                          )}
                         </div>
-                        {updating === order.id && (
-                          <span className="w-4 h-4 border-2 border-violet-300 border-t-blue-600 rounded-full animate-spin" />
-                        )}
-                        {updated === order.id && (
-                          <span className="w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center">
-                            <Check size={10} className="text-emerald-600" />
-                          </span>
-                        )}
                       </div>
                     </td>
                   </tr>
@@ -489,6 +498,175 @@ export default function AdminOrdersPage() {
                 Close Preview
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Detailed Order Review Modal Overlay */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-gray-100">
+            
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-950 to-[#0c2037] text-white px-6 py-4 flex items-center justify-between border-b border-blue-900/60">
+              <div>
+                <h3 className="font-bold text-lg text-yellow-400">Review Order Details</h3>
+                <p className="text-xs text-blue-200/80">Order ID: <span className="font-mono">{selectedOrder.id}</span> • Submitted {new Date(selectedOrder.date).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedOrder(null)}
+                className="text-blue-200 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <ChevronDown size={22} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              {/* Left Column: Client details & Product detail */}
+              <div className="space-y-5">
+                
+                {/* Client brief */}
+                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Client Contact details</h4>
+                  <div className="space-y-2 text-sm">
+                    <p className="grid grid-cols-3"><span className="text-gray-400">Customer Name:</span> <span className="col-span-2 font-semibold text-gray-800">{selectedOrder.customer}</span></p>
+                    <p className="grid grid-cols-3"><span className="text-gray-400">Mobile:</span> <span className="col-span-2 font-semibold text-gray-800">{selectedOrder.phone}</span></p>
+                    <p className="grid grid-cols-3"><span className="text-gray-400">Email:</span> <span className="col-span-2 font-semibold text-gray-800">{selectedOrder.email}</span></p>
+                    <p className="grid grid-cols-3"><span className="text-gray-400">Payment:</span> <span className="col-span-2 font-semibold text-blue-600 font-mono">{selectedOrder.paymentMethod}</span></p>
+                    <p className="grid grid-cols-3"><span className="text-gray-400">Address:</span> <span className="col-span-2 font-semibold text-gray-800 leading-tight whitespace-pre-wrap">{selectedOrder.shippingAddress}</span></p>
+                  </div>
+                </div>
+
+                {/* Product details */}
+                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Purchased Items ({selectedOrder.items.length})</h4>
+                  <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                    {selectedOrder.items.map((item: any, idx: number) => {
+                      const normalized = item.product ? {
+                        name: item.product.name,
+                        category: item.product.category || 'N/A',
+                        image: item.product.image || '/images/marketing/everyday_cooking.jpg',
+                        price: item.product.finalPrice || item.product.price
+                      } : {
+                        name: item.name,
+                        category: 'N/A',
+                        image: '/images/marketing/everyday_cooking.jpg',
+                        price: item.price
+                      };
+                      return (
+                        <div key={idx} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-100">
+                          <img 
+                            src={normalized.image} 
+                            alt={normalized.name} 
+                            className="w-14 h-14 object-cover rounded-lg border border-gray-200"
+                          />
+                          <div className="flex-1">
+                            <h5 className="font-bold text-gray-800 text-sm line-clamp-1">{normalized.name}</h5>
+                            <p className="text-[10px] text-gray-400 capitalize">Category: {normalized.category}</p>
+                            <p className="text-xs text-gray-700 font-medium mt-0.5">
+                              {formatPrice(normalized.price)} × {item.quantity}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="block text-sm font-extrabold text-gray-900">{formatPrice(normalized.price * item.quantity)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Right Column: Admin actions, negotiated price, status update */}
+              <div className="space-y-5 flex flex-col justify-between">
+                
+                {/* Dynamic Quotation Summary Generator (Invoice) */}
+                <div className="bg-blue-950 text-white rounded-2xl p-4 border border-blue-900 shadow-sm mt-0">
+                  <h5 className="text-xs font-bold text-yellow-400 uppercase mb-3 flex items-center gap-1">
+                    <FileText size={12} /> Order Invoice Summary
+                  </h5>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between border-b border-blue-900/50 pb-2 mb-2">
+                      <span className="text-blue-300">Total Items</span>
+                      <span className="font-bold">{selectedOrder.items.reduce((acc: number, cur: any) => acc + cur.quantity, 0)} units</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-blue-300">Subtotal (Excl. Tax)</span>
+                      <span className="font-bold">{formatPrice(selectedOrder.subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-emerald-400">
+                      <span>CGST</span>
+                      <span>+ {formatPrice(selectedOrder.cgstAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-emerald-400">
+                      <span>SGST</span>
+                      <span>+ {formatPrice(selectedOrder.sgstAmount)}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-blue-800 pt-3 mt-2 text-sm font-extrabold text-yellow-400">
+                      <span>Grand Total Paid</span>
+                      <span>{formatPrice(selectedOrder.total)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Workflow Buttons */}
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        let cleanMobile = selectedOrder.phone.replace(/\D/g, '');
+                        if (cleanMobile.length === 10) cleanMobile = '91' + cleanMobile;
+                        const text = `Hi ${selectedOrder.customer}, thank you for your order #${selectedOrder.id} from Kitchenbay.`;
+                        window.open(`https://wa.me/${cleanMobile}?text=${encodeURIComponent(text)}`, '_blank');
+                      }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 border border-emerald-500 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-xs transition-all cursor-pointer"
+                    >
+                      <MessageSquare size={14} /> WhatsApp Client
+                    </button>
+                    <a
+                      href={`mailto:${selectedOrder.email}?subject=Order Update #${selectedOrder.id} - Kitchenbay`}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 border border-blue-600 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs transition-all cursor-pointer"
+                    >
+                      <Mail size={14} /> Email Client
+                    </a>
+                  </div>
+
+                  <div className="pt-2">
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Update Order Status</label>
+                    <div className="relative w-full">
+                      <select
+                        value={selectedOrder.status}
+                        onChange={(e) => {
+                          const newStatus = e.target.value as OrderStatus;
+                          setSelectedOrder({...selectedOrder, status: newStatus});
+                          handleStatusChange(selectedOrder.id, newStatus);
+                        }}
+                        disabled={updating === selectedOrder.id}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all cursor-pointer text-center focus:outline-none appearance-none disabled:opacity-50"
+                      >
+                        {statusOptions.map(s => (
+                          <option key={s} value={s}>➔ Set: {s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center px-2 text-white">
+                        {updating === selectedOrder.id ? (
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <ChevronDown size={16} />
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-2 text-center">Changing status will automatically trigger an email notification to the customer.</p>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
         </div>
       )}

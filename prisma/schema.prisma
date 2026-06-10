@@ -225,3 +225,15 @@ model StoreSettings {
   updatedAt         DateTime @updatedAt
 }
 
+model SiteContent {
+  id        String   @id @default(cuid())
+  page      String   // e.g., "home", "about", "global"
+  section   String   // e.g., "hero_banners", "trust_badges", "testimonials"
+  key       String   // e.g., "banner_1_title", or JSON structure key
+  value     String   @db.Text // Stores text, URL, or JSON string
+  type      String   @default("TEXT") // "TEXT", "IMAGE", "JSON"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([page, section, key])
+}

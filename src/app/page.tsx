@@ -14,27 +14,36 @@ import { Truck, RotateCcw, ShieldCheck, HeartHandshake, Leaf, Users, Star, Quote
 import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/lib/productsContext';
 import { useAuth } from '@/lib/authContext';
+import EditButton from '@/components/cms/EditButton';
+import CMSModal from '@/components/cms/CMSModal';
 
-const categories = [
+const defaultCategories = [
   { name: 'Kitchenware', sub: 'Traditional Cookware', img: '/images/marketing/modern_world_kitchen.png' },
   { name: 'Dining', sub: 'Handcrafted Serveware', img: '/images/home/modern_luxury_dining_card.png' },
   { name: 'Décor', sub: 'Heritage Home Accents', img: '/images/home/modern_luxury_decor_card.png' },
 ];
 
-const materials = [
+const defaultMaterials = [
   { name: 'Cast Iron', desc: 'Naturally non-stick & iron fortifying', img: '/images/home/material_cast_iron.png' },
   { name: 'Pure Brass', desc: 'Timeless elegance & health benefits', img: '/images/home/material_pure_brass.png' },
   { name: 'Copper', desc: 'Ayurvedic wellness for water storage', img: '/images/home/material_copper.png' },
   { name: 'Soapstone', desc: 'Slow cooking for perfect flavor', img: '/images/home/material_soapstone.png' }
 ];
 
-const journalEntries = [
+const defaultJournalEntries = [
   { title: 'The Lost Art of Hand-Hammered Cookware', category: 'Craftsmanship', img: '/artisan_hammering_copper.png' },
   { title: 'Why Traditional Brass Adds Positive Energy', category: 'Heritage', img: '/artisan_crafting_brass.png' },
   { title: 'Seasoning Your Cast Iron: A Masterclass', category: 'Care Guide', img: '/artisan_forging_cast_iron.png' }
 ];
 
-const promoSlides = [
+const defaultTestimonials = [
+  { name: "Michelle Rose", text: "I absolutely love this Triply Cookware set! Cooked my first traditional curry in it, and the heat distribution is amazing.", rating: 5, avatar: "https://i.pravatar.cc/150?img=1", productImg: "/images/marketing/everyday_cooking.jpg" },
+  { name: "Paras Chugh", text: "The Soapstone Cookware is outstanding. Authentic taste and retains heat for a very long time. Extremely pleased!", rating: 5, avatar: "https://i.pravatar.cc/150?img=11", productImg: "/images/marketing/casserole_banner.jpg" },
+  { name: "Prabhas Upadhyay", text: "Brought this beautiful Brass Coffee Dabara set. It's solid brass and gives the perfect filter coffee feel.", rating: 5, avatar: "https://i.pravatar.cc/150?img=33", productImg: "/images/marketing/culinary_prep.jpg" },
+  { name: "Jayavant Jadhav", text: "These traditional brass diyas are of exceptional quality. They look stunning during pooja ceremonies!", rating: 5, avatar: "https://i.pravatar.cc/150?img=60", productImg: "/images/marketing/ss_chopping_board.jpg" },
+];
+
+const defaultPromoSlides = [
   {
     title: "Craftsmanship in Copper",
     subtitle: "Hand-Hammered Elegance",
@@ -55,18 +64,93 @@ const promoSlides = [
   },
 ];
 
+const defaultMainHeroBanner = [
+  {
+    title: "Authentic Handcrafted Kitchenware",
+    image: "/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg",
+    link: "/products",
+  }
+];
+
+const defaultSecondaryBanners = [
+  { title: "Modern Kitchen Collection →", image: "/images/home/handi-set-banner-wide.png", link: "/products?category=kitchenware" },
+  { title: "Premium Dining & Serveware →", image: "/images/home/durable-cookware-banner-wide.png", link: "/products?category=dining" },
+  { title: "Bring Style Into Everyday Living →", image: "/images/home/apple-handi-banner-wide.png", link: "/products?category=decor" }
+];
+
 export default function HomePage() {
   const { products } = useProducts();
   const { isAdmin } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{isOpen: boolean; sectionId: string; sectionTitle: string; schema: any[]; initialData: any[] } | null>(null);
+
+  const handleEditClick = (sectionId: string, sectionTitle: string, schema: any[], initialData: any[]) => {
+    setModalConfig({ isOpen: true, sectionId, sectionTitle, schema, initialData });
+  };
+
   useEffect(() => {
+    if (isAdmin && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setIsEditMode(params.get('editMode') === 'true');
+    }
+  }, [isAdmin]);
+
+  const [mainHeroBanner, setMainHeroBanner] = useState(defaultMainHeroBanner);
+  const [secondaryBanners, setSecondaryBanners] = useState(defaultSecondaryBanners);
+  const [promoSlides, setPromoSlides] = useState(defaultPromoSlides);
+  const [categories, setCategories] = useState(defaultCategories);
+  const [materials, setMaterials] = useState(defaultMaterials);
+  const [journalEntries, setJournalEntries] = useState(defaultJournalEntries);
+  const [testimonials, setTestimonials] = useState(defaultTestimonials);
+  const [manualBestsellers, setManualBestsellers] = useState<{productId: string}[]>([]);
+  const [manualNewArrivals, setManualNewArrivals] = useState<{productId: string}[]>([]);
+  const [manualRecommended, setManualRecommended] = useState<{productId: string}[]>([]);
+
+  useEffect(() => {
+    // Fetch CMS content
+    const fetchContent = async () => {
+      try {
+        const res = await fetch('/api/content?page=home');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.content) {
+            const getParsed = (key: string, fallback: any) => {
+              const record = data.content.find((c: any) => c.key === key);
+              if (record && record.value) {
+                try { return JSON.parse(record.value); } catch(e) { return fallback; }
+              }
+              return fallback;
+            };
+            
+            setMainHeroBanner(getParsed('mainHeroBanner', defaultMainHeroBanner));
+            setSecondaryBanners(getParsed('secondaryBanners', defaultSecondaryBanners));
+            setPromoSlides(getParsed('promoSlides', defaultPromoSlides));
+            setCategories(getParsed('categories', defaultCategories));
+            setMaterials(getParsed('materials', defaultMaterials));
+            setJournalEntries(getParsed('journalEntries', defaultJournalEntries));
+            setTestimonials(getParsed('testimonials', defaultTestimonials));
+            setManualBestsellers(getParsed('bestsellers', []));
+            setManualNewArrivals(getParsed('newArrivals', []));
+            setManualRecommended(getParsed('recommended', []));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching CMS content:", error);
+      }
+    };
+    fetchContent();
+  }, []);
+
+  useEffect(() => {
+    if (promoSlides.length === 0) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % promoSlides.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, [promoSlides.length]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.touches[0].clientX);
@@ -84,16 +168,26 @@ export default function HomePage() {
     setTouchStartX(null);
   };
 
-  const bestsellers = useMemo(() => products.slice(0, 4), [products]);
-  const newArrivals = useMemo(() => products.slice(4, 8), [products]);
-  const recommendedProducts = useMemo(() => [...products].reverse().slice(0, 8), [products]);
+  const bestsellers = useMemo(() => {
+    if (manualBestsellers.length > 0) {
+      return manualBestsellers.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+    }
+    return products.slice(0, 4);
+  }, [products, manualBestsellers]);
 
-  const testimonials = [
-    { name: "Michelle Rose", text: "I absolutely love this Triply Cookware set! Cooked my first traditional curry in it, and the heat distribution is amazing.", rating: 5, avatar: "https://i.pravatar.cc/150?img=1", productImg: "/images/marketing/everyday_cooking.jpg" },
-    { name: "Paras Chugh", text: "The Soapstone Cookware is outstanding. Authentic taste and retains heat for a very long time. Extremely pleased!", rating: 5, avatar: "https://i.pravatar.cc/150?img=11", productImg: "/images/marketing/casserole_banner.jpg" },
-    { name: "Prabhas Upadhyay", text: "Brought this beautiful Brass Coffee Dabara set. It's solid brass and gives the perfect filter coffee feel.", rating: 5, avatar: "https://i.pravatar.cc/150?img=33", productImg: "/images/marketing/culinary_prep.jpg" },
-    { name: "Jayavant Jadhav", text: "These traditional brass diyas are of exceptional quality. They look stunning during pooja ceremonies!", rating: 5, avatar: "https://i.pravatar.cc/150?img=60", productImg: "/images/marketing/ss_chopping_board.jpg" },
-  ];
+  const newArrivals = useMemo(() => {
+    if (manualNewArrivals.length > 0) {
+      return manualNewArrivals.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+    }
+    return products.slice(4, 8);
+  }, [products, manualNewArrivals]);
+
+  const recommendedProducts = useMemo(() => {
+    if (manualRecommended.length > 0) {
+      return manualRecommended.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+    }
+    return [...products].reverse().slice(0, 8);
+  }, [products, manualRecommended]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[--color-brand-bg]">
@@ -106,24 +200,39 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
               {/* Left Main Banner (Summer Sale) */}
-              <Link href="/products" className="lg:col-span-8 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block">
-                <Image
-                  src="/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"
-                  alt="Collection for Everyday Cooking"
-                  fill
-                  className="object-contain object-center group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
-                <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-6 sm:p-8 lg:p-12">
-                  <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Authentic Handcrafted Kitchenware</h2>
-                </div>
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-white text-black font-semibold py-2 px-4 rounded hover:bg-gray-100 transition-colors mt-4">Explore Collection</span>
-                </div>
-              </Link>
+              <div className="lg:col-span-8 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block">
+                {isEditMode && <EditButton onClick={() => handleEditClick('mainHeroBanner', 'Main Hero Banner', [
+                  { key: 'title', label: 'Title' },
+                  { key: 'image', label: 'Image URL', type: 'image' },
+                  { key: 'link', label: 'Link URL', type: 'product-link' }
+                ], mainHeroBanner)} label="Edit Main Banner" />}
+                {mainHeroBanner.map((banner, idx) => (
+                  <Link key={idx} href={banner.link || '/products'} className="absolute inset-0 z-0">
+                    <Image
+                    src={banner.image || "/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"}
+                    alt={banner.title || "Collection for Everyday Cooking"}
+                    fill
+                    className="object-contain object-center group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
+                  <div className="absolute inset-0 z-0 flex flex-col justify-center items-center text-center p-6 sm:p-8 lg:p-12 pointer-events-none">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-md">{banner.title}</h2>
+                  </div>
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-0 pointer-events-none">
+                    <span className="bg-white text-black font-semibold py-2 px-4 rounded hover:bg-gray-100 transition-colors mt-4 inline-block shadow-sm">Explore Collection</span>
+                  </div>
+                  </Link>
+                ))}
+              </div>
 
               {/* Right Side Banner (Premium Slideshow) */}
               <div className="lg:col-span-4 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block bg-slate-900" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+                {isEditMode && <EditButton onClick={() => handleEditClick('promoSlides', 'Hero Banners', [
+                  { key: 'title', label: 'Title' },
+                  { key: 'subtitle', label: 'Subtitle' },
+                  { key: 'image', label: 'Image URL', type: 'image' },
+                  { key: 'link', label: 'Link URL', type: 'product-link' }
+                ], promoSlides)} label="Edit Slides" />}
                 {promoSlides.map((slide, idx) => (
                   <Link
                     key={idx}
@@ -132,8 +241,8 @@ export default function HomePage() {
                       }`}
                   >
                     <Image
-                      src={slide.image}
-                      alt={slide.title}
+                      src={slide.image || '/images/marketing/everyday_cooking.jpg'}
+                      alt={slide.title || 'Slide Image'}
                       fill
                       className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentSlide ? 'scale-105' : 'scale-100'
                         }`}
@@ -204,53 +313,42 @@ export default function HomePage() {
         </section>
 
         {/* ── 3 CATEGORY BANNERS ────────────────────────────────────────── */}
-        <section className="bg-white py-6">
+        <section className="bg-white py-6 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('secondaryBanners', 'Secondary Banners', [
+            { key: 'title', label: 'Title' },
+            { key: 'image', label: 'Image URL', type: 'image' },
+            { key: 'link', label: 'Link URL', type: 'product-link' }
+          ], secondaryBanners)} label="Edit Secondary Banners" />}
           <div className="max-w-[1600px] mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link href="/products?category=kitchenware" className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group rounded-sm block bg-slate-100">
-                <Image
-                  src="/images/home/handi-set-banner-wide.png"
-                  alt="Modern Kitchen Collection"
-                  fill
-                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent" />
-                <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
-                  <h4 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">Modern Kitchen<br />Collection &rarr;</h4>
-                </div>
-              </Link>
-
-              <Link href="/products?category=dining" className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group rounded-sm block bg-slate-100">
-                <Image
-                  src="/images/home/durable-cookware-banner-wide.png"
-                  alt="Premium Dining Sets"
-                  fill
-                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-                <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
-                  <h4 className="text-lg md:text-xl font-bold text-white leading-tight">Premium Dining &amp;<br />Serveware &rarr;</h4>
-                </div>
-              </Link>
-
-              <Link href="/products?category=decor" className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group rounded-sm block bg-slate-100">
-                <Image
-                  src="/images/home/apple-handi-banner-wide.png"
-                  alt="Bring Style Into Everyday Living"
-                  fill
-                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent" />
-                <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
-                  <h4 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">Bring Style Into<br />Everyday Living &rarr;</h4>
-                </div>
-              </Link>
+              {secondaryBanners.slice(0, 3).map((banner, idx) => {
+                const isDark = idx === 1;
+                return (
+                  <Link key={idx} href={banner.link || '/products'} className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group/banner rounded-sm block bg-slate-100">
+                    <Image
+                      src={banner.image || '/images/marketing/everyday_cooking.jpg'}
+                      alt={banner.title || 'Banner Image'}
+                      fill
+                      className="object-cover object-center group-hover/banner:scale-105 transition-transform duration-700"
+                    />
+                    <div className={`absolute inset-0 bg-gradient-to-r ${isDark ? 'from-black/80 via-black/40' : 'from-white/90 via-white/40'} to-transparent`} />
+                    <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
+                      <h4 className={`text-lg md:text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} leading-tight`}>{banner.title}</h4>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
 
         {/* ── CATEGORY SHOWCASE ─────────────────────────────────────────── */}
-        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('categories', 'Categories', [
+            { key: 'name', label: 'Name' },
+            { key: 'sub', label: 'Subtitle' },
+            { key: 'img', label: 'Image', type: 'image' }
+          ], categories)} label="Edit Categories" />}
           <div className="text-center mb-16">
             <span className="text-[--color-brand-accent] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Curated Categories</span>
             <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Discover Our Collections</h2>
@@ -260,8 +358,8 @@ export default function HomePage() {
               <Link href={`/products?category=${cat.name.toLowerCase()}`} key={idx} className="group flex flex-col items-center cursor-pointer">
                 <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm mb-6 shadow-sm">
                   <Image
-                    src={cat.img}
-                    alt={cat.name}
+                    src={cat.img || '/images/marketing/everyday_cooking.jpg'}
+                    alt={cat.name || 'Category Image'}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     className="object-cover group-hover:scale-110 transition-transform duration-1000"
@@ -310,7 +408,10 @@ export default function HomePage() {
         <TraditionVideoSection />
 
         {/* ── BESTSELLERS ───────────────────────────────────────────────── */}
-        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('bestsellers', 'Bestsellers', [
+            { key: 'productId', label: 'Select Product', type: 'product-link' }
+          ], manualBestsellers)} label="Edit Bestsellers" />}
           <div className="flex items-end justify-between mb-16">
             <div>
               <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Most Loved</span>
@@ -333,7 +434,12 @@ export default function HomePage() {
         </section>
 
         {/* ── TRADITIONAL MATERIALS SHOWCASE ────────────────────────────── */}
-        <section className="bg-white py-24">
+        <section className="bg-white py-24 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('materials', 'Materials', [
+            { key: 'name', label: 'Name' },
+            { key: 'desc', label: 'Description' },
+            { key: 'img', label: 'Image', type: 'image' }
+          ], materials)} label="Edit Materials" />}
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">The Essence of Earth</h2>
@@ -342,7 +448,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {materials.map((mat, idx) => (
                 <Link href={`/products?material=${mat.name}`} key={idx} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer">
-                  <Image src={mat.img} alt={mat.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <Image src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute bottom-6 left-6 pr-6">
                     <h3 className="text-white text-2xl font-bold font-[family-name:var(--font-heading)] mb-2">{mat.name}</h3>
@@ -356,7 +462,10 @@ export default function HomePage() {
 
         {/* ── NEW ARRIVALS ──────────────────────────────────────────────── */}
         {newArrivals.length >= 4 && (
-          <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-[--color-brand-card]/30">
+          <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-[--color-brand-card]/30 relative group">
+            {isEditMode && <EditButton onClick={() => handleEditClick('newArrivals', 'New Arrivals', [
+              { key: 'productId', label: 'Select Product', type: 'product-link' }
+            ], manualNewArrivals)} label="Edit New Arrivals" />}
             <div className="flex items-end justify-between mb-16">
               <div>
                 <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Just In</span>
@@ -372,7 +481,12 @@ export default function HomePage() {
         )}
 
         {/* ── THE JOURNAL / BLOG ────────────────────────────────────────── */}
-        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('journalEntries', 'Journal', [
+            { key: 'title', label: 'Title' },
+            { key: 'category', label: 'Category' },
+            { key: 'img', label: 'Image', type: 'image' }
+          ], journalEntries)} label="Edit Journal" />}
           <div className="text-center mb-16">
             <span className="text-[--color-brand-accent] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">The Kitchenbay Journal</span>
             <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Wisdom &amp; Stories</h2>
@@ -381,7 +495,7 @@ export default function HomePage() {
             {journalEntries.map((entry, idx) => (
               <article key={idx} className="group cursor-pointer">
                 <div className="relative w-full aspect-[4/3] overflow-hidden rounded-sm mb-6">
-                  <Image src={entry.img} alt={entry.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <Image src={entry.img || '/images/marketing/everyday_cooking.jpg'} alt={entry.title || 'Journal Image'} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 </div>
                 <span className="text-[--color-brand-accent] text-xs font-bold uppercase tracking-widest mb-3 block">{entry.category}</span>
                 <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] leading-snug group-hover:text-[--color-brand-accent] transition-colors">{entry.title}</h3>
@@ -391,7 +505,14 @@ export default function HomePage() {
         </section>
 
         {/* ── CUSTOMER TESTIMONIALS ─────────────────────────────────────── */}
-        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('testimonials', 'Testimonials', [
+            { key: 'name', label: 'Name' },
+            { key: 'text', label: 'Review Text' },
+            { key: 'rating', label: 'Rating (1-5)', type: 'number' },
+            { key: 'avatar', label: 'Avatar Image', type: 'image' },
+            { key: 'productImg', label: 'Product Image', type: 'image' }
+          ], testimonials)} label="Edit Testimonials" />}
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_2.5fr] gap-8">
             <div className="bg-[#F8F9FE] rounded-sm p-12 flex flex-col justify-center relative overflow-hidden border border-[#EBEFFA]">
               <Quote size={120} className="absolute top-[-20px] left-[-20px] text-blue-50 opacity-50" />
@@ -405,7 +526,7 @@ export default function HomePage() {
               {testimonials.map((t, idx) => (
                 <div key={idx} className="bg-white p-6 rounded-sm shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-[--color-brand-border] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
                   <div className="flex items-start gap-5">
-                    <Image src={t.avatar} alt={t.name} width={50} height={50} className="rounded-full object-cover shrink-0 shadow-sm border border-gray-100" />
+                    <Image src={t.avatar || 'https://i.pravatar.cc/150'} alt={t.name || 'Avatar'} width={50} height={50} className="rounded-full object-cover shrink-0 shadow-sm border border-gray-100" />
                     <div className="flex-1">
                       <p className="text-[13px] text-gray-600 italic mb-3 leading-relaxed">"{t.text}"</p>
                       <h4 className="text-[13px] font-bold text-gray-900">- {t.name}</h4>
@@ -414,7 +535,7 @@ export default function HomePage() {
                       </div>
                     </div>
                     <div className="shrink-0">
-                      <Image src={t.productImg} alt="Product" width={64} height={64} className="rounded-sm object-cover border border-gray-100 shadow-sm" />
+                      <Image src={t.productImg || '/images/marketing/everyday_cooking.jpg'} alt="Product" width={64} height={64} className="rounded-sm object-cover border border-gray-100 shadow-sm" />
                     </div>
                   </div>
                 </div>
@@ -424,7 +545,10 @@ export default function HomePage() {
         </section>
 
         {/* ── RECOMMENDED FOR YOU ───────────────────────────────────────── */}
-        <section className="py-12 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-12 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('recommended', 'Recommended For You', [
+            { key: 'productId', label: 'Select Product', type: 'product-link' }
+          ], manualRecommended)} label="Edit Recommended" />}
           <div className="mb-10">
             <h2 className="text-3xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Recommended For You</h2>
           </div>
@@ -484,6 +608,21 @@ export default function HomePage() {
 
       </main>
       <Footer />
+      
+      {/* CMS Modals */}
+      {modalConfig && (
+        <CMSModal 
+          isOpen={modalConfig.isOpen}
+          onClose={() => setModalConfig(null)}
+          onSaveSuccess={() => {
+            if (typeof window !== 'undefined') window.location.reload();
+          }}
+          sectionId={modalConfig.sectionId}
+          sectionTitle={modalConfig.sectionTitle}
+          initialData={modalConfig.initialData}
+          schema={modalConfig.schema}
+        />
+      )}
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/adminAuth';
-import { products } from '@/lib/mockData';
 
 export async function GET(req: NextRequest) {
   try {
@@ -35,6 +34,16 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
+    // Gather all unique product IDs
+    const productIds = new Set<string>();
+    orders.forEach(o => o.items.forEach((i: any) => productIds.add(i.productId)));
+
+    // Fetch related products
+    const productsList = await prisma.product.findMany({
+      where: { id: { in: Array.from(productIds) } }
+    });
+    const productMap = new Map(productsList.map(p => [p.id, p]));
+
     // Fetch shipping addresses for all orders
     const addressIds = orders.map(o => o.shippingAddrId).filter(Boolean) as string[];
     const addresses = await prisma.address.findMany({
@@ -47,9 +56,10 @@ export async function GET(req: NextRequest) {
       const address = o.shippingAddrId ? addressMap.get(o.shippingAddrId) : null;
       
       const mappedItems = o.items.map((i: any) => {
-        const prod = products.find(p => p.id === i.productId);
+        const prod = productMap.get(i.productId);
         return {
           productId: i.productId,
+          product: prod || null,
           name: prod ? prod.name : i.productId,
           quantity: i.quantity,
           price: i.price,
@@ -58,7 +68,7 @@ export async function GET(req: NextRequest) {
 
       // Calculate taxes dynamically matching context logic
       const subtotal = mappedItems.reduce((sum: number, item: any) => {
-        const prod = products.find(p => p.id === item.productId);
+        const prod = item.product;
         const basePrice = prod ? prod.price : Math.round(item.price / 1.18);
         return sum + basePrice * item.quantity;
       }, 0);
