@@ -54,10 +54,10 @@ const shopLinks = [
 
 export default function Footer() {
   return (
-    <footer className="w-full flex flex-col border-t-4 border-blue-600">
+    <footer className="w-full flex flex-col border-t-4 border-blue-500">
 
       {/* ── TOP FOOTER ────────────────────────────────────────────────── */}
-      <div className="bg-blue-900 text-white py-14">
+      <div className="bg-blue-600 text-white py-14">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10">
 
@@ -72,7 +72,7 @@ export default function Footer() {
                   className="object-contain h-28 sm:h-36 lg:h-40 w-auto max-w-[320px] sm:max-w-sm"
                 />
               </Link>
-              <p className="text-sm text-blue-100/90 leading-relaxed max-w-xs">
+              <p className="text-sm text-white/80 leading-relaxed max-w-xs">
                 India&apos;s Premium Destination for Authentic Handcrafted Kitchenware,
                 Dining &amp; Traditional Home Décor
               </p>
@@ -86,7 +86,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={item.label}
-                    className="w-9 h-9 rounded-full border border-blue-400 flex items-center justify-center hover:bg-blue-400 hover:border-blue-400 hover:text-blue-950 transition-all duration-200 text-blue-100"
+                    className="w-9 h-9 rounded-full border border-white/40 flex items-center justify-center hover:bg-white hover:border-white hover:text-blue-600 transition-all duration-200 text-white"
                   >
                     <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor">
                       {item.svg}
@@ -98,11 +98,11 @@ export default function Footer() {
 
             {/* Company */}
             <div>
-              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-blue-300">Company</h4>
-              <ul className="flex flex-col gap-2.5 text-sm text-blue-100/80">
+              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-white/60">Company</h4>
+              <ul className="flex flex-col gap-2.5 text-sm text-white/80">
                 {companyLinks.map(({ label, href }) => (
                   <li key={label}>
-                    <Link href={href} className="hover:text-blue-300 transition-colors font-medium">
+                    <Link href={href} className="hover:text-white transition-colors font-medium">
                       {label}
                     </Link>
                   </li>
@@ -112,11 +112,11 @@ export default function Footer() {
 
             {/* Shop */}
             <div>
-              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-blue-300">Shop</h4>
-              <ul className="flex flex-col gap-2.5 text-sm text-blue-100/80">
+              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-white/60">Shop</h4>
+              <ul className="flex flex-col gap-2.5 text-sm text-white/80">
                 {shopLinks.map(({ label, href }) => (
                   <li key={label}>
-                    <Link href={href} className="hover:text-blue-300 transition-colors font-medium">
+                    <Link href={href} className="hover:text-white transition-colors font-medium">
                       {label}
                     </Link>
                   </li>
@@ -126,21 +126,21 @@ export default function Footer() {
 
             {/* Help */}
             <div>
-              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-blue-300">Help</h4>
-              <ul className="flex flex-col gap-2.5 text-sm text-blue-100/80">
+              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-white/60">Help</h4>
+              <ul className="flex flex-col gap-2.5 text-sm text-white/80">
                 {helpLinks.map(({ label, href }) => (
                   <li key={label}>
-                    <Link href={href} className="hover:text-blue-300 transition-colors font-medium">
+                    <Link href={href} className="hover:text-white transition-colors font-medium">
                       {label}
                     </Link>
                   </li>
                 ))}
               </ul>
-              <h4 className="font-bold mt-7 mb-5 uppercase text-xs tracking-widest text-blue-300">Policies</h4>
-              <ul className="flex flex-col gap-2.5 text-sm text-blue-100/80">
+              <h4 className="font-bold mt-7 mb-5 uppercase text-xs tracking-widest text-white/60">Policies</h4>
+              <ul className="flex flex-col gap-2.5 text-sm text-white/80">
                 {policyLinks.map(({ label, href }) => (
                   <li key={label}>
-                    <Link href={href} className="hover:text-blue-300 transition-colors font-medium">
+                    <Link href={href} className="hover:text-white transition-colors font-medium">
                       {label}
                     </Link>
                   </li>
@@ -150,8 +150,8 @@ export default function Footer() {
 
             {/* Get the App */}
             <div>
-              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-blue-300">Get the App</h4>
-              <p className="text-sm text-blue-100/90 mb-5 leading-relaxed">
+              <h4 className="font-bold mb-5 uppercase text-xs tracking-widest text-white/60">Get the App</h4>
+              <p className="text-sm text-white/80 mb-5 leading-relaxed">
                 Download our app for exclusive deals &amp; early access
               </p>
               <div className="flex flex-col gap-3">
@@ -159,7 +159,7 @@ export default function Footer() {
                   href="https://apps.apple.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 bg-blue-800 hover:bg-blue-700 hover:text-white text-blue-100 border border-blue-700 hover:border-blue-400 rounded-lg py-2.5 px-4 transition-all duration-200 group shadow-sm"
+                  className="flex items-center gap-2.5 bg-blue-700 hover:bg-white hover:text-blue-700 text-white border border-white/20 hover:border-white rounded-lg py-2.5 px-4 transition-all duration-200 group shadow-sm"
                 >
                   <Apple size={18} className="shrink-0" />
                   <div className="text-left">
@@ -171,7 +171,7 @@ export default function Footer() {
                   href="https://play.google.com/store"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 bg-blue-800 hover:bg-blue-700 hover:text-white text-blue-100 border border-blue-700 hover:border-blue-400 rounded-lg py-2.5 px-4 transition-all duration-200 group shadow-sm"
+                  className="flex items-center gap-2.5 bg-blue-700 hover:bg-white hover:text-blue-700 text-white border border-white/20 hover:border-white rounded-lg py-2.5 px-4 transition-all duration-200 group shadow-sm"
                 >
                   <Play size={18} className="shrink-0" />
                   <div className="text-left">
@@ -183,7 +183,7 @@ export default function Footer() {
 
               {/* Newsletter */}
               <div className="mt-7">
-                <h4 className="font-bold mb-3 uppercase text-xs tracking-widest text-blue-300">Newsletter</h4>
+                <h4 className="font-bold mb-3 uppercase text-xs tracking-widest text-white/60">Newsletter</h4>
                 <form
                   onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing!'); }}
                   className="flex gap-2"
@@ -192,11 +192,11 @@ export default function Footer() {
                     type="email"
                     required
                     placeholder="Your email"
-                    className="flex-1 rounded-lg bg-blue-950/50 border border-blue-800 text-white placeholder:text-blue-300/50 text-xs px-3 py-2.5 outline-none focus:border-blue-400 transition-colors min-w-0 shadow-sm"
+                    className="flex-1 rounded-lg bg-blue-700/50 border border-white/20 text-white placeholder:text-white/40 text-xs px-3 py-2.5 outline-none focus:border-white transition-colors min-w-0 shadow-sm"
                   />
                   <button
                     type="submit"
-                    className="bg-blue-500 hover:bg-blue-400 text-white font-bold text-xs rounded-lg px-4 py-2.5 transition-colors shrink-0 shadow-sm"
+                    className="bg-white hover:bg-blue-50 text-blue-600 font-bold text-xs rounded-lg px-4 py-2.5 transition-colors shrink-0 shadow-sm"
                   >
                     Join
                   </button>
@@ -209,16 +209,16 @@ export default function Footer() {
       </div>
 
       {/* ── BOTTOM FOOTER ─────────────────────────────────────────────── */}
-      <div className="bg-blue-950 py-4 border-t border-blue-900">
+      <div className="bg-blue-700 py-4 border-t border-white/10">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-blue-200/60 text-sm font-medium">
+          <p className="text-white/70 text-sm font-medium">
             © {new Date().getFullYear()} KitchenBay. All Rights Reserved.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             {['Razorpay', 'UPI', 'Visa', 'Mastercard', 'NetBanking'].map((method) => (
               <span
                 key={method}
-                className="bg-blue-900 text-blue-200/80 border border-blue-800 shadow-sm text-xs px-3 py-1 rounded-full font-medium"
+                className="bg-blue-500 text-white border border-white/20 shadow-sm text-xs px-3 py-1 rounded-full font-medium"
               >
                 {method}
               </span>
