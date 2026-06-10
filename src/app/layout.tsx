@@ -7,6 +7,7 @@ import { ProductsProvider } from '@/lib/productsContext';
 import { AuthProvider } from '@/lib/authContext';
 import { OrdersProvider } from '@/lib/ordersContext';
 import { NextAuthProvider } from '@/components/Providers';
+import CartDrawer from '@/components/CartDrawer';
 
 const playfair = Playfair_Display({
   weight: ['400', '500', '600', '700', '800', '900'],
@@ -39,6 +40,7 @@ export default function RootLayout({
               <WishlistProvider>
                 <CartProvider>
                   <OrdersProvider>{children}</OrdersProvider>
+                  <CartDrawer />
                 </CartProvider>
               </WishlistProvider>
             </ProductsProvider>

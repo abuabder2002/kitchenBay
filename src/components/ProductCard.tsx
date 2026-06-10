@@ -1,12 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/lib/mockData';
 import { useCart } from '@/lib/cartContext';
 import { useWishlist } from '@/lib/wishlistContext';
 import { useAuth } from '@/lib/authContext';
-import { Heart, Pencil, ShoppingCart } from 'lucide-react';
+import { Check, Heart, Pencil, ShoppingCart } from 'lucide-react';
 
 // Created once at module level — not on every render
 const priceFormatter = new Intl.NumberFormat('en-IN');
@@ -20,6 +21,15 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
   const { addItem: addToCart } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist, isItemLoading } = useWishlist();
   const { isAdmin } = useAuth();
+  const [added, setAdded] = useState(false);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
 
 
   const formatPrice = (price: number) => priceFormatter.format(price);
@@ -91,7 +101,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         {/* Quick Add to Cart on Hover */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3 hidden md:flex items-end">
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(product); }}
+            onClick={handleAddToCart}
             className="w-full flex items-center justify-center gap-2 font-semibold rounded-full py-2 text-xs shadow-lg transition-colors" style={{backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}
           >
             <ShoppingCart size={14} /> Quick Add
@@ -151,13 +161,18 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
 
         {/* Add to Cart */}
         <button 
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(product); }} 
-          className="w-full flex items-center justify-center gap-2 font-bold rounded-full py-2 text-sm transition-colors"
-          style={{backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-mid)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-light)'; }}
+          onClick={handleAddToCart}
+          disabled={added}
+          className={`w-full flex items-center justify-center gap-2 font-bold rounded-full py-2 text-sm transition-all duration-200 ${
+            added 
+              ? 'bg-green-500 text-white border-green-500 scale-95' 
+              : ''
+          }`}
+          style={added ? {} : {backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}
+          onMouseEnter={e => { if (!added) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-mid)'; }}
+          onMouseLeave={e => { if (!added) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-light)'; }}
         >
-          <ShoppingCart size={15} /> Add to Cart
+          {added ? <><Check size={15} /> Added!</> : <><ShoppingCart size={15} /> Add to Cart</>}
         </button>
       </div>
     </div>
