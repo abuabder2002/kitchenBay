@@ -25,31 +25,31 @@ const socialLinks = [
 
 // Explicit correct paths — no slug-generation guessing
 const companyLinks = [
-  { label: 'About Us',      href: '/about-us'      },
-  { label: 'Store Locator', href: '/store-locator'  },
-  { label: 'Our Story',     href: '/story'          },
+  { label: 'About Us', href: '/about-us' },
+  { label: 'Store Locator', href: '/store-locator' },
+  { label: 'Our Story', href: '/story' },
 ];
 
 const helpLinks = [
-  { label: 'FAQ',               href: '/faq'             },
-  { label: 'Track Order',       href: '/track'           },  // page is at /track
+  { label: 'FAQ', href: '/faq' },
+  { label: 'Track Order', href: '/track' },  // page is at /track
   { label: 'Returns & Refunds', href: '/returns-refunds' },
-  { label: 'Contact Us',        href: '/contact'         },  // page is at /contact
+  { label: 'Contact Us', href: '/contact' },  // page is at /contact
 ];
 
 const policyLinks = [
   { label: 'Privacy Policy', href: '/privacy-policy' },
-  { label: 'Terms of Use',   href: '/terms-of-use'   },
+  { label: 'Terms of Use', href: '/terms-of-use' },
   { label: 'Shipping Policy', href: '/shipping-policy' },
 ];
 
 const shopLinks = [
-  { label: 'All Products',   href: '/products'              },
-  { label: 'Kitchenware',    href: '/products?cat=Kitchenware' },
-  { label: 'Dining',         href: '/products?cat=Dining'   },
-  { label: 'Décor',          href: '/products?cat=Décor'    },
-  { label: 'Wishlist',       href: '/wishlist'              },
-  { label: 'My Orders',      href: '/orders'                },
+  { label: 'All Products', href: '/products' },
+  { label: 'Kitchenware', href: '/products?cat=Kitchenware' },
+  { label: 'Dining', href: '/products?cat=Dining' },
+  { label: 'Décor', href: '/products?cat=Décor' },
+  { label: 'Wishlist', href: '/wishlist' },
+  { label: 'My Orders', href: '/orders' },
 ];
 
 export default function Footer() {
@@ -67,9 +67,9 @@ export default function Footer() {
                 <Image
                   src={logoImg}
                   alt="KitchenBay Logo"
-                  width={360}
-                  height={90}
-                  className="object-contain h-24 w-auto invert mix-blend-screen"
+                  width={540}
+                  height={190}
+                  className="object-contain h-28 sm:h-36 lg:h-40 w-auto max-w-[320px] sm:max-w-sm"
                 />
               </Link>
               <p className="text-sm text-blue-100/80 leading-relaxed max-w-xs">
