@@ -25,20 +25,42 @@ export default function AddProductPage() {
   // Dynamic categories/subcategories from DB
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const [dbSubcategories, setDbSubcategories] = useState<DbSubcategory[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
 
   useEffect(() => {
+    setCategoriesLoading(true);
+    setCategoriesError(null);
     fetch('/api/admin/categories?limit=100&isActive=true')
-      .then(r => r.json())
-      .then(d => setDbCategories(d.categories || []))
-      .catch(() => {});
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(d => {
+        const cats = d.categories || [];
+        console.log('[AddProduct] Loaded categories:', cats.length);
+        setDbCategories(cats);
+      })
+      .catch(err => {
+        console.error('[AddProduct] Failed to load categories:', err);
+        setCategoriesError('Failed to load categories. Please refresh the page.');
+      })
+      .finally(() => setCategoriesLoading(false));
   }, []);
 
   useEffect(() => {
     if (!form.categoryId) { setDbSubcategories([]); return; }
-    fetch(`/api/admin/subcategories?categoryId=${form.categoryId}&limit=100`)
-      .then(r => r.json())
-      .then(d => setDbSubcategories(d.subcategories || []))
-      .catch(() => {});
+    fetch(`/api/admin/subcategories?categoryId=${form.categoryId}&limit=100&isActive=true`)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(d => {
+        const subs = d.subcategories || [];
+        console.log('[AddProduct] Loaded subcategories:', subs.length);
+        setDbSubcategories(subs);
+      })
+      .catch(err => console.error('[AddProduct] Failed to load subcategories:', err));
   }, [form.categoryId]);
 
   const availableSubcategories = useMemo(() => dbSubcategories, [dbSubcategories]);
@@ -159,6 +181,12 @@ export default function AddProductPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Categories error banner */}
+        {categoriesError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+            ⚠️ {categoriesError}
+          </div>
+        )}
         {/* Basic Info */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -170,7 +198,9 @@ export default function AddProductPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <FormInput id="stock" label="Stock Quantity" type="number" placeholder="e.g. 50" value={form.stock} onChange={handleChange} required />
               <FormInput id="category" label="Category" as="select" value={form.categoryId} onChange={handleChange} required>
-                <option value="">Select a category</option>
+                <option value="">
+                  {categoriesLoading ? 'Loading categories…' : categoriesError ? 'Error loading categories' : 'Select a category'}
+                </option>
                 {dbCategories.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}

@@ -1,9 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
+import { verifyAdmin } from '@/lib/adminAuth';
 
 export async function GET() {
   try {
+    const auth = await verifyAdmin();
+    if ('error' in auth) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     // Define headers and some sample data
     const headers = [
       'Product Name',

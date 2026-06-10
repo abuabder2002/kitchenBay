@@ -1,48 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { currentUser } from '@clerk/nextjs/server';
+import { verifyAdmin } from '@/lib/adminAuth';
 import { downloadImage } from '@/lib/images/download';
 
 type TransactionClient = Omit<
   typeof prisma,
   '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
 >;
-// Helper to verify admin role
-async function verifyAdmin() {
-  const clerkUser = await currentUser();
-  if (!clerkUser) return { error: 'Please sign in to continue', status: 401 };
-
-  const email = clerkUser.emailAddresses?.[0]?.emailAddress;
-  if (!email) return { error: 'Clerk email address not found', status: 401 };
-
-  let user = await prisma.user.findUnique({ where: { clerkUserId: clerkUser.id } });
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-  const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
-  const isEmailAdmin = adminEmails.includes(email.toLowerCase()) || email.toLowerCase() === 'yousufsuhaily@gmail.com';
-
-  if (!isEmailAdmin) {
-    return { error: 'Unauthorized: Admin privileges required', status: 403 };
-  }
-
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        clerkUserId: clerkUser.id,
-        email: email.toLowerCase(),
-        name: clerkUser.fullName || clerkUser.username || email.split('@')[0],
-        role: 'ADMIN',
-      },
-    });
-  }
-
-  return { user, email };
-}
 
 export async function POST(req: NextRequest) {
   try {
     const auth = await verifyAdmin();
-    if (auth.error) {
+    if ('error' in auth) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 

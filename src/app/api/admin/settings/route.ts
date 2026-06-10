@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { currentUser } from '@clerk/nextjs/server';
+import { verifyAdmin } from '@/lib/adminAuth';
 
 export async function GET() {
   try {
-    const user = await currentUser();
-    const email = user?.emailAddresses?.[0]?.emailAddress;
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-    const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
-
-    if (!user || !email || (!adminEmails.includes(email.toLowerCase()) && email.toLowerCase() !== 'yousufsuhaily@gmail.com')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await verifyAdmin();
+    if ('error' in auth) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     let settings = await prisma.storeSettings.findUnique({
@@ -36,13 +32,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await currentUser();
-    const email = user?.emailAddresses?.[0]?.emailAddress;
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-    const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
-
-    if (!user || !email || (!adminEmails.includes(email.toLowerCase()) && email.toLowerCase() !== 'yousufsuhaily@gmail.com')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await verifyAdmin();
+    if ('error' in auth) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     const { razorpayKeyId, razorpayKeySecret } = await req.json();

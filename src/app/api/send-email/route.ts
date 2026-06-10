@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { getAdminEmails } from '@/lib/adminAuth';
 
 export async function POST(request: Request) {
   try {
@@ -172,7 +173,7 @@ export async function POST(request: Request) {
     await transporter.sendMail({
       from: smtpFrom,
       to: `${order.customer} <${order.email}>`,
-      bcc: [process.env.ADMIN_EMAIL || 'admin@Kitchenbay.com', 'yousufsuhaily@gmail.com'].join(','),
+      bcc: getAdminEmails().join(','),
       subject: emailSubject,
       html: htmlBody,
     });

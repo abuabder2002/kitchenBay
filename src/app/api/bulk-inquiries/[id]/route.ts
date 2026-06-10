@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
+import { getAdminEmails } from '@/lib/adminAuth';
 
 // ── Helper: Get or create DB user from Clerk session ────────
 async function getDbUser() {
@@ -37,8 +38,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Please sign in to continue' }, { status: 401 });
     }
 
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-    const isAdmin = [adminEmail.toLowerCase(), 'yousufsuhaily@gmail.com'].includes(user.email.toLowerCase());
+    const isAdmin = getAdminEmails().includes(user.email.toLowerCase());
 
     const inquiry = await prisma.bulkInquiry.findUnique({
       where: { id },
@@ -80,8 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Please sign in to continue' }, { status: 401 });
     }
 
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-    const isAdmin = [adminEmail.toLowerCase(), 'yousufsuhaily@gmail.com'].includes(user.email.toLowerCase());
+    const isAdmin = getAdminEmails().includes(user.email.toLowerCase());
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });

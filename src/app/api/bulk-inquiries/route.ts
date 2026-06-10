@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
 import nodemailer from 'nodemailer';
+import { getAdminEmails } from '@/lib/adminAuth';
 
 // ── Helper: Get or create DB user from Clerk session ────────
 async function getDbUser() {
@@ -71,8 +72,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Please sign in to view inquiries' }, { status: 401 });
     }
 
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-    const isAdmin = [adminEmail.toLowerCase(), 'yousufsuhaily@gmail.com'].includes(user.email.toLowerCase());
+    const isAdmin = getAdminEmails().includes(user.email.toLowerCase());
 
     const url = new URL(req.url);
     const statusFilter = url.searchParams.get('status') || undefined;
@@ -228,8 +228,8 @@ export async function POST(req: NextRequest) {
     // ── Email Notifications ─────────────────────────────────
     const transporter = createEmailTransporter();
     if (transporter) {
-      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-      const fromEmail = process.env.SMTP_FROM || 'abdershaheen4@gmail.com';
+      const adminEmailsList = getAdminEmails();
+      const fromEmail = process.env.SMTP_FROM || adminEmailsList[0];
 
       const itemsHtml = productsDetails
         .map(
@@ -245,7 +245,7 @@ export async function POST(req: NextRequest) {
       // 1. Admin Alert Email
       const adminMailOptions = {
         from: fromEmail,
-        to: [adminEmail, 'yousufsuhaily@gmail.com'].join(','),
+        to: adminEmailsList.join(','),
         subject: `🚨 [B2B Wholesale Lead] New Bulk Inquiry from ${customerName}`,
         html: `
           <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">

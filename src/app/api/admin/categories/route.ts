@@ -1,28 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { verifyAdmin } from '@/lib/adminAuth';
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-// GET: List all categories
+// GET: List all categories — public (used by product dropdowns & admin UI)
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
+    const isActiveParam = searchParams.get('isActive');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const skip = (page - 1) * limit;
 
-    const where = search
-      ? { name: { contains: search, mode: 'insensitive' as const } }
-      : {};
+    const where: Record<string, unknown> = {};
+    if (search) where.name = { contains: search, mode: 'insensitive' as const };
+    if (isActiveParam === 'true') where.isActive = true;
+    if (isActiveParam === 'false') where.isActive = false;
 
     const [categories, total] = await Promise.all([
       prisma.category.findMany({
         where,
         include: { _count: { select: { subcategories: true, products: true } } },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { name: 'asc' },
         skip,
         take: limit,
       }),
@@ -39,6 +42,11 @@ export async function GET(req: NextRequest) {
 // POST: Create a category
 export async function POST(req: NextRequest) {
   try {
+    const auth = await verifyAdmin();
+    if ('error' in auth) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     const body = await req.json();
     const { name, image, isActive } = body;
 

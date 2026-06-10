@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { getAdminEmails } from '@/lib/adminAuth';
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +13,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || process.env.SMTP_USER;
+    const adminEmailsList = getAdminEmails();
+    const adminEmail = adminEmailsList[0] || process.env.SMTP_USER;
 
     if (!adminEmail) {
       console.error('Admin email not configured in .env');
@@ -34,7 +36,7 @@ export async function POST(req: Request) {
 
     const mailOptions = {
       from: process.env.SMTP_FROM || process.env.SMTP_USER,
-      to: [adminEmail, 'yousufsuhaily@gmail.com'].join(','),
+      to: adminEmailsList.join(','),
       subject: `New Contact Message from ${firstName} ${lastName}`,
       html: `
         <h2>New Contact Form Submission</h2>

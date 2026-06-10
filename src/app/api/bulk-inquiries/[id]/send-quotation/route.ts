@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
 import nodemailer from 'nodemailer';
+import { getAdminEmails } from '@/lib/adminAuth';
 
 // ── Helper: Get or create DB user from Clerk session ────────
 async function getDbUser() {
@@ -40,8 +41,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // Admin-only
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'abdershaheen4@gmail.com';
-    const isAdmin = [adminEmail.toLowerCase(), 'yousufsuhaily@gmail.com'].includes(user.email.toLowerCase());
+    const adminEmailsList = getAdminEmails();
+    const isAdmin = adminEmailsList.includes(user.email.toLowerCase());
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
     }
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const smtpPort = parseInt(process.env.SMTP_PORT || '587');
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASSWORD;
-    const fromEmail = process.env.SMTP_FROM || smtpUser || adminEmail;
+    const fromEmail = process.env.SMTP_FROM || smtpUser || adminEmailsList[0];
 
     if (!smtpUser || !smtpPass) {
       return NextResponse.json(
@@ -241,7 +242,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     <div style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:20px 28px; text-align:center;">
       <p style="margin:0 0 4px 0; font-size:13px; font-weight:700; color:#1e293b;">Kitchenbay B2B Sales Team</p>
       <p style="margin:0 0 4px 0; font-size:12px; color:#64748b;">Premium Traditional Indian Cookware & Decor</p>
-      <p style="margin:6px 0 0 0; font-size:11px; color:#94a3b8;">📧 ${adminEmail} &nbsp;|&nbsp; 🌐 kitchenbay.com</p>
+      <p style="margin:6px 0 0 0; font-size:11px; color:#94a3b8;">📧 ${adminEmailsList[0]} &nbsp;|&nbsp; 🌐 kitchenbay.com</p>
     </div>
 
   </div>
