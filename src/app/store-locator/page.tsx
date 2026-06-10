@@ -10,27 +10,11 @@ export default function StoreLocatorPage() {
   const stores = [
     {
       id: 1,
-      name: "Kitchenbay Flagship - Delhi",
-      address: "123 Heritage Marg, Connaught Place, New Delhi 110001",
-      phone: "+91 11 2345 6789",
-      hours: "Mon-Sun: 10:00 AM - 9:00 PM",
-      mapsLink: "https://maps.app.goo.gl/FZV6UQXnDwivVp1o9",
-    },
-    {
-      id: 2,
-      name: "Kitchenbay Studio - Mumbai",
-      address: "45 Kitchenbay Avenue, Kala Ghoda, Mumbai 400001",
-      phone: "+91 22 9876 5432",
-      hours: "Mon-Sat: 10:30 AM - 8:30 PM",
-      mapsLink: "https://maps.app.goo.gl/FZV6UQXnDwivVp1o9",
-    },
-    {
-      id: 3,
-      name: "Kitchenbay Experience - Bangalore",
-      address: "78 Craft Road, Indiranagar, Bengaluru 560038",
-      phone: "+91 80 1234 5678",
-      hours: "Mon-Sun: 11:00 AM - 9:30 PM",
-      mapsLink: "https://maps.app.goo.gl/FZV6UQXnDwivVp1o9",
+      name: "Kitchenbay Private Limited",
+      address: "19/A Line Street, Attur, Salem, Tamil Nadu 636102",
+      phone: "+91 98765 43210", // Update this with actual phone if available
+      hours: "Mon-Sat: 9:00 AM - 7:00 PM",
+      mapsLink: "https://www.google.com/maps/search/?api=1&query=19%2FA+Line+Street%2C+Attur%2C+Salem%2C+Tamil+Nadu+636102",
     }
   ];
 
