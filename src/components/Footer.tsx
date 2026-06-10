@@ -40,7 +40,7 @@ const helpLinks = [
 const policyLinks = [
   { label: 'Privacy Policy', href: '/privacy-policy' },
   { label: 'Terms of Use',   href: '/terms-of-use'   },
-  { label: 'Cookie Policy',  href: '/cookie-policy'  },
+  { label: 'Shipping Policy', href: '/shipping-policy' },
 ];
 
 const shopLinks = [

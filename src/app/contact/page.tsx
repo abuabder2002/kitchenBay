@@ -1,12 +1,9 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react/no-unescaped-entities */
-
 
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Mail, MapPin, Phone, Loader2 } from 'lucide-react';
+import { Mail, MapPin, Loader2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export default function ContactPage() {
@@ -71,7 +68,7 @@ export default function ContactPage() {
           <span className="text-brand-accent text-sm font-semibold tracking-[0.15em] uppercase mb-4 block">Get In Touch</span>
           <h1 className="font-serif text-5xl font-bold text-brand-text mb-6">Contact Us</h1>
           <p className="text-brand-muted max-w-2xl mx-auto text-lg">
-            We'd love to hear from you. Reach out with any questions, wholesale inquiries, or just to say hello.
+            We&apos;d love to hear from you. Reach out with any questions, support requests, or just to say hello.
           </p>
         </div>
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -141,29 +138,27 @@ export default function ContactPage() {
               <div className="space-y-8">
                 <div className="flex items-start gap-5">
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
-                    <MapPin className="text-brand-accent" size={22} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-brand-text mb-1">Our Studio</h3>
-                    <p className="text-brand-muted leading-relaxed">123 Kitchenbay Village Road<br />Jayanagar, Bangalore<br />Karnataka 560041</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-5">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
                     <Mail className="text-brand-accent" size={22} />
                   </div>
                   <div>
                     <h3 className="font-bold text-brand-text mb-1">Email Us</h3>
-                    <p className="text-brand-muted leading-relaxed">namaste@kitchenbay.com<br />support@kitchenbay.com</p>
+                    <p className="text-brand-muted leading-relaxed">
+                      kitchenbay.co.in@gmail.com
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-5">
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
-                    <Phone className="text-brand-accent" size={22} />
+                    <MapPin className="text-brand-accent" size={22} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-brand-text mb-1">Call Us</h3>
-                    <p className="text-brand-muted leading-relaxed">+91 98765 43210<br />Mon-Fri, 9am to 6pm IST</p>
+                    <h3 className="font-bold text-brand-text mb-1">Our Location</h3>
+                    <p className="text-brand-muted leading-relaxed">
+                      Kitchenbay Private Limited<br />
+                      19/A, Line Street<br />
+                      Attur, Salem (DT)<br />
+                      Tamil Nadu - 636102
+                    </p>
                   </div>
                 </div>
               </div>
