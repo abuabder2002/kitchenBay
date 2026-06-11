@@ -26,6 +26,76 @@ import {
   Briefcase,
   CheckCircle2
 } from 'lucide-react';
+import { useAuth } from '@/lib/authContext';
+import EditButton from '@/components/cms/EditButton';
+import CMSModal from '@/components/cms/CMSModal';
+import { useEffect } from 'react';
+
+const defaultCategories = [
+  {
+    id: 'wedding',
+    title: 'Wedding Gifts',
+    desc: 'Timeless handcrafted vessels for the perfect beginning.',
+    img: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800&auto=format&fit=crop'
+  },
+  {
+    id: 'housewarming',
+    title: 'Housewarming Gifts',
+    desc: 'Heritage cookware to bless a new kitchen and home.',
+    img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=400&auto=format&fit=crop'
+  },
+  {
+    id: 'festival',
+    title: 'Festival Gifts',
+    desc: 'Auspicious brass and copper items for festive joy.',
+    img: 'https://images.unsplash.com/photo-1605389659020-f5e93345e69e?q=80&w=800&auto=format&fit=crop'
+  },
+  {
+    id: 'corporate',
+    title: 'Corporate Gifting',
+    desc: 'Premium Kitchenbay gifts for clients and employees.',
+    img: 'https://images.unsplash.com/photo-1556761175-5973dc0f32b7?q=80&w=800&auto=format&fit=crop'
+  },
+  {
+    id: 'return',
+    title: 'Return Gifts',
+    desc: 'Meaningful handcrafted tokens for your guests.',
+    img: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop'
+  },
+  {
+    id: 'heritage',
+    title: 'Premium Heritage',
+    desc: 'Luxury traditional heirlooms meant to last generations.',
+    img: 'https://images.unsplash.com/photo-1603566164673-8a3c874bc0b3?q=80&w=800&auto=format&fit=crop'
+  }
+];
+
+const defaultHampers = [
+  {
+    title: 'The Royal Wedding Hamper',
+    desc: 'An exquisite collection of hand-hammered brass vessels, perfect for newlyweds.',
+    img: 'https://images.unsplash.com/photo-1615486171448-4fb325087790?q=80&w=600&auto=format&fit=crop',
+    price: '₹15,000'
+  },
+  {
+    title: 'Auspicious Housewarming Set',
+    desc: 'Cast iron essentials and a traditional copper water dispenser for a healthy start.',
+    img: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?q=80&w=600&auto=format&fit=crop',
+    price: '₹8,500'
+  },
+  {
+    title: 'Diwali Festival Collection',
+    desc: 'Shimmering brass diyas and copper serveware wrapped in festive elegance.',
+    img: 'https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?q=80&w=600&auto=format&fit=crop',
+    price: '₹5,200'
+  },
+  {
+    title: 'Executive Corporate Gift',
+    desc: 'Premium copper tumblers and personalized note in a sleek wooden box.',
+    img: 'https://images.unsplash.com/photo-1544715567-0c151121d5c2?q=80&w=600&auto=format&fit=crop',
+    price: '₹3,000'
+  }
+];
 
 export default function GiftConciergePage() {
   const [finderState, setFinderState] = useState({
@@ -34,71 +104,48 @@ export default function GiftConciergePage() {
     quantity: ''
   });
 
-  const categories = [
-    {
-      id: 'wedding',
-      title: 'Wedding Gifts',
-      desc: 'Timeless handcrafted vessels for the perfect beginning.',
-      img: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-      id: 'housewarming',
-      title: 'Housewarming Gifts',
-      desc: 'Heritage cookware to bless a new kitchen and home.',
-      img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=400&auto=format&fit=crop'
-    },
-    {
-      id: 'festival',
-      title: 'Festival Gifts',
-      desc: 'Auspicious brass and copper items for festive joy.',
-      img: 'https://images.unsplash.com/photo-1605389659020-f5e93345e69e?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-      id: 'corporate',
-      title: 'Corporate Gifting',
-      desc: 'Premium Kitchenbay gifts for clients and employees.',
-      img: 'https://images.unsplash.com/photo-1556761175-5973dc0f32b7?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-      id: 'return',
-      title: 'Return Gifts',
-      desc: 'Meaningful handcrafted tokens for your guests.',
-      img: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop'
-    },
-    {
-      id: 'heritage',
-      title: 'Premium Heritage',
-      desc: 'Luxury traditional heirlooms meant to last generations.',
-      img: 'https://images.unsplash.com/photo-1603566164673-8a3c874bc0b3?q=80&w=800&auto=format&fit=crop'
-    }
-  ];
+  const { isAdmin } = useAuth();
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{isOpen: boolean; sectionId: string; sectionTitle: string; schema: any[]; initialData: any[] } | null>(null);
 
-  const hampers = [
-    {
-      title: 'The Royal Wedding Hamper',
-      desc: 'An exquisite collection of hand-hammered brass vessels, perfect for newlyweds.',
-      img: 'https://images.unsplash.com/photo-1615486171448-4fb325087790?q=80&w=600&auto=format&fit=crop',
-      price: '₹15,000'
-    },
-    {
-      title: 'Auspicious Housewarming Set',
-      desc: 'Cast iron essentials and a traditional copper water dispenser for a healthy start.',
-      img: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?q=80&w=600&auto=format&fit=crop',
-      price: '₹8,500'
-    },
-    {
-      title: 'Diwali Festival Collection',
-      desc: 'Shimmering brass diyas and copper serveware wrapped in festive elegance.',
-      img: 'https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?q=80&w=600&auto=format&fit=crop',
-      price: '₹5,200'
-    },
-    {
-      title: 'Executive Corporate Gift',
-      desc: 'Premium copper tumblers and personalized note in a sleek wooden box.',
-      img: 'https://images.unsplash.com/photo-1544715567-0c151121d5c2?q=80&w=600&auto=format&fit=crop',
-      price: '₹3,000'
+  const [categories, setCategories] = useState(defaultCategories);
+  const [hampers, setHampers] = useState(defaultHampers);
+
+  const handleEditClick = (sectionId: string, sectionTitle: string, schema: any[], initialData: any[]) => {
+    setModalConfig({ isOpen: true, sectionId, sectionTitle, schema, initialData });
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsEditMode(!!isAdmin);
     }
-  ];
+  }, [isAdmin]);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await fetch('/api/content?page=gift-concierge');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.content) {
+            const getParsed = (key: string, fallback: any) => {
+              const record = data.content.find((c: any) => c.key === key);
+              if (record && record.value) {
+                try { return JSON.parse(record.value); } catch(e) { return fallback; }
+              }
+              return fallback;
+            };
+            
+            setCategories(getParsed('categories', defaultCategories));
+            setHampers(getParsed('hampers', defaultHampers));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching CMS content:", error);
+      }
+    };
+    fetchContent();
+  }, []);
 
   const perfectFor = [
     { title: 'Weddings', icon: <Heart size={32} className="mb-4 text-[--color-brand-accent-yellow]" /> },
@@ -192,7 +239,13 @@ export default function GiftConciergePage() {
         </section>
 
         {/* SECTION 2 - GIFTING CATEGORIES */}
-        <section id="collections" className="pt-32 pb-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-white">
+        <section id="collections" className="pt-32 pb-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-white relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('categories', 'Gifting Collections', [
+            { key: 'title', label: 'Title' },
+            { key: 'desc', label: 'Description' },
+            { key: 'img', label: 'Image URL', type: 'image' },
+            { key: 'id', label: 'Category ID' }
+          ], categories)} label="Edit Collections" />}
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-4">Curated Gifting Collections</h2>
             <div className="w-24 h-1 bg-[--color-brand-accent-yellow] mx-auto"></div>
@@ -215,7 +268,13 @@ export default function GiftConciergePage() {
         </section>
 
         {/* SECTION - FEATURED HAMPERS */}
-        <section className="py-24 bg-[#E6F2FF] relative overflow-hidden border-y border-[#BFDBFE]">
+        <section className="py-24 bg-[#E6F2FF] relative overflow-hidden border-y border-[#BFDBFE] group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('hampers', 'Featured Hampers', [
+            { key: 'title', label: 'Title' },
+            { key: 'desc', label: 'Description' },
+            { key: 'price', label: 'Price' },
+            { key: 'img', label: 'Image URL', type: 'image' }
+          ], hampers)} label="Edit Hampers" />}
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#BFDBFE]/30 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
 
@@ -467,6 +526,22 @@ export default function GiftConciergePage() {
       </main>
 
       <Footer />
+
+      {/* CMS Modals */}
+      {modalConfig && (
+        <CMSModal 
+          isOpen={modalConfig.isOpen}
+          onClose={() => setModalConfig(null)}
+          onSaveSuccess={() => {
+            if (typeof window !== 'undefined') window.location.reload();
+          }}
+          sectionId={modalConfig.sectionId}
+          sectionTitle={modalConfig.sectionTitle}
+          initialData={modalConfig.initialData}
+          schema={modalConfig.schema}
+          pageName="gift-concierge"
+        />
+      )}
     </div>
   );
 }

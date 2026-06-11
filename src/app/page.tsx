@@ -92,9 +92,8 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    if (isAdmin && typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      setIsEditMode(params.get('editMode') === 'true');
+    if (typeof window !== 'undefined') {
+      setIsEditMode(!!isAdmin);
     }
   }, [isAdmin]);
 

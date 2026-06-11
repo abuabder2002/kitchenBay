@@ -14,7 +14,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: '/admin', label: 'Dashboard', icon: <BarChart2 size={18} /> },
-  { href: '/?editMode=true', label: 'CMS / Content', icon: <Layers size={18} /> },
+  { href: '/', label: 'CMS / Content', icon: <Layers size={18} /> },
   { href: '/admin/products', label: 'Products', icon: <Package size={18} /> },
   { href: '/admin/products/add', label: 'Add Product', icon: <ShoppingBag size={18} /> },
   { href: '/admin/categories', label: 'Categories', icon: <Tag size={18} /> },

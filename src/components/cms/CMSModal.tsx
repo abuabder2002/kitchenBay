@@ -13,9 +13,10 @@ interface CMSModalProps {
   sectionTitle: string;
   initialData: any[]; 
   schema: { key: string, label: string, type?: 'text' | 'image' | 'number' | 'product-link' }[];
+  pageName?: string;
 }
 
-export default function CMSModal({ isOpen, onClose, onSaveSuccess, sectionId, sectionTitle, initialData, schema }: CMSModalProps) {
+export default function CMSModal({ isOpen, onClose, onSaveSuccess, sectionId, sectionTitle, initialData, schema, pageName = 'home' }: CMSModalProps) {
   const { products } = useProducts();
   const [data, setData] = useState<any[]>([...initialData]);
   const [saving, setSaving] = useState(false);
@@ -81,7 +82,7 @@ export default function CMSModal({ isOpen, onClose, onSaveSuccess, sectionId, se
     try {
       const updates = [
         {
-          page: 'home',
+          page: pageName,
           section: 'hero', // Assuming hero for now, can be parameterized
           key: sectionId,
           value: JSON.stringify(data),
