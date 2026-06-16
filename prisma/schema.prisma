@@ -84,10 +84,17 @@ model Product {
   sku              String?           @unique // Stock‑keeping unit, unique if present
   material         String?           // Material description
   dimensions       String?           // e.g., "10x20x5 cm"
+  height           Float?            // Height in cm
+  width            Float?            // Width/Breadth in cm
+  length           Float?            // Length in cm
+  diameter         Float?            // Diameter in cm
+  weight           Float?            // Weight in kg/g
+  sizeCategory     String?           // Small, Medium, Large, Extra Large, Standard, Custom
   tags             String[]          // Array of tags/keywords
   moq              Int?              // Minimum Order Quantity for bulk
   bulkPricingTiers Json?             // [{ qty: number, price: number }]
   image            String
+  subImages        String[]          @default([])
   rating           Float             @default(0)
   reviewCount      Int               @default(0)
   featured         Boolean           @default(false)

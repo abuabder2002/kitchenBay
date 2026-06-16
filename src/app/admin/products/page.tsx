@@ -91,6 +91,59 @@ export default function AdminProductsPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleEditSubImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxSize = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxSize) {
+              height *= maxSize / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width *= maxSize / height;
+              height = maxSize;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          setEditingProduct(prev => {
+            if (!prev) return null;
+            return { ...prev, subImages: [...(prev.subImages || []), dataUrl] };
+          });
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeEditSubImage = (indexToRemove: number) => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        subImages: (prev.subImages || []).filter((_, idx) => idx !== indexToRemove)
+      };
+    });
+  };
+
   const availableSubcategories = editingProduct 
     ? subcategories.filter(s => s.category === editingProduct.category) 
     : [];
@@ -407,6 +460,45 @@ export default function AdminProductsPage() {
                   <span className="font-bold text-violet-900 text-lg">{formatPrice(editingProduct.finalPrice)}</span>
                 </div>
 
+                {/* Dimensions & Sizing */}
+                <div className="pt-2">
+                  <h3 className="font-semibold text-gray-800 mb-3">Dimensions & Sizing</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="sizeCategory" className="text-sm font-medium text-gray-700">Size Category</label>
+                      <select id="sizeCategory" value={editingProduct.sizeCategory || ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all">
+                        <option value="">Select Size</option>
+                        <option value="Small">Small</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Large">Large</option>
+                        <option value="Extra Large">Extra Large</option>
+                        <option value="Standard">Standard</option>
+                        <option value="Custom">Custom</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="weight" className="text-sm font-medium text-gray-700">Weight (kg/g)</label>
+                      <input id="weight" type="number" placeholder={editingProduct.sizeCategory === 'Small' ? 'e.g. 0.5' : editingProduct.sizeCategory === 'Medium' ? 'e.g. 1.5' : editingProduct.sizeCategory === 'Large' ? 'e.g. 3.0' : editingProduct.sizeCategory === 'Extra Large' ? 'e.g. 5.0' : 'e.g. 1.5'} value={editingProduct.weight ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="length" className="text-sm font-medium text-gray-700">Length (cm)</label>
+                      <input id="length" type="number" placeholder={editingProduct.sizeCategory === 'Small' ? 'e.g. 10' : editingProduct.sizeCategory === 'Medium' ? 'e.g. 20' : editingProduct.sizeCategory === 'Large' ? 'e.g. 30' : editingProduct.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 20'} value={editingProduct.length ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="width" className="text-sm font-medium text-gray-700">Width (cm)</label>
+                      <input id="width" type="number" placeholder={editingProduct.sizeCategory === 'Small' ? 'e.g. 10' : editingProduct.sizeCategory === 'Medium' ? 'e.g. 20' : editingProduct.sizeCategory === 'Large' ? 'e.g. 30' : editingProduct.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 15'} value={editingProduct.width ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="height" className="text-sm font-medium text-gray-700">Height (cm)</label>
+                      <input id="height" type="number" placeholder={editingProduct.sizeCategory === 'Small' ? 'e.g. 10' : editingProduct.sizeCategory === 'Medium' ? 'e.g. 15' : editingProduct.sizeCategory === 'Large' ? 'e.g. 25' : editingProduct.sizeCategory === 'Extra Large' ? 'e.g. 40' : 'e.g. 10'} value={editingProduct.height ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="diameter" className="text-sm font-medium text-gray-700">Diameter (cm)</label>
+                      <input id="diameter" type="number" placeholder={editingProduct.sizeCategory === 'Small' ? 'e.g. 10' : editingProduct.sizeCategory === 'Medium' ? 'e.g. 20' : editingProduct.sizeCategory === 'Large' ? 'e.g. 30' : editingProduct.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 12'} value={editingProduct.diameter ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                    </div>
+                  </div>
+                </div>
+
                 {/* Image Upload Option */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-gray-700">Product Image</label>
@@ -421,6 +513,29 @@ export default function AdminProductsPage() {
                     <label className="flex-1 cursor-pointer px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors text-center border-dashed border-2">
                       <span className="text-blue-600 font-medium">Click to upload new image</span>
                       <input type="file" accept="image/*" className="hidden" onChange={handleEditImageUpload} />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Sub Images Upload Option */}
+                <div className="flex flex-col gap-1.5 mt-2 pt-4 border-t border-gray-100">
+                  <label className="text-sm font-medium text-gray-700">Additional Images (Optional)</label>
+                  <div className="flex items-center gap-4 flex-wrap">
+                    {(editingProduct.subImages || []).map((imgSrc, idx) => (
+                      <div key={idx} className="relative group">
+                        <img src={imgSrc} alt={`Sub image ${idx + 1}`} className="w-16 h-16 object-cover rounded-xl border border-gray-200" />
+                        <button 
+                          type="button" 
+                          onClick={() => removeEditSubImage(idx)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    <label className="w-16 h-16 cursor-pointer flex items-center justify-center text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors border-dashed border-2">
+                      <Upload size={18} />
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={handleEditSubImageUpload} />
                     </label>
                   </div>
                 </div>

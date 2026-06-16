@@ -209,17 +209,9 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
                   <span className="text-gray-500">Subtotal</span>
                   <span className="font-medium">{formatPrice(order.subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">CGST</span>
-                  <span className="font-medium text-emerald-600">{formatPrice(order.cgstAmount)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">SGST</span>
-                  <span className="font-medium text-emerald-600">{formatPrice(order.sgstAmount)}</span>
-                </div>
                 <div className="flex justify-between text-xs text-gray-400">
-                  <span>Total Tax (CGST + SGST)</span>
-                  <span>{formatPrice(order.gstAmount || (order.cgstAmount + order.sgstAmount))}</span>
+                  <span>Tax</span>
+                  <span>Inclusive of all taxes</span>
                 </div>
                 <div className="border-t border-gray-100 pt-2 flex justify-between">
                   <span className="font-bold text-gray-900">Total</span>

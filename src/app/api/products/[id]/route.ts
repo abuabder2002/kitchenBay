@@ -22,6 +22,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     delete updateData.finalPrice;
     delete updateData.isFromDb;
     delete updateData.discount;
+
+    if (updateData.height !== undefined) updateData.height = updateData.height ? parseFloat(updateData.height) : null;
+    if (updateData.width !== undefined) updateData.width = updateData.width ? parseFloat(updateData.width) : null;
+    if (updateData.length !== undefined) updateData.length = updateData.length ? parseFloat(updateData.length) : null;
+    if (updateData.diameter !== undefined) updateData.diameter = updateData.diameter ? parseFloat(updateData.diameter) : null;
+    if (updateData.weight !== undefined) updateData.weight = updateData.weight ? parseFloat(updateData.weight) : null;
     
     if (priceInPaise !== undefined) updateData.price = priceInPaise;
     if (originalPriceInPaise !== undefined) updateData.discountPrice = originalPriceInPaise;

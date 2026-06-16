@@ -28,6 +28,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   const [activeTab, setActiveTab] = useState<'story' | 'Kitchenbay' | 'care'>('story');
 
@@ -72,7 +73,7 @@ export default function ProductDetailPage() {
             <div className="space-y-6">
               <div className="relative w-full aspect-[4/5] md:aspect-[3/4] bg-white rounded-sm overflow-hidden shadow-md">
                 <Image
-                  src={product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop'}
+                  src={selectedImage || product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop'}
                   alt={product.name}
                   fill
                   className="object-cover"
@@ -80,13 +81,17 @@ export default function ProductDetailPage() {
                 />
               </div>
               <div className="grid grid-cols-4 gap-4">
-                 <div className="relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 border-[--color-brand-text] cursor-pointer">
-                    <Image src={product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=400&auto=format&fit=crop'} alt="Thumb 1" fill className="object-cover opacity-100" />
-                 </div>
-                 {/* Placeholders for additional gallery images */}
-                 {[1,2,3].map(i => (
-                   <div key={i} className="relative w-full aspect-square bg-[--color-brand-card] rounded-sm overflow-hidden border border-transparent cursor-not-allowed opacity-50">
-                      <Image src={product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=400&auto=format&fit=crop'} alt={`Thumb ${i+1}`} fill className="object-cover" />
+                 {[product.image, ...(product.subImages || [])].filter(Boolean).map((img, idx) => (
+                   <div 
+                     key={idx} 
+                     onClick={() => setSelectedImage(img)}
+                     className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${
+                       (selectedImage === img) || (!selectedImage && idx === 0) 
+                         ? 'border-[--color-brand-text] opacity-100' 
+                         : 'border-transparent opacity-60 hover:opacity-100'
+                     }`}
+                   >
+                      <Image src={img || ''} alt={`Thumb ${idx + 1}`} fill className="object-cover" />
                    </div>
                  ))}
               </div>

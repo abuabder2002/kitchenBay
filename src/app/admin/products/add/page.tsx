@@ -6,7 +6,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import FormInput from '@/components/FormInput';
 import { useProducts } from '@/lib/productsContext';
-import { Package, Calculator, Check, Upload, ShieldCheck } from 'lucide-react';
+import { Package, Calculator, Check, Upload, ShieldCheck, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface DbCategory { id: string; name: string; slug: string; }
@@ -18,7 +18,8 @@ export default function AddProductPage() {
   const [form, setForm] = useState({
     name: '', description: '', price: '', originalPrice: '', gstPercent: '18',
     stock: '', category: '', subcategory: '', categoryId: '', subcategoryId: '',
-    material: '', image: '', rating: '5.0', reviewCount: '0'
+    material: '', image: '', subImages: [] as string[], rating: '5.0', reviewCount: '0',
+    height: '', width: '', length: '', diameter: '', weight: '', sizeCategory: ''
   });
   const [saved, setSaved] = useState(false);
 
@@ -131,6 +132,53 @@ export default function AddProductPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleSubImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxSize = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxSize) {
+              height *= maxSize / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width *= maxSize / height;
+              height = maxSize;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          setForm(prev => ({ ...prev, subImages: [...prev.subImages, dataUrl] }));
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeSubImage = (indexToRemove: number) => {
+    setForm(prev => ({
+      ...prev,
+      subImages: prev.subImages.filter((_, idx) => idx !== indexToRemove)
+    }));
+  };
+
   const basePrice = parseFloat(form.price) || 0;
   const gst = parseFloat(form.gstPercent) || 0;
   const gstAmount = Math.round(basePrice * gst / 100);
@@ -161,9 +209,16 @@ export default function AddProductPage() {
       subcategory: form.subcategory,
       material: form.material || 'Standard',
       image: form.image,
+      subImages: form.subImages,
       rating: parseFloat(form.rating) || 5.0,
       reviewCount: parseInt(form.reviewCount) || 0,
       featured: false,
+      height: form.height ? parseFloat(form.height) : undefined,
+      width: form.width ? parseFloat(form.width) : undefined,
+      length: form.length ? parseFloat(form.length) : undefined,
+      diameter: form.diameter ? parseFloat(form.diameter) : undefined,
+      weight: form.weight ? parseFloat(form.weight) : undefined,
+      sizeCategory: form.sizeCategory || undefined,
     });
 
     setSaved(true);
@@ -233,6 +288,29 @@ export default function AddProductPage() {
                 </label>
               </div>
               <p className="text-xs text-gray-500 mt-1">Image will be automatically resized to perfectly match other product cards.</p>
+            </div>
+            
+            {/* Sub Images */}
+            <div className="flex flex-col gap-1.5 mt-4 border-t pt-4">
+              <label className="text-sm font-medium text-gray-700">Additional Images (Optional)</label>
+              <div className="flex items-center gap-4 flex-wrap">
+                {form.subImages.map((imgSrc, idx) => (
+                  <div key={idx} className="relative group">
+                    <img src={imgSrc} alt={`Sub image ${idx + 1}`} className="w-20 h-20 object-cover rounded-xl border border-gray-200" />
+                    <button 
+                      type="button" 
+                      onClick={() => removeSubImage(idx)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                <label className="w-20 h-20 cursor-pointer flex items-center justify-center text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors border-dashed border-2">
+                  <Upload size={20} />
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleSubImageUpload} />
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -315,6 +393,29 @@ export default function AddProductPage() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Dimensions & Sizing */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Package size={18} className="text-blue-600" /> Dimensions & Sizing
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <FormInput id="sizeCategory" label="Size Category" as="select" value={form.sizeCategory} onChange={handleChange}>
+              <option value="">Select Size</option>
+              <option value="Small">Small</option>
+              <option value="Medium">Medium</option>
+              <option value="Large">Large</option>
+              <option value="Extra Large">Extra Large</option>
+              <option value="Standard">Standard</option>
+              <option value="Custom">Custom</option>
+            </FormInput>
+            <FormInput id="weight" label="Weight (kg/g)" placeholder={form.sizeCategory === 'Small' ? 'e.g. 0.5' : form.sizeCategory === 'Medium' ? 'e.g. 1.5' : form.sizeCategory === 'Large' ? 'e.g. 3.0' : form.sizeCategory === 'Extra Large' ? 'e.g. 5.0' : 'e.g. 1.5'} type="number" value={form.weight} onChange={handleChange} />
+            <FormInput id="length" label="Length (cm)" placeholder={form.sizeCategory === 'Small' ? 'e.g. 10' : form.sizeCategory === 'Medium' ? 'e.g. 20' : form.sizeCategory === 'Large' ? 'e.g. 30' : form.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 20'} type="number" value={form.length} onChange={handleChange} />
+            <FormInput id="width" label="Width / Breadth (cm)" placeholder={form.sizeCategory === 'Small' ? 'e.g. 10' : form.sizeCategory === 'Medium' ? 'e.g. 20' : form.sizeCategory === 'Large' ? 'e.g. 30' : form.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 15'} type="number" value={form.width} onChange={handleChange} />
+            <FormInput id="height" label="Height (cm)" placeholder={form.sizeCategory === 'Small' ? 'e.g. 10' : form.sizeCategory === 'Medium' ? 'e.g. 15' : form.sizeCategory === 'Large' ? 'e.g. 25' : form.sizeCategory === 'Extra Large' ? 'e.g. 40' : 'e.g. 10'} type="number" value={form.height} onChange={handleChange} />
+            <FormInput id="diameter" label="Diameter (cm)" placeholder={form.sizeCategory === 'Small' ? 'e.g. 10' : form.sizeCategory === 'Medium' ? 'e.g. 20' : form.sizeCategory === 'Large' ? 'e.g. 30' : form.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 12'} type="number" value={form.diameter} onChange={handleChange} />
+          </div>
         </div>
 
         {/* Validation Checklist */}

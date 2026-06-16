@@ -70,7 +70,7 @@ export default function CartPage() {
                           <span className="text-xs text-gray-400">Base: {formatPrice(product.price)}</span>
                           {product.gstPercent > 0 && (
                             <span className="text-xs text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full font-medium">
-                              CGST {product.gstPercent / 2}% + SGST {product.gstPercent / 2}%
+                              Inclusive of Tax
                             </span>
                           )}
                         </div>
@@ -102,16 +102,7 @@ export default function CartPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold text-gray-900">{formatPrice(itemTotal)}</p>
-                        {product.gstPercent > 0 && (
-                          <>
-                            <p className="text-xs text-gray-400">
-                              CGST {product.gstPercent / 2}%: {formatPrice(Math.floor(itemGst / 2))}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              SGST {product.gstPercent / 2}%: {formatPrice(itemGst - Math.floor(itemGst / 2))}
-                            </p>
-                          </>
-                        )}
+
                       </div>
                     </div>
                   </div>
@@ -131,21 +122,9 @@ export default function CartPage() {
                   <span className="text-gray-600">Subtotal ({itemCount} items)</span>
                   <span className="font-medium text-gray-800">{formatPrice(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 flex items-center gap-1">
-                    <Tag size={12} className="text-emerald-500" /> CGST
-                  </span>
-                  <span className="font-medium text-emerald-600">{formatPrice(cgstAmount)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 flex items-center gap-1">
-                    <Tag size={12} className="text-emerald-500" /> SGST
-                  </span>
-                  <span className="font-medium text-emerald-600">{formatPrice(sgstAmount)}</span>
-                </div>
                 <div className="flex justify-between text-xs text-gray-400 border-t border-dashed border-gray-100 pt-2">
-                  <span>Total Tax (CGST + SGST)</span>
-                  <span>{formatPrice(gstAmount)}</span>
+                  <span>Tax</span>
+                  <span>Inclusive of all taxes</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery</span>
@@ -155,10 +134,10 @@ export default function CartPage() {
 
               <div className="border-t border-gray-100 pt-4 mb-6">
                 <div className="flex justify-between">
-                  <span className="font-bold text-gray-900">Total (GST incl.)</span>
+                  <span className="font-bold text-gray-900">Total</span>
                   <span className="text-xl font-bold text-blue-700">{formatPrice(total)}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">CGST + SGST invoice will be provided</p>
+                <p className="text-xs text-gray-400 mt-1">Invoice will be provided</p>
               </div>
 
               <Link
@@ -176,7 +155,7 @@ export default function CartPage() {
 
               <div className="mt-5 p-3 bg-blue-50 rounded-xl border border-blue-50">
                 <p className="text-xs text-blue-700 font-medium mb-1">🔒 Secure Checkout</p>
-                <p className="text-xs text-blue-600">CGST &amp; SGST compliant invoices for all orders</p>
+                <p className="text-xs text-blue-600">Compliant invoices for all orders</p>
               </div>
             </div>
           </div>

@@ -175,8 +175,8 @@ export default function CartDrawer() {
                 <span className="font-semibold text-[--color-brand-text]">{formatPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between text-xs text-gray-400">
-                <span>Taxes & GST</span>
-                <span>Calculated at checkout</span>
+                <span>Tax</span>
+                <span>Inclusive of all taxes</span>
               </div>
               <div className="flex justify-between text-xs text-gray-400">
                 <span>Shipping</span>
@@ -211,7 +211,7 @@ export default function CartDrawer() {
 
             {/* Trust Badge */}
             <p className="text-center text-[10px] text-gray-400 uppercase tracking-wider pt-1">
-              🔒 Secure checkout · Free returns · GST invoice included
+              🔒 Secure checkout · Free returns
             </p>
           </div>
         )}

@@ -755,17 +755,9 @@ export default function CheckoutPage() {
                     <span className="text-gray-500">Subtotal</span>
                     <span className="font-semibold text-gray-700">{formatPrice(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">CGST (9%)</span>
-                    <span className="font-medium text-emerald-600">{formatPrice(cgstAmount)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">SGST (9%)</span>
-                    <span className="font-medium text-emerald-600">{formatPrice(sgstAmount)}</span>
-                  </div>
                   <div className="flex justify-between text-[11px] text-gray-400 pb-2 border-b border-gray-100">
-                    <span>Tax compliance</span>
-                    <span>18% inclusive GST</span>
+                    <span>Tax</span>
+                    <span>Inclusive of all taxes</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-500">Shipping</span>
