@@ -152,11 +152,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!serverData) return;
     
     // Check if we have mapped all products
-    const mapped = serverData.map((d) => ({
-      product: products.find(p => p.id === d.productId),
-      quantity: d.quantity,
-      size: d.size,
-    })).filter((i): i is CartItem => !!i.product);
+    const mapped = serverData.map((d) => {
+      const p = products.find(p => p.id === d.productId);
+      return {
+        product: p,
+        quantity: d.quantity,
+        ...(d.size ? { size: d.size } : {})
+      };
+    }).filter((i): i is CartItem => !!i.product);
 
     // Only update if we found at least some products. 
     // This will naturally re-run and find more if 'products' updates asynchronously from DB.
