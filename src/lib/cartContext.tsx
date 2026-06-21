@@ -11,9 +11,9 @@ interface CartState {
 
 type CartAction =
   | { type: 'SET_ITEMS'; items: CartItem[] }
-  | { type: 'ADD_ITEM'; product: Product }
-  | { type: 'REMOVE_ITEM'; productId: string }
-  | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number }
+  | { type: 'ADD_ITEM'; product: Product; size?: string }
+  | { type: 'REMOVE_ITEM'; productId: string; size?: string }
+  | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number; size?: string }
   | { type: 'CLEAR_CART' };
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
@@ -21,27 +21,27 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     case 'SET_ITEMS':
       return { items: action.items };
     case 'ADD_ITEM': {
-      const existing = state.items.find(i => i.product.id === action.product.id);
+      const existing = state.items.find(i => i.product.id === action.product.id && (i.size || "") === (action.size || ""));
       if (existing) {
         return {
           items: state.items.map(i =>
-            i.product.id === action.product.id
+            i.product.id === action.product.id && (i.size || "") === (action.size || "")
               ? { ...i, quantity: i.quantity + 1 }
               : i
           ),
         };
       }
-      return { items: [...state.items, { product: action.product, quantity: 1 }] };
+      return { items: [...state.items, { product: action.product, quantity: 1, size: action.size }] };
     }
     case 'REMOVE_ITEM':
-      return { items: state.items.filter(i => i.product.id !== action.productId) };
+      return { items: state.items.filter(i => !(i.product.id === action.productId && (i.size || "") === (action.size || ""))) };
     case 'UPDATE_QUANTITY':
       if (action.quantity <= 0) {
-        return { items: state.items.filter(i => i.product.id !== action.productId) };
+        return { items: state.items.filter(i => !(i.product.id === action.productId && (i.size || "") === (action.size || ""))) };
       }
       return {
         items: state.items.map(i =>
-          i.product.id === action.productId ? { ...i, quantity: action.quantity } : i
+          i.product.id === action.productId && (i.size || "") === (action.size || "") ? { ...i, quantity: action.quantity } : i
         ),
       };
     case 'CLEAR_CART':
@@ -53,9 +53,9 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (product: Product, size?: string) => void;
+  removeItem: (productId: string, size?: string) => void;
+  updateQuantity: (productId: string, quantity: number, size?: string) => void;
   clearCart: () => void;
   itemCount: number;
   subtotal: number;
@@ -76,7 +76,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { currentUser } = useAuth();
   const { products } = useProducts();
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
-  const [serverData, setServerData] = useState<{productId: string, quantity: number}[] | null>(null);
+  const [serverData, setServerData] = useState<{productId: string, quantity: number, size?: string}[] | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Track whether we have loaded from localStorage yet
@@ -155,6 +155,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const mapped = serverData.map((d) => ({
       product: products.find(p => p.id === d.productId),
       quantity: d.quantity,
+      size: d.size,
     })).filter((i): i is CartItem => !!i.product);
 
     // Only update if we found at least some products. 
@@ -164,33 +165,33 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [serverData, products]);
 
-  const addItem = useCallback(async (product: Product) => {
-    dispatch({ type: 'ADD_ITEM', product });
+  const addItem = useCallback(async (product: Product, size?: string) => {
+    dispatch({ type: 'ADD_ITEM', product, size });
     setIsDrawerOpen(true); // Open drawer when item added
     if (currentUser) {
       fetch('/api/cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'ADD', productId: product.id }),
+        body: JSON.stringify({ action: 'ADD', productId: product.id, size: size || "" }),
       }).catch(err => console.warn('[Cart] Add sync failed:', err.message));
     }
   }, [currentUser]);
 
-  const removeItem = useCallback(async (productId: string) => {
-    dispatch({ type: 'REMOVE_ITEM', productId });
+  const removeItem = useCallback(async (productId: string, size?: string) => {
+    dispatch({ type: 'REMOVE_ITEM', productId, size });
     if (currentUser) {
-      fetch(`/api/cart?productId=${productId}`, { method: 'DELETE' })
+      fetch(`/api/cart?productId=${productId}&size=${encodeURIComponent(size || "")}`, { method: 'DELETE' })
         .catch(err => console.warn('[Cart] Remove sync failed:', err.message));
     }
   }, [currentUser]);
 
-  const updateQuantity = useCallback(async (productId: string, quantity: number) => {
-    dispatch({ type: 'UPDATE_QUANTITY', productId, quantity });
+  const updateQuantity = useCallback(async (productId: string, quantity: number, size?: string) => {
+    dispatch({ type: 'UPDATE_QUANTITY', productId, quantity, size });
     if (currentUser) {
       fetch('/api/cart', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ productId, quantity, size: size || "" }),
       }).catch(err => console.warn('[Cart] Update sync failed:', err.message));
     }
   }, [currentUser]);

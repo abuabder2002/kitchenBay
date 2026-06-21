@@ -93,6 +93,7 @@ model Product {
   tags             String[]          // Array of tags/keywords
   moq              Int?              // Minimum Order Quantity for bulk
   bulkPricingTiers Json?             // [{ qty: number, price: number }]
+  variants         Json?             // Size-specific dimensions/prices
   image            String
   subImages        String[]          @default([])
   rating           Float             @default(0)
@@ -131,6 +132,7 @@ model OrderItem {
   productId String
   quantity  Int
   price     Int     // Price at the time of purchase in paise
+  size      String  @default("")
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
@@ -159,10 +161,11 @@ model CartItem {
   cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productId String
   quantity  Int
+  size      String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([cartId, productId])
+  @@unique([cartId, productId, size])
 }
 
 model Wishlist {

@@ -83,7 +83,7 @@ export default function Navbar() {
 
       {/* Main Navbar */}
       <header
-        className={`z-40 w-full transition-all duration-500 backdrop-blur-md sticky top-0 ${scrolled ? 'shadow-sm py-2' : 'py-4'} border-b border-[#E6F2FF] bg-white`}
+        className={`z-40 w-full transition-all duration-500 sticky top-0 border-b border-[#E6F2FF] ${scrolled ? 'shadow-sm py-2 bg-white/70 backdrop-blur-lg' : 'py-4 bg-white backdrop-blur-none'}`}
       >
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
 

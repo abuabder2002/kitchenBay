@@ -7,12 +7,6 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const data = await req.json();
     const { id } = await params;
     
-    // Check if the product exists in DB before updating
-    const existing = await prisma.product.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: 'Product not found in database' }, { status: 404 });
-    }
-
     const priceInPaise = data.price !== undefined ? Math.round(data.price * 100) : undefined;
     const originalPriceInPaise = data.originalPrice !== undefined ? Math.round(data.originalPrice * 100) : undefined;
 
@@ -32,14 +26,27 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (priceInPaise !== undefined) updateData.price = priceInPaise;
     if (originalPriceInPaise !== undefined) updateData.discountPrice = originalPriceInPaise;
 
-    const updatedProduct = await prisma.product.update({
-      where: { id },
-      data: updateData
-    });
+    const existing = await prisma.product.findUnique({ where: { id } });
+    
+    let updatedProduct;
+    if (!existing) {
+      // If it's a mock product not yet in DB, create it instead of returning 404
+      updatedProduct = await prisma.product.create({
+        data: {
+          id,
+          ...updateData
+        }
+      });
+    } else {
+      updatedProduct = await prisma.product.update({
+        where: { id },
+        data: updateData
+      });
+    }
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
-    console.error('Error updating product:', error);
+    console.error('Error updating/upserting product:', error);
     return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
   }
 }

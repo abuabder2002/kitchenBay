@@ -25,6 +25,25 @@ export default function ProductDetailPage() {
   const { addItem, items } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist, isItemLoading } = useWishlist();
 
+  const variants = product?.variants as Record<string, any> | undefined;
+  const variantSizes = variants ? Object.keys(variants).filter(Boolean) : [];
+  const legacySizes = product?.sizeCategory ? product.sizeCategory.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const availableSizes = variantSizes.length > 0 ? variantSizes : legacySizes;
+
+  const [selectedSize, setSelectedSize] = useState<string>(availableSizes[0] || '');
+  const [sizeError, setSizeError] = useState(false);
+
+  const activeVariant = selectedSize && variants ? variants[selectedSize] : undefined;
+  
+  const displayDimensions = {
+    weight: activeVariant?.weight || product?.weight,
+    length: activeVariant?.length || product?.length,
+    width: activeVariant?.width || product?.width,
+    height: activeVariant?.height || product?.height,
+    diameter: activeVariant?.diameter || product?.diameter,
+  };
+  const hasDimensions = Object.values(displayDimensions).some(v => v);
+
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
@@ -45,7 +64,12 @@ export default function ProductDetailPage() {
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) addItem(product);
+    if (availableSizes.length > 0 && !selectedSize) {
+      setSizeError(true);
+      return;
+    }
+    setSizeError(false);
+    for (let i = 0; i < quantity; i++) addItem(product, selectedSize);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -164,6 +188,30 @@ export default function ProductDetailPage() {
                   {product.description}
                 </div>
 
+                {/* Available Sizes */}
+                {availableSizes.length > 0 && (
+                  <div className="pt-4">
+                    <p className="text-xs font-bold text-[--color-brand-muted] uppercase tracking-widest mb-2 flex items-center gap-2">
+                      Select Size: {sizeError && <span className="text-red-500 font-normal lowercase">(Please select a size)</span>}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {availableSizes.map((size: string, idx: number) => (
+                        <button 
+                          key={idx} 
+                          onClick={() => { setSelectedSize(size); setSizeError(false); }}
+                          className={`px-4 py-2 border rounded-sm text-sm font-bold shadow-sm transition-colors ${
+                            selectedSize === size 
+                              ? 'border-brand-text bg-brand-text text-white' 
+                              : 'border-brand-border bg-white text-brand-text hover:border-brand-text'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Add to Cart Area */}
                 {product.stock > 0 ? (
                   <div className="space-y-4 pt-6 border-t border-[--color-brand-border]">
@@ -226,6 +274,45 @@ export default function ProductDetailPage() {
                      <div className="bg-red-50 text-red-600 font-bold uppercase tracking-widest py-4 text-center rounded-sm border border-red-200">
                         Out of Stock
                      </div>
+                  </div>
+                )}
+
+                {/* Dimensions / Specifications */}
+                {hasDimensions && (
+                  <div className="pt-8 mt-8 border-t border-[--color-brand-border]">
+                    <h3 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-4">Specifications</h3>
+                    <div className="grid grid-cols-2 gap-y-3 text-sm">
+                      {displayDimensions.weight && (
+                        <>
+                          <span className="text-[--color-brand-muted]">Weight</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.weight} {Number(displayDimensions.weight) < 10 ? 'kg' : 'g'}</span>
+                        </>
+                      )}
+                      {displayDimensions.length && (
+                        <>
+                          <span className="text-[--color-brand-muted]">Length</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.length} cm</span>
+                        </>
+                      )}
+                      {displayDimensions.width && (
+                        <>
+                          <span className="text-[--color-brand-muted]">Width</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.width} cm</span>
+                        </>
+                      )}
+                      {displayDimensions.height && (
+                        <>
+                          <span className="text-[--color-brand-muted]">Height</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.height} cm</span>
+                        </>
+                      )}
+                      {displayDimensions.diameter && (
+                        <>
+                          <span className="text-[--color-brand-muted]">Diameter</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.diameter} cm</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
 

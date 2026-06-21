@@ -10,7 +10,7 @@ import { Package, Calculator, Check, Upload, ShieldCheck, X } from 'lucide-react
 import { useRouter } from 'next/navigation';
 
 interface DbCategory { id: string; name: string; slug: string; }
-interface DbSubcategory { id: string; name: string; categoryId: string; }
+interface DbSubcategory { id: string; name: string; categoryId: string; slug: string; }
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -21,6 +21,7 @@ export default function AddProductPage() {
     material: '', image: '', subImages: [] as string[], rating: '5.0', reviewCount: '0',
     height: '', width: '', length: '', diameter: '', weight: '', sizeCategory: ''
   });
+  const [variants, setVariants] = useState<{ [size: string]: { weight: string, length: string, width: string, height: string, diameter: string, price: string, stock: string } }>({});
   const [saved, setSaved] = useState(false);
 
   // Dynamic categories/subcategories from DB
@@ -88,7 +89,7 @@ export default function AddProductPage() {
       setForm(prev => ({ ...prev, category: selected?.slug || value, categoryId: value, subcategory: '', subcategoryId: '' }));
     } else if (id === 'subcategory') {
       const selected = dbSubcategories.find(s => s.id === value);
-      setForm(prev => ({ ...prev, subcategory: selected?.name || value, subcategoryId: value }));
+      setForm(prev => ({ ...prev, subcategory: selected?.slug || value, subcategoryId: value }));
     } else {
       setForm(prev => ({ ...prev, [id]: value }));
     }
@@ -179,6 +180,23 @@ export default function AddProductPage() {
     }));
   };
 
+  const toggleSize = (size: string) => {
+    setVariants(prev => {
+      const copy = { ...prev };
+      if (copy[size]) delete copy[size];
+      else copy[size] = { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '' };
+      
+      // Update form.sizeCategory automatically to comma separated list for legacy field
+      const newSizes = Object.keys(copy).join(', ');
+      setForm(f => ({ ...f, sizeCategory: newSizes }));
+      return copy;
+    });
+  };
+
+  const updateVariant = (size: string, field: string, value: string) => {
+    setVariants(prev => ({ ...prev, [size]: { ...prev[size], [field]: value } }));
+  };
+
   const basePrice = parseFloat(form.price) || 0;
   const gst = parseFloat(form.gstPercent) || 0;
   const gstAmount = Math.round(basePrice * gst / 100);
@@ -219,6 +237,7 @@ export default function AddProductPage() {
       diameter: form.diameter ? parseFloat(form.diameter) : undefined,
       weight: form.weight ? parseFloat(form.weight) : undefined,
       sizeCategory: form.sizeCategory || undefined,
+      variants: Object.keys(variants).length > 0 ? variants : undefined,
     });
 
     setSaved(true);
@@ -398,24 +417,60 @@ export default function AddProductPage() {
         {/* Dimensions & Sizing */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Package size={18} className="text-blue-600" /> Dimensions & Sizing
+            <Package size={18} className="text-blue-600" /> Dimensions & Size Variants
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <FormInput id="sizeCategory" label="Size Category" as="select" value={form.sizeCategory} onChange={handleChange}>
-              <option value="">Select Size</option>
-              <option value="Small">Small</option>
-              <option value="Medium">Medium</option>
-              <option value="Large">Large</option>
-              <option value="Extra Large">Extra Large</option>
-              <option value="Standard">Standard</option>
-              <option value="Custom">Custom</option>
-            </FormInput>
-            <FormInput id="weight" label="Weight (kg/g)" placeholder={form.sizeCategory === 'Small' ? 'e.g. 0.5' : form.sizeCategory === 'Medium' ? 'e.g. 1.5' : form.sizeCategory === 'Large' ? 'e.g. 3.0' : form.sizeCategory === 'Extra Large' ? 'e.g. 5.0' : 'e.g. 1.5'} type="number" value={form.weight} onChange={handleChange} />
-            <FormInput id="length" label="Length (cm)" placeholder={form.sizeCategory === 'Small' ? 'e.g. 10' : form.sizeCategory === 'Medium' ? 'e.g. 20' : form.sizeCategory === 'Large' ? 'e.g. 30' : form.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 20'} type="number" value={form.length} onChange={handleChange} />
-            <FormInput id="width" label="Width / Breadth (cm)" placeholder={form.sizeCategory === 'Small' ? 'e.g. 10' : form.sizeCategory === 'Medium' ? 'e.g. 20' : form.sizeCategory === 'Large' ? 'e.g. 30' : form.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 15'} type="number" value={form.width} onChange={handleChange} />
-            <FormInput id="height" label="Height (cm)" placeholder={form.sizeCategory === 'Small' ? 'e.g. 10' : form.sizeCategory === 'Medium' ? 'e.g. 15' : form.sizeCategory === 'Large' ? 'e.g. 25' : form.sizeCategory === 'Extra Large' ? 'e.g. 40' : 'e.g. 10'} type="number" value={form.height} onChange={handleChange} />
-            <FormInput id="diameter" label="Diameter (cm)" placeholder={form.sizeCategory === 'Small' ? 'e.g. 10' : form.sizeCategory === 'Medium' ? 'e.g. 20' : form.sizeCategory === 'Large' ? 'e.g. 30' : form.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 12'} type="number" value={form.diameter} onChange={handleChange} />
+          
+          <div className="mb-6">
+            <label className="text-sm font-medium text-gray-700 block mb-2">Select Available Sizes</label>
+            <div className="flex flex-wrap gap-2">
+              {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Standard', 'Custom'].map(sz => (
+                <button
+                  key={sz}
+                  type="button"
+                  onClick={() => toggleSize(sz)}
+                  className={`px-4 py-2 border rounded-xl text-sm font-bold shadow-sm transition-colors ${
+                    variants[sz] 
+                      ? 'border-blue-600 bg-blue-600 text-white' 
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  {sz}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {Object.keys(variants).length > 0 ? (
+            <div className="space-y-6">
+              {Object.entries(variants).map(([sz, data]) => (
+                <div key={sz} className="border border-blue-100 bg-blue-50/30 rounded-xl p-4">
+                  <h3 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                    Size: {sz}
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <FormInput id={`weight-${sz}`} label="Weight (kg/g)" placeholder="e.g. 1.5" type="number" value={data.weight} onChange={(e) => updateVariant(sz, 'weight', e.target.value)} />
+                    <FormInput id={`length-${sz}`} label="Length (cm)" placeholder="e.g. 20" type="number" value={data.length} onChange={(e) => updateVariant(sz, 'length', e.target.value)} />
+                    <FormInput id={`width-${sz}`} label="Width (cm)" placeholder="e.g. 15" type="number" value={data.width} onChange={(e) => updateVariant(sz, 'width', e.target.value)} />
+                    <FormInput id={`height-${sz}`} label="Height (cm)" placeholder="e.g. 10" type="number" value={data.height} onChange={(e) => updateVariant(sz, 'height', e.target.value)} />
+                    <FormInput id={`diameter-${sz}`} label="Diameter (cm)" placeholder="e.g. 12" type="number" value={data.diameter} onChange={(e) => updateVariant(sz, 'diameter', e.target.value)} />
+                    <FormInput id={`price-${sz}`} label="Price Override (₹)" placeholder="Optional base price" type="number" value={data.price} onChange={(e) => updateVariant(sz, 'price', e.target.value)} />
+                    <FormInput id={`stock-${sz}`} label="Stock Override" placeholder="Optional" type="number" value={data.stock} onChange={(e) => updateVariant(sz, 'stock', e.target.value)} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-gray-500 mb-4">No specific sizes selected. You can provide general dimensions for the product below.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormInput id="weight" label="Weight (kg/g)" placeholder="e.g. 1.5" type="number" value={form.weight} onChange={handleChange} />
+                <FormInput id="length" label="Length (cm)" placeholder="e.g. 20" type="number" value={form.length} onChange={handleChange} />
+                <FormInput id="width" label="Width / Breadth (cm)" placeholder="e.g. 15" type="number" value={form.width} onChange={handleChange} />
+                <FormInput id="height" label="Height (cm)" placeholder="e.g. 10" type="number" value={form.height} onChange={handleChange} />
+                <FormInput id="diameter" label="Diameter (cm)" placeholder="e.g. 12" type="number" value={form.diameter} onChange={handleChange} />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Validation Checklist */}

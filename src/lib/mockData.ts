@@ -26,11 +26,13 @@ export interface Product {
   diameter?: number;
   weight?: number;
   sizeCategory?: string;
+  variants?: Record<string, any>;
 }
 
 export interface CartItem {
   product: Product;
   quantity: number;
+  size?: string;
 }
 
 export interface Order {

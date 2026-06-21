@@ -144,6 +144,33 @@ export default function AdminProductsPage() {
     });
   };
 
+  const toggleEditSize = (sz: string) => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      const currentVariants = (prev.variants as any) || {};
+      const copy = { ...currentVariants };
+      if (copy[sz]) delete copy[sz];
+      else copy[sz] = { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '' };
+      
+      const newSizes = Object.keys(copy).join(', ');
+      return { ...prev, variants: copy, sizeCategory: newSizes };
+    });
+  };
+
+  const updateEditVariant = (sz: string, field: string, value: string) => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      const currentVariants = (prev.variants as any) || {};
+      return {
+        ...prev,
+        variants: {
+          ...currentVariants,
+          [sz]: { ...currentVariants[sz], [field]: value }
+        }
+      };
+    });
+  };
+
   const availableSubcategories = editingProduct 
     ? subcategories.filter(s => s.category === editingProduct.category) 
     : [];
@@ -460,43 +487,79 @@ export default function AdminProductsPage() {
                   <span className="font-bold text-violet-900 text-lg">{formatPrice(editingProduct.finalPrice)}</span>
                 </div>
 
-                {/* Dimensions & Sizing */}
+                {/* Dimensions & Size Variants */}
                 <div className="pt-2">
-                  <h3 className="font-semibold text-gray-800 mb-3">Dimensions & Sizing</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor="sizeCategory" className="text-sm font-medium text-gray-700">Size Category</label>
-                      <select id="sizeCategory" value={editingProduct.sizeCategory || ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all">
-                        <option value="">Select Size</option>
-                        <option value="Small">Small</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Large">Large</option>
-                        <option value="Extra Large">Extra Large</option>
-                        <option value="Standard">Standard</option>
-                        <option value="Custom">Custom</option>
-                      </select>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor="weight" className="text-sm font-medium text-gray-700">Weight (kg/g)</label>
-                      <input id="weight" type="number" placeholder={editingProduct.sizeCategory === 'Small' ? 'e.g. 0.5' : editingProduct.sizeCategory === 'Medium' ? 'e.g. 1.5' : editingProduct.sizeCategory === 'Large' ? 'e.g. 3.0' : editingProduct.sizeCategory === 'Extra Large' ? 'e.g. 5.0' : 'e.g. 1.5'} value={editingProduct.weight ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor="length" className="text-sm font-medium text-gray-700">Length (cm)</label>
-                      <input id="length" type="number" placeholder={editingProduct.sizeCategory === 'Small' ? 'e.g. 10' : editingProduct.sizeCategory === 'Medium' ? 'e.g. 20' : editingProduct.sizeCategory === 'Large' ? 'e.g. 30' : editingProduct.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 20'} value={editingProduct.length ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor="width" className="text-sm font-medium text-gray-700">Width (cm)</label>
-                      <input id="width" type="number" placeholder={editingProduct.sizeCategory === 'Small' ? 'e.g. 10' : editingProduct.sizeCategory === 'Medium' ? 'e.g. 20' : editingProduct.sizeCategory === 'Large' ? 'e.g. 30' : editingProduct.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 15'} value={editingProduct.width ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor="height" className="text-sm font-medium text-gray-700">Height (cm)</label>
-                      <input id="height" type="number" placeholder={editingProduct.sizeCategory === 'Small' ? 'e.g. 10' : editingProduct.sizeCategory === 'Medium' ? 'e.g. 15' : editingProduct.sizeCategory === 'Large' ? 'e.g. 25' : editingProduct.sizeCategory === 'Extra Large' ? 'e.g. 40' : 'e.g. 10'} value={editingProduct.height ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor="diameter" className="text-sm font-medium text-gray-700">Diameter (cm)</label>
-                      <input id="diameter" type="number" placeholder={editingProduct.sizeCategory === 'Small' ? 'e.g. 10' : editingProduct.sizeCategory === 'Medium' ? 'e.g. 20' : editingProduct.sizeCategory === 'Large' ? 'e.g. 30' : editingProduct.sizeCategory === 'Extra Large' ? 'e.g. 50' : 'e.g. 12'} value={editingProduct.diameter ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                  <h3 className="font-semibold text-gray-800 mb-3">Dimensions & Size Variants</h3>
+                  
+                  <div className="mb-6">
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Select Available Sizes</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Standard', 'Custom'].map(sz => {
+                        const isSelected = !!((editingProduct.variants as any)?.[sz]);
+                        return (
+                          <button
+                            key={sz}
+                            type="button"
+                            onClick={() => toggleEditSize(sz)}
+                            className={`px-4 py-2 border rounded-xl text-sm font-bold shadow-sm transition-colors ${
+                              isSelected 
+                                ? 'border-blue-600 bg-blue-600 text-white' 
+                                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                            }`}
+                          >
+                            {sz}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
+
+                  {Object.keys((editingProduct.variants as any) || {}).length > 0 ? (
+                    <div className="space-y-6">
+                      {Object.entries((editingProduct.variants as any) || {}).map(([sz, data]: any) => (
+                        <div key={sz} className="border border-blue-100 bg-blue-50/30 rounded-xl p-4">
+                          <h3 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                            Size: {sz}
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Weight</label><input type="number" value={data.weight || ''} onChange={(e) => updateEditVariant(sz, 'weight', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Length</label><input type="number" value={data.length || ''} onChange={(e) => updateEditVariant(sz, 'length', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Width</label><input type="number" value={data.width || ''} onChange={(e) => updateEditVariant(sz, 'width', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Height</label><input type="number" value={data.height || ''} onChange={(e) => updateEditVariant(sz, 'height', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Diameter</label><input type="number" value={data.diameter || ''} onChange={(e) => updateEditVariant(sz, 'diameter', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Price Override</label><input type="number" value={data.price || ''} onChange={(e) => updateEditVariant(sz, 'price', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Stock Override</label><input type="number" value={data.stock || ''} onChange={(e) => updateEditVariant(sz, 'stock', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-xs text-gray-500 mb-4">No specific sizes selected. You can provide general dimensions for the product below.</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label htmlFor="weight" className="text-sm font-medium text-gray-700">Weight (kg/g)</label>
+                          <input id="weight" type="number" placeholder="e.g. 1.5" value={editingProduct.weight ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label htmlFor="length" className="text-sm font-medium text-gray-700">Length (cm)</label>
+                          <input id="length" type="number" placeholder="e.g. 20" value={editingProduct.length ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label htmlFor="width" className="text-sm font-medium text-gray-700">Width (cm)</label>
+                          <input id="width" type="number" placeholder="e.g. 15" value={editingProduct.width ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label htmlFor="height" className="text-sm font-medium text-gray-700">Height (cm)</label>
+                          <input id="height" type="number" placeholder="e.g. 10" value={editingProduct.height ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label htmlFor="diameter" className="text-sm font-medium text-gray-700">Diameter (cm)</label>
+                          <input id="diameter" type="number" placeholder="e.g. 12" value={editingProduct.diameter ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Image Upload Option */}
