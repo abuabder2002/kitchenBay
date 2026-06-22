@@ -1,6 +1,6 @@
 'use client';
-import React, { createContext, useContext } from 'react';
-import { useUser, useClerk } from '@clerk/nextjs';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
 
 export interface Address {
   id: string;
@@ -53,29 +53,60 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { isLoaded, user } = useUser();
-  const { signOut } = useClerk();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
-  const currentUser: User | null = user ? {
-    id: user.id,
-    name: user.fullName || user.username || user.primaryEmailAddress?.emailAddress?.split('@')[0] || 'User',
-    email: user.primaryEmailAddress?.emailAddress || '',
-    avatar: user.imageUrl,
-    addresses: (user.unsafeMetadata?.addresses as Address[]) || [],
-    orders: [],
-    recentSearches: [],
-    recentlyViewed: []
-  } : null;
+  useEffect(() => {
+    // Initial fetch
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      if (user) {
+        setCurrentUser({
+          id: user.id,
+          name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+          email: user.email || '',
+          avatar: user.user_metadata?.avatar_url,
+          addresses: [],
+          orders: [],
+          recentSearches: [],
+          recentlyViewed: []
+        });
+      }
+      setLoading(false);
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setCurrentUser({
+          id: session.user.id,
+          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatar: session.user.user_metadata?.avatar_url,
+          addresses: [],
+          orders: [],
+          recentSearches: [],
+          recentlyViewed: []
+        });
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
   const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
   const userEmail = currentUser?.email?.toLowerCase();
-  const isAdmin = user?.publicMetadata?.role === 'admin' || !!(userEmail && (adminEmails.includes(userEmail) || userEmail === 'yousufsuhaily@gmail.com' || userEmail === 'kitchenbaythehomeneeds@gmail.com' || userEmail === 'abdershaheen4@gmail.com'));
+  const isAdmin = !!(userEmail && (adminEmails.includes(userEmail) || userEmail === 'yousufsuhaily@gmail.com' || userEmail === 'kitchenbaythehomeneeds@gmail.com' || userEmail === 'abdershaheen4@gmail.com'));
 
-  const login = () => false;
+  const login = () => false; // Let individual login forms handle this and redirect
   const signup = () => false;
-  const logout = () => {
-    signOut();
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
   const updateUser = () => {};
 
@@ -90,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updateUser, 
         error: null, 
         clearError: () => {}, 
-        loading: !isLoaded,
+        loading,
         isAdmin
       }}
     >

@@ -1,5 +1,5 @@
 import Sidebar from '@/components/Sidebar';
-import { UserButton } from '@clerk/nextjs';
+import { UserCircle2 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <p className="text-sm font-semibold text-gray-700">Kitchenbay Management</p>
           </div>
           <div className="flex items-center gap-3 mt-2 md:mt-0">
-            <UserButton />
+            <UserCircle2 size={32} className="text-gray-400" />
           </div>
         </header>
 

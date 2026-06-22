@@ -1,10 +1,7 @@
 'use client';
-import { ClerkProvider } from '@clerk/nextjs';
 
 export function NextAuthProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
-      {children}
-    </ClerkProvider>
-  );
+  // ClerkProvider removed, returning children directly
+  // Supabase Auth doesn't require a global provider at the Next.js level in the same way.
+  return <>{children}</>;
 }

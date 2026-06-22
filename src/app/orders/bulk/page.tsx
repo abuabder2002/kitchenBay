@@ -7,7 +7,7 @@
 
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/lib/authContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
@@ -52,7 +52,7 @@ interface BulkInquiry {
 }
 
 export default function CustomerBulkInquiriesPage() {
-  const { user, isLoaded: authLoaded } = useUser();
+  const { currentUser: user, loading: authLoaded } = useAuth();
   const [inquiries, setInquiries] = useState<BulkInquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

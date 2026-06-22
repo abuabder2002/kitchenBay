@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@clerk/nextjs/server';
+import { getDbUser } from '@/lib/serverAuth';
 
 export async function PUT(request: Request) {
   try {
     // Admin check is mostly handled by middleware.ts, but we do a basic auth check here
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getDbUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

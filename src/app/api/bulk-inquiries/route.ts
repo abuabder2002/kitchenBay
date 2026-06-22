@@ -1,40 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { currentUser } from '@clerk/nextjs/server';
+import { getDbUser } from '@/lib/serverAuth';
 import nodemailer from 'nodemailer';
 import { getAdminEmails } from '@/lib/adminAuth';
 
-// ── Helper: Get or create DB user from Clerk session ────────
-async function getDbUser() {
-  const clerkUser = await currentUser();
-  if (!clerkUser) return null;
-  const email = clerkUser.emailAddresses?.[0]?.emailAddress;
-  if (!email) return null;
-  const name = clerkUser.fullName || clerkUser.username || email.split('@')[0];
-
-  let user = await prisma.user.findUnique({ where: { clerkUserId: clerkUser.id } });
-  if (!user) {
-    user = await prisma.user.findUnique({ where: { email } });
-    if (user) {
-      user = await prisma.user.update({ where: { email }, data: { clerkUserId: clerkUser.id, name } });
-    } else {
-      user = await prisma.user.create({ data: { clerkUserId: clerkUser.id, email, name } });
-    }
-  }
-
-  // Link any guest bulk inquiries submitted with this email to the user profile
+// Link guest inquiries to logged in user if email matches
+// We call this helper inside GET and POST to handle guest-to-user linking
+async function syncGuestInquiries(user: any) {
+  if (!user) return;
   await prisma.bulkInquiry.updateMany({
     where: {
-      email: email,
+      email: user.email,
       userId: null
     },
     data: {
       userId: user.id
     }
   });
-
-  return user;
 }
 
 // ── Helper: Create SMTP transporter using .env variables ────────
@@ -71,6 +54,7 @@ export async function GET(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Please sign in to view inquiries' }, { status: 401 });
     }
+    await syncGuestInquiries(user);
 
     const isAdmin = getAdminEmails().includes(user.email.toLowerCase());
 
@@ -140,6 +124,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = await getDbUser();
+    await syncGuestInquiries(user);
     const body = await req.json();
 
     const {

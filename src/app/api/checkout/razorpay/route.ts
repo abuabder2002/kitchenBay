@@ -2,28 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { prisma } from '@/lib/prisma';
-import { currentUser } from '@clerk/nextjs/server';
+import { getDbUser } from '@/lib/serverAuth';
 import { products as productCatalog } from '@/lib/mockData';
-
-// ── Helper: Get or create DB user from Clerk session ────────
-async function getDbUser() {
-  const clerkUser = await currentUser();
-  if (!clerkUser) return null;
-  const email = clerkUser.emailAddresses?.[0]?.emailAddress;
-  if (!email) return null;
-  const name = clerkUser.fullName || clerkUser.username || email.split('@')[0];
-
-  let user = await prisma.user.findUnique({ where: { clerkUserId: clerkUser.id } });
-  if (!user) {
-    user = await prisma.user.findUnique({ where: { email } });
-    if (user) {
-      user = await prisma.user.update({ where: { email }, data: { clerkUserId: clerkUser.id, name } });
-    } else {
-      user = await prisma.user.create({ data: { clerkUserId: clerkUser.id, email, name } });
-    }
-  }
-  return user;
-}
 
 /**
  * POST /api/checkout/razorpay

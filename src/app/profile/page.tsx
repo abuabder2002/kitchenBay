@@ -7,12 +7,9 @@ import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { UserCircle2, MapPin, Settings, X } from 'lucide-react';
-import { useClerk, useUser } from '@clerk/nextjs';
 
 export default function ProfilePage() {
   const { currentUser: user, loading } = useAuth();
-  const { user: clerkUser } = useUser();
-  const clerk = useClerk();
   const router = useRouter();
 
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -26,20 +23,11 @@ export default function ProfilePage() {
   }, [user, loading, router]);
 
   const handleSaveAddress = async () => {
-    if (!clerkUser) return;
-    setIsSaving(true);
-    try {
-      const currentAddresses = (clerkUser.unsafeMetadata?.addresses as any[]) || [];
-      const updatedAddresses = [...currentAddresses, { id: Date.now().toString(), ...newAddress, country: 'India' }];
-      await clerkUser.update({ unsafeMetadata: { ...clerkUser.unsafeMetadata, addresses: updatedAddresses } });
-      setIsAddressModalOpen(false);
-      setNewAddress({ street: '', city: '', state: '', zip: '' });
-      window.location.reload();
-    } catch (error) {
-      console.error('Error saving address:', error);
-    } finally {
-      setIsSaving(false);
-    }
+    // Requires an API route to actually save to DB since Clerk is gone
+    // We will just alert for now or close modal
+    setIsAddressModalOpen(false);
+    setNewAddress({ street: '', city: '', state: '', zip: '' });
+    alert('Saving address is currently disabled pending backend integration.');
   };
 
   if (loading || !user) {
@@ -71,7 +59,7 @@ export default function ProfilePage() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
               <p className="text-gray-500 mb-2">{user.email}</p>
-              <button onClick={() => clerk.openUserProfile()} className="text-sm font-semibold text-[--color-brand-accent] hover:text-[--color-brand-accent-hover] bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">Edit Profile</button>
+              <button onClick={() => alert('Editing profile is coming soon!')} className="text-sm font-semibold text-[--color-brand-accent] hover:text-[--color-brand-accent-hover] bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">Edit Profile</button>
             </div>
           </div>
         </div>
@@ -102,9 +90,9 @@ export default function ProfilePage() {
           <div className="bg-white rounded-2xl shadow-sm border border-[--color-brand-border] p-8">
             <h3 className="text-xl font-bold flex items-center gap-2 mb-6 text-gray-900"><Settings size={20} className="text-gray-400" /> Account Settings</h3>
             <ul className="space-y-4 text-gray-700">
-              <li><button onClick={() => clerk.openUserProfile()} className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Change Password</button></li>
-              <li><button onClick={() => clerk.openUserProfile()} className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Communication Preferences</button></li>
-              <li><button onClick={() => clerk.openUserProfile()} className="w-full text-left p-3 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-600 font-medium transition-colors border border-transparent hover:border-red-100">Delete Account</button></li>
+              <li><button onClick={() => alert('Change password coming soon')} className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Change Password</button></li>
+              <li><button onClick={() => alert('Communication preferences coming soon')} className="w-full text-left p-3 rounded-lg hover:bg-gray-50 font-medium transition-colors border border-transparent hover:border-gray-100">Communication Preferences</button></li>
+              <li><button onClick={() => alert('Account deletion coming soon')} className="w-full text-left p-3 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-600 font-medium transition-colors border border-transparent hover:border-red-100">Delete Account</button></li>
             </ul>
           </div>
         </div>
