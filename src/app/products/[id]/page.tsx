@@ -158,29 +158,7 @@ export default function ProductDetailPage() {
                   </div>
                   <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-6">Inclusive of all taxes</p>
 
-                  <div className="bg-[--color-brand-card]/50 p-4 rounded-sm text-sm border border-[--color-brand-border]">
-                     <div className="flex items-center gap-2 font-bold text-[--color-brand-text] mb-3">
-                       <Info size={16} /> Tax Breakdown
-                     </div>
-                     <div className="flex justify-between text-[--color-brand-muted] mb-1">
-                       <span>Base Price</span>
-                       <span className="font-medium text-[--color-brand-text]">{formatPrice(product.price)}</span>
-                     </div>
-                     {product.gstPercent > 0 ? (
-                       <>
-                         <div className="flex justify-between text-[--color-brand-muted] mb-1">
-                           <span>CGST ({cgstPercent}%)</span>
-                           <span className="font-medium text-[--color-brand-text]">+{formatPrice(cgstAmount)}</span>
-                         </div>
-                         <div className="flex justify-between text-[--color-brand-muted]">
-                           <span>SGST ({sgstPercent}%)</span>
-                           <span className="font-medium text-[--color-brand-text]">+{formatPrice(sgstAmount)}</span>
-                         </div>
-                       </>
-                     ) : (
-                       <div className="text-[--color-brand-muted] italic mt-2">GST Exempt (Handicraft)</div>
-                     )}
-                  </div>
+
                 </div>
 
                 {/* Description */}
