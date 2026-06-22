@@ -102,6 +102,7 @@ model Product {
   bulkInquiryItems BulkInquiryItem[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+  isActive         Boolean           @default(true)
 }
 
 model Order {

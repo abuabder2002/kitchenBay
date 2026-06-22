@@ -191,7 +191,13 @@ export default function ProductDetailPage() {
                 )}
 
                 {/* Add to Cart Area */}
-                {product.stock > 0 ? (
+                {product.isActive === false ? (
+                  <div className="pt-6 border-t border-[--color-brand-border]">
+                     <div className="bg-gray-100 text-gray-600 font-bold uppercase tracking-widest py-4 text-center rounded-sm border border-gray-300">
+                        Currently Unavailable
+                     </div>
+                  </div>
+                ) : product.stock > 0 ? (
                   <div className="space-y-4 pt-6 border-t border-[--color-brand-border]">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                       {/* Quantity selector */}

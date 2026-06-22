@@ -20,6 +20,7 @@ export interface Product {
   rating: number;
   reviewCount: number;
   featured: boolean;
+  isActive?: boolean;
   height?: number;
   width?: number;
   length?: number;

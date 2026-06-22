@@ -255,7 +255,12 @@ export default function AdminProductsPage() {
                       <div className="flex items-center gap-3">
                         <img src={p.image} alt={p.name} className="w-12 h-12 rounded-xl object-cover bg-gray-50 shrink-0" />
                         <div>
-                          <p className="text-sm font-semibold text-gray-800 line-clamp-1">{p.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-gray-800 line-clamp-1">{p.name}</p>
+                            {p.isActive === false && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 uppercase">Paused</span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-400 line-clamp-1">{p.description.slice(0, 50)}...</p>
                         </div>
                       </div>
@@ -353,6 +358,23 @@ export default function AdminProductsPage() {
                     required
                     className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all resize-none"
                   />
+                </div>
+
+                {/* Status / Visibility */}
+                <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={editingProduct.isActive !== false} 
+                      onChange={(e) => setEditingProduct(prev => prev ? {...prev, isActive: e.target.checked} : null)} 
+                    />
+                    <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Active / Visible to Customers</p>
+                    <p className="text-xs text-gray-500">Turn this off to pause the product and show &quot;Currently Unavailable&quot;</p>
+                  </div>
                 </div>
 
                 {/* Stock & Category */}
