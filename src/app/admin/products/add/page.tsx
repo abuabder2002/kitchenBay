@@ -6,11 +6,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import FormInput from '@/components/FormInput';
 import { useProducts } from '@/lib/productsContext';
-import { Package, Calculator, Check, Upload, ShieldCheck } from 'lucide-react';
+import { Package, Calculator, Check, Upload, ShieldCheck, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface DbCategory { id: string; name: string; slug: string; }
-interface DbSubcategory { id: string; name: string; categoryId: string; }
+interface DbSubcategory { id: string; name: string; categoryId: string; slug: string; }
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -18,8 +18,10 @@ export default function AddProductPage() {
   const [form, setForm] = useState({
     name: '', description: '', price: '', originalPrice: '', gstPercent: '18',
     stock: '', category: '', subcategory: '', categoryId: '', subcategoryId: '',
-    material: '', image: '', rating: '5.0', reviewCount: '0'
+    material: '', image: '', subImages: [] as string[], rating: '5.0', reviewCount: '0',
+    height: '', width: '', length: '', diameter: '', weight: '', sizeCategory: ''
   });
+  const [variants, setVariants] = useState<{ [size: string]: { weight: string, length: string, width: string, height: string, diameter: string, price: string, stock: string } }>({});
   const [saved, setSaved] = useState(false);
 
   // Dynamic categories/subcategories from DB
@@ -87,7 +89,7 @@ export default function AddProductPage() {
       setForm(prev => ({ ...prev, category: selected?.slug || value, categoryId: value, subcategory: '', subcategoryId: '' }));
     } else if (id === 'subcategory') {
       const selected = dbSubcategories.find(s => s.id === value);
-      setForm(prev => ({ ...prev, subcategory: selected?.name || value, subcategoryId: value }));
+      setForm(prev => ({ ...prev, subcategory: selected?.slug || value, subcategoryId: value }));
     } else {
       setForm(prev => ({ ...prev, [id]: value }));
     }
@@ -131,6 +133,70 @@ export default function AddProductPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleSubImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxSize = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxSize) {
+              height *= maxSize / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width *= maxSize / height;
+              height = maxSize;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          setForm(prev => ({ ...prev, subImages: [...prev.subImages, dataUrl] }));
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeSubImage = (indexToRemove: number) => {
+    setForm(prev => ({
+      ...prev,
+      subImages: prev.subImages.filter((_, idx) => idx !== indexToRemove)
+    }));
+  };
+
+  const toggleSize = (size: string) => {
+    setVariants(prev => {
+      const copy = { ...prev };
+      if (copy[size]) delete copy[size];
+      else copy[size] = { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '' };
+      
+      // Update form.sizeCategory automatically to comma separated list for legacy field
+      const newSizes = Object.keys(copy).join(', ');
+      setForm(f => ({ ...f, sizeCategory: newSizes }));
+      return copy;
+    });
+  };
+
+  const updateVariant = (size: string, field: string, value: string) => {
+    setVariants(prev => ({ ...prev, [size]: { ...prev[size], [field]: value } }));
+  };
+
   const basePrice = parseFloat(form.price) || 0;
   const gst = parseFloat(form.gstPercent) || 0;
   const gstAmount = Math.round(basePrice * gst / 100);
@@ -161,9 +227,17 @@ export default function AddProductPage() {
       subcategory: form.subcategory,
       material: form.material || 'Standard',
       image: form.image,
+      subImages: form.subImages,
       rating: parseFloat(form.rating) || 5.0,
       reviewCount: parseInt(form.reviewCount) || 0,
       featured: false,
+      height: form.height ? parseFloat(form.height) : undefined,
+      width: form.width ? parseFloat(form.width) : undefined,
+      length: form.length ? parseFloat(form.length) : undefined,
+      diameter: form.diameter ? parseFloat(form.diameter) : undefined,
+      weight: form.weight ? parseFloat(form.weight) : undefined,
+      sizeCategory: form.sizeCategory || undefined,
+      variants: Object.keys(variants).length > 0 ? variants : undefined,
     });
 
     setSaved(true);
@@ -233,6 +307,29 @@ export default function AddProductPage() {
                 </label>
               </div>
               <p className="text-xs text-gray-500 mt-1">Image will be automatically resized to perfectly match other product cards.</p>
+            </div>
+            
+            {/* Sub Images */}
+            <div className="flex flex-col gap-1.5 mt-4 border-t pt-4">
+              <label className="text-sm font-medium text-gray-700">Additional Images (Optional)</label>
+              <div className="flex items-center gap-4 flex-wrap">
+                {form.subImages.map((imgSrc, idx) => (
+                  <div key={idx} className="relative group">
+                    <img src={imgSrc} alt={`Sub image ${idx + 1}`} className="w-20 h-20 object-cover rounded-xl border border-gray-200" />
+                    <button 
+                      type="button" 
+                      onClick={() => removeSubImage(idx)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                <label className="w-20 h-20 cursor-pointer flex items-center justify-center text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors border-dashed border-2">
+                  <Upload size={20} />
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleSubImageUpload} />
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -314,6 +411,65 @@ export default function AddProductPage() {
                 </div>
               </div>
             </div>
+          )}
+        </div>
+
+        {/* Dimensions & Sizing */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Package size={18} className="text-blue-600" /> Dimensions & Size Variants
+          </h2>
+          
+          <div className="mb-6">
+            <label className="text-sm font-medium text-gray-700 block mb-2">Select Available Sizes</label>
+            <div className="flex flex-wrap gap-2">
+              {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Standard', 'Custom'].map(sz => (
+                <button
+                  key={sz}
+                  type="button"
+                  onClick={() => toggleSize(sz)}
+                  className={`px-4 py-2 border rounded-xl text-sm font-bold shadow-sm transition-colors ${
+                    variants[sz] 
+                      ? 'border-blue-600 bg-blue-600 text-white' 
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  {sz}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {Object.keys(variants).length > 0 ? (
+            <div className="space-y-6">
+              {Object.entries(variants).map(([sz, data]) => (
+                <div key={sz} className="border border-blue-100 bg-blue-50/30 rounded-xl p-4">
+                  <h3 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                    Size: {sz}
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <FormInput id={`weight-${sz}`} label="Weight (kg/g)" placeholder="e.g. 1.5" type="number" value={data.weight} onChange={(e) => updateVariant(sz, 'weight', e.target.value)} />
+                    <FormInput id={`length-${sz}`} label="Length (cm)" placeholder="e.g. 20" type="number" value={data.length} onChange={(e) => updateVariant(sz, 'length', e.target.value)} />
+                    <FormInput id={`width-${sz}`} label="Width (cm)" placeholder="e.g. 15" type="number" value={data.width} onChange={(e) => updateVariant(sz, 'width', e.target.value)} />
+                    <FormInput id={`height-${sz}`} label="Height (cm)" placeholder="e.g. 10" type="number" value={data.height} onChange={(e) => updateVariant(sz, 'height', e.target.value)} />
+                    <FormInput id={`diameter-${sz}`} label="Diameter (cm)" placeholder="e.g. 12" type="number" value={data.diameter} onChange={(e) => updateVariant(sz, 'diameter', e.target.value)} />
+                    <FormInput id={`price-${sz}`} label="Price Override (₹)" placeholder="Optional base price" type="number" value={data.price} onChange={(e) => updateVariant(sz, 'price', e.target.value)} />
+                    <FormInput id={`stock-${sz}`} label="Stock Override" placeholder="Optional" type="number" value={data.stock} onChange={(e) => updateVariant(sz, 'stock', e.target.value)} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-gray-500 mb-4">No specific sizes selected. You can provide general dimensions for the product below.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormInput id="weight" label="Weight (kg/g)" placeholder="e.g. 1.5" type="number" value={form.weight} onChange={handleChange} />
+                <FormInput id="length" label="Length (cm)" placeholder="e.g. 20" type="number" value={form.length} onChange={handleChange} />
+                <FormInput id="width" label="Width / Breadth (cm)" placeholder="e.g. 15" type="number" value={form.width} onChange={handleChange} />
+                <FormInput id="height" label="Height (cm)" placeholder="e.g. 10" type="number" value={form.height} onChange={handleChange} />
+                <FormInput id="diameter" label="Diameter (cm)" placeholder="e.g. 12" type="number" value={form.diameter} onChange={handleChange} />
+              </div>
+            </>
           )}
         </div>
 

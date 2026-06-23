@@ -3,7 +3,7 @@
 
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/lib/authContext';
 import { X, Send, MessageSquare, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -24,7 +24,7 @@ interface BulkInquiryModalProps {
 }
 
 export default function BulkInquiryModal({ product, isOpen, onClose, initialQuantity }: BulkInquiryModalProps) {
-  const { user, isLoaded } = useUser();
+  const { currentUser, loading } = useAuth();
   const moq = product.category === 'kitchenware' ? 50 : 30;
 
   // Form States
@@ -43,15 +43,15 @@ export default function BulkInquiryModal({ product, isOpen, onClose, initialQuan
   const [submittedInquiryId, setSubmittedInquiryId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Autofill Clerk User Information
+  // Autofill Current User Information
   useEffect(() => {
-    if (isLoaded && user) {
+    if (!loading && currentUser) {
       Promise.resolve().then(() => {
-        setCustomerName(user.fullName || user.username || '');
-        setEmail(user.emailAddresses?.[0]?.emailAddress || '');
+        setCustomerName(currentUser.name || '');
+        setEmail(currentUser.email || '');
       });
     }
-  }, [user, isLoaded]);
+  }, [currentUser, loading]);
 
   if (!isOpen) return null;
 

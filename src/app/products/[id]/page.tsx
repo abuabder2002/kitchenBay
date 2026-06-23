@@ -25,9 +25,29 @@ export default function ProductDetailPage() {
   const { addItem, items } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist, isItemLoading } = useWishlist();
 
+  const variants = product?.variants as Record<string, any> | undefined;
+  const variantSizes = variants ? Object.keys(variants).filter(Boolean) : [];
+  const legacySizes = product?.sizeCategory ? product.sizeCategory.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const availableSizes = variantSizes.length > 0 ? variantSizes : legacySizes;
+
+  const [selectedSize, setSelectedSize] = useState<string>(availableSizes[0] || '');
+  const [sizeError, setSizeError] = useState(false);
+
+  const activeVariant = selectedSize && variants ? variants[selectedSize] : undefined;
+  
+  const displayDimensions = {
+    weight: activeVariant?.weight || product?.weight,
+    length: activeVariant?.length || product?.length,
+    width: activeVariant?.width || product?.width,
+    height: activeVariant?.height || product?.height,
+    diameter: activeVariant?.diameter || product?.diameter,
+  };
+  const hasDimensions = Object.values(displayDimensions).some(v => v);
+
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   const [activeTab, setActiveTab] = useState<'story' | 'Kitchenbay' | 'care'>('story');
 
@@ -44,7 +64,12 @@ export default function ProductDetailPage() {
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) addItem(product);
+    if (availableSizes.length > 0 && !selectedSize) {
+      setSizeError(true);
+      return;
+    }
+    setSizeError(false);
+    for (let i = 0; i < quantity; i++) addItem(product, selectedSize);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -72,7 +97,7 @@ export default function ProductDetailPage() {
             <div className="space-y-6">
               <div className="relative w-full aspect-[4/5] md:aspect-[3/4] bg-white rounded-sm overflow-hidden shadow-md">
                 <Image
-                  src={product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop'}
+                  src={selectedImage || product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop'}
                   alt={product.name}
                   fill
                   className="object-cover"
@@ -80,13 +105,17 @@ export default function ProductDetailPage() {
                 />
               </div>
               <div className="grid grid-cols-4 gap-4">
-                 <div className="relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 border-[--color-brand-text] cursor-pointer">
-                    <Image src={product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=400&auto=format&fit=crop'} alt="Thumb 1" fill className="object-cover opacity-100" />
-                 </div>
-                 {/* Placeholders for additional gallery images */}
-                 {[1,2,3].map(i => (
-                   <div key={i} className="relative w-full aspect-square bg-[--color-brand-card] rounded-sm overflow-hidden border border-transparent cursor-not-allowed opacity-50">
-                      <Image src={product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=400&auto=format&fit=crop'} alt={`Thumb ${i+1}`} fill className="object-cover" />
+                 {[product.image, ...(product.subImages || [])].filter(Boolean).map((img, idx) => (
+                   <div 
+                     key={idx} 
+                     onClick={() => setSelectedImage(img)}
+                     className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${
+                       (selectedImage === img) || (!selectedImage && idx === 0) 
+                         ? 'border-[--color-brand-text] opacity-100' 
+                         : 'border-transparent opacity-60 hover:opacity-100'
+                     }`}
+                   >
+                      <Image src={img || ''} alt={`Thumb ${idx + 1}`} fill className="object-cover" />
                    </div>
                  ))}
               </div>
@@ -129,29 +158,7 @@ export default function ProductDetailPage() {
                   </div>
                   <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-6">Inclusive of all taxes</p>
 
-                  <div className="bg-[--color-brand-card]/50 p-4 rounded-sm text-sm border border-[--color-brand-border]">
-                     <div className="flex items-center gap-2 font-bold text-[--color-brand-text] mb-3">
-                       <Info size={16} /> Tax Breakdown
-                     </div>
-                     <div className="flex justify-between text-[--color-brand-muted] mb-1">
-                       <span>Base Price</span>
-                       <span className="font-medium text-[--color-brand-text]">{formatPrice(product.price)}</span>
-                     </div>
-                     {product.gstPercent > 0 ? (
-                       <>
-                         <div className="flex justify-between text-[--color-brand-muted] mb-1">
-                           <span>CGST ({cgstPercent}%)</span>
-                           <span className="font-medium text-[--color-brand-text]">+{formatPrice(cgstAmount)}</span>
-                         </div>
-                         <div className="flex justify-between text-[--color-brand-muted]">
-                           <span>SGST ({sgstPercent}%)</span>
-                           <span className="font-medium text-[--color-brand-text]">+{formatPrice(sgstAmount)}</span>
-                         </div>
-                       </>
-                     ) : (
-                       <div className="text-[--color-brand-muted] italic mt-2">GST Exempt (Handicraft)</div>
-                     )}
-                  </div>
+
                 </div>
 
                 {/* Description */}
@@ -159,8 +166,38 @@ export default function ProductDetailPage() {
                   {product.description}
                 </div>
 
+                {/* Available Sizes */}
+                {availableSizes.length > 0 && (
+                  <div className="pt-4">
+                    <p className="text-xs font-bold text-[--color-brand-muted] uppercase tracking-widest mb-2 flex items-center gap-2">
+                      Select Size: {sizeError && <span className="text-red-500 font-normal lowercase">(Please select a size)</span>}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {availableSizes.map((size: string, idx: number) => (
+                        <button 
+                          key={idx} 
+                          onClick={() => { setSelectedSize(size); setSizeError(false); }}
+                          className={`px-4 py-2 border rounded-sm text-sm font-bold shadow-sm transition-colors ${
+                            selectedSize === size 
+                              ? 'border-brand-text bg-brand-text text-white' 
+                              : 'border-brand-border bg-white text-brand-text hover:border-brand-text'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Add to Cart Area */}
-                {product.stock > 0 ? (
+                {product.isActive === false ? (
+                  <div className="pt-6 border-t border-[--color-brand-border]">
+                     <div className="bg-gray-100 text-gray-600 font-bold uppercase tracking-widest py-4 text-center rounded-sm border border-gray-300">
+                        Currently Unavailable
+                     </div>
+                  </div>
+                ) : product.stock > 0 ? (
                   <div className="space-y-4 pt-6 border-t border-[--color-brand-border]">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                       {/* Quantity selector */}
@@ -221,6 +258,45 @@ export default function ProductDetailPage() {
                      <div className="bg-red-50 text-red-600 font-bold uppercase tracking-widest py-4 text-center rounded-sm border border-red-200">
                         Out of Stock
                      </div>
+                  </div>
+                )}
+
+                {/* Dimensions / Specifications */}
+                {hasDimensions && (
+                  <div className="pt-8 mt-8 border-t border-[--color-brand-border]">
+                    <h3 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-4">Specifications</h3>
+                    <div className="grid grid-cols-2 gap-y-3 text-sm">
+                      {displayDimensions.weight && (
+                        <>
+                          <span className="text-[--color-brand-muted]">Weight</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.weight} {Number(displayDimensions.weight) < 10 ? 'kg' : 'g'}</span>
+                        </>
+                      )}
+                      {displayDimensions.length && (
+                        <>
+                          <span className="text-[--color-brand-muted]">Length</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.length} cm</span>
+                        </>
+                      )}
+                      {displayDimensions.width && (
+                        <>
+                          <span className="text-[--color-brand-muted]">Width</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.width} cm</span>
+                        </>
+                      )}
+                      {displayDimensions.height && (
+                        <>
+                          <span className="text-[--color-brand-muted]">Height</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.height} cm</span>
+                        </>
+                      )}
+                      {displayDimensions.diameter && (
+                        <>
+                          <span className="text-[--color-brand-muted]">Diameter</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.diameter} cm</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
 

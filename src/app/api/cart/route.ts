@@ -1,34 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { getDbUser } from '@/lib/serverAuth';
 import { prisma } from '@/lib/prisma';
-
-async function getDbUser() {
-  const clerkUser = await currentUser();
-  if (!clerkUser) return null;
-
-  const email = clerkUser.emailAddresses[0]?.emailAddress;
-  if (!email) return null;
-
-  const name = clerkUser.fullName || clerkUser.username || email.split('@')[0];
-
-  let user = await prisma.user.findUnique({ where: { clerkUserId: clerkUser.id } });
-  if (!user) {
-    user = await prisma.user.findUnique({ where: { email } });
-    if (user) {
-      user = await prisma.user.update({
-        where: { email },
-        data: { clerkUserId: clerkUser.id, name }
-      });
-    } else {
-      user = await prisma.user.create({
-        data: { clerkUserId: clerkUser.id, email, name }
-      });
-    }
-  }
-  return user;
-}
 
 export async function GET(req: NextRequest) {
   try {
@@ -62,7 +36,7 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       // Handle empty or malformed body
     }
-    const { action, items, productId, quantity } = body;
+    const { action, items, productId, quantity, size = "" } = body;
 
     let cart = await prisma.cart.findUnique({ where: { userId: user.id } });
     if (!cart) {
@@ -73,8 +47,9 @@ export async function POST(req: NextRequest) {
       // Sync local items to DB
       if (Array.isArray(items)) {
         for (const item of items) {
+          const itemSize = item.size || "";
           const existing = await prisma.cartItem.findUnique({
-            where: { cartId_productId: { cartId: cart.id, productId: item.product.id } }
+            where: { cartId_productId_size: { cartId: cart.id, productId: item.product.id, size: itemSize } }
           });
           if (existing) {
             await prisma.cartItem.update({
@@ -83,14 +58,14 @@ export async function POST(req: NextRequest) {
             });
           } else {
             await prisma.cartItem.create({
-              data: { cartId: cart.id, productId: item.product.id, quantity: item.quantity }
+              data: { cartId: cart.id, productId: item.product.id, quantity: item.quantity, size: itemSize }
             });
           }
         }
       }
     } else if (action === 'ADD') {
       const existing = await prisma.cartItem.findUnique({
-        where: { cartId_productId: { cartId: cart.id, productId } }
+        where: { cartId_productId_size: { cartId: cart.id, productId, size } }
       });
       if (existing) {
         await prisma.cartItem.update({
@@ -99,7 +74,7 @@ export async function POST(req: NextRequest) {
         });
       } else {
         await prisma.cartItem.create({
-          data: { cartId: cart.id, productId, quantity: 1 }
+          data: { cartId: cart.id, productId, quantity: 1, size }
         });
       }
     }
@@ -120,17 +95,17 @@ export async function PUT(req: NextRequest) {
     const user = await getDbUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { productId, quantity } = await req.json();
+    const { productId, quantity, size = "" } = await req.json();
     const cart = await prisma.cart.findUnique({ where: { userId: user.id } });
     if (!cart) return NextResponse.json({ error: 'Cart not found' }, { status: 404 });
 
     if (quantity <= 0) {
       await prisma.cartItem.delete({
-        where: { cartId_productId: { cartId: cart.id, productId } }
+        where: { cartId_productId_size: { cartId: cart.id, productId, size } }
       });
     } else {
       await prisma.cartItem.update({
-        where: { cartId_productId: { cartId: cart.id, productId } },
+        where: { cartId_productId_size: { cartId: cart.id, productId, size } },
         data: { quantity }
       });
     }
@@ -149,13 +124,14 @@ export async function DELETE(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const productId = searchParams.get('productId');
+    const size = searchParams.get('size') || "";
     
     const cart = await prisma.cart.findUnique({ where: { userId: user.id } });
     if (!cart) return NextResponse.json({ error: 'Cart not found' }, { status: 404 });
 
     if (productId) {
       await prisma.cartItem.delete({
-        where: { cartId_productId: { cartId: cart.id, productId } }
+        where: { cartId_productId_size: { cartId: cart.id, productId, size } }
       });
     } else {
       await prisma.cartItem.deleteMany({

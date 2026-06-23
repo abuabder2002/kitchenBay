@@ -97,8 +97,8 @@ export default function CartDrawer() {
             </div>
           ) : (
             <ul className="divide-y divide-gray-50 px-4 py-2">
-              {items.map((item) => (
-                <li key={item.product.id} className="flex gap-4 py-4 group animate-in fade-in slide-in-from-right-2 duration-200">
+              {items.map((item, idx) => (
+                <li key={`${item.product.id}-${item.size || idx}`} className="flex gap-4 py-4 group animate-in fade-in slide-in-from-right-2 duration-200">
                   {/* Product Image */}
                   <Link href={`/products/${item.product.id}`} onClick={closeDrawer} className="shrink-0">
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
@@ -120,13 +120,21 @@ export default function CartDrawer() {
                           {item.product.name}
                         </p>
                       </Link>
-                      <p className="text-xs text-gray-400 mt-0.5 uppercase tracking-wide">{item.product.material}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide">{item.product.material}</p>
+                        {item.size && (
+                          <>
+                            <span className="text-gray-300 text-xs">•</span>
+                            <span className="text-xs font-bold text-[--color-brand-accent] uppercase tracking-wider">{item.size}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       {/* Quantity Controls */}
                       <div className="flex items-center gap-1 border border-gray-200 rounded-full overflow-hidden bg-white">
                         <button
-                          onClick={() => item.quantity > 1 ? updateQuantity(item.product.id, item.quantity - 1) : removeItem(item.product.id)}
+                          onClick={() => item.quantity > 1 ? updateQuantity(item.product.id, item.quantity - 1, item.size) : removeItem(item.product.id, item.size)}
                           className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-[--color-brand-accent] hover:bg-gray-50 transition-colors"
                           aria-label="Decrease quantity"
                         >
@@ -136,7 +144,7 @@ export default function CartDrawer() {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.size)}
                           className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-[--color-brand-accent] hover:bg-gray-50 transition-colors"
                           aria-label="Increase quantity"
                         >
@@ -150,7 +158,7 @@ export default function CartDrawer() {
                           {formatPrice(item.product.finalPrice * item.quantity)}
                         </span>
                         <button
-                          onClick={() => removeItem(item.product.id)}
+                          onClick={() => removeItem(item.product.id, item.size)}
                           className="text-gray-300 hover:text-red-500 transition-colors"
                           aria-label="Remove item"
                         >
@@ -175,8 +183,8 @@ export default function CartDrawer() {
                 <span className="font-semibold text-[--color-brand-text]">{formatPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between text-xs text-gray-400">
-                <span>Taxes & GST</span>
-                <span>Calculated at checkout</span>
+                <span>Tax</span>
+                <span>Inclusive of all taxes</span>
               </div>
               <div className="flex justify-between text-xs text-gray-400">
                 <span>Shipping</span>
@@ -211,7 +219,7 @@ export default function CartDrawer() {
 
             {/* Trust Badge */}
             <p className="text-center text-[10px] text-gray-400 uppercase tracking-wider pt-1">
-              🔒 Secure checkout · Free returns · GST invoice included
+              🔒 Secure checkout · Free returns
             </p>
           </div>
         )}

@@ -15,6 +15,14 @@ export default function StoreLocatorPage() {
       phone: "+91 98765 43210", // Update this with actual phone if available
       hours: "Mon-Sat: 9:00 AM - 7:00 PM",
       mapsLink: "https://www.google.com/maps/search/?api=1&query=19%2FA+Line+Street%2C+Attur%2C+Salem%2C+Tamil+Nadu+636102",
+    },
+    {
+      id: 2,
+      name: "Kitchenbay The Homeneeds (Chennai)",
+      address: "Kitchenbay The Homeneeds, Chennai, Tamil Nadu",
+      phone: "+91 98765 43210", 
+      hours: "Mon-Sat: 9:00 AM - 7:00 PM",
+      mapsLink: "https://maps.app.goo.gl/7Z3v7MhxSBLs1Jj49",
     }
   ];
 

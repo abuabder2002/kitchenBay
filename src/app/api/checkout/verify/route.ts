@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
-import { currentUser } from '@clerk/nextjs/server';
+import { getDbUser } from '@/lib/serverAuth';
 
 /**
  * POST /api/checkout/verify
@@ -15,8 +15,8 @@ import { currentUser } from '@clerk/nextjs/server';
 export async function POST(req: NextRequest) {
   try {
     // ── Auth ────────────────────────────────────────────────
-    const clerkUser = await currentUser();
-    if (!clerkUser) {
+    const user = await getDbUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -71,9 +71,6 @@ export async function POST(req: NextRequest) {
     });
 
     // ── Clear user's cart ───────────────────────────────────
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId: clerkUser.id },
-    });
     if (user) {
       const cart = await prisma.cart.findUnique({ where: { userId: user.id } });
       if (cart) {

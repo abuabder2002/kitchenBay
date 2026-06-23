@@ -91,6 +91,86 @@ export default function AdminProductsPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleEditSubImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxSize = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxSize) {
+              height *= maxSize / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width *= maxSize / height;
+              height = maxSize;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          setEditingProduct(prev => {
+            if (!prev) return null;
+            return { ...prev, subImages: [...(prev.subImages || []), dataUrl] };
+          });
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeEditSubImage = (indexToRemove: number) => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        subImages: (prev.subImages || []).filter((_, idx) => idx !== indexToRemove)
+      };
+    });
+  };
+
+  const toggleEditSize = (sz: string) => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      const currentVariants = (prev.variants as any) || {};
+      const copy = { ...currentVariants };
+      if (copy[sz]) delete copy[sz];
+      else copy[sz] = { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '' };
+      
+      const newSizes = Object.keys(copy).join(', ');
+      return { ...prev, variants: copy, sizeCategory: newSizes };
+    });
+  };
+
+  const updateEditVariant = (sz: string, field: string, value: string) => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      const currentVariants = (prev.variants as any) || {};
+      return {
+        ...prev,
+        variants: {
+          ...currentVariants,
+          [sz]: { ...currentVariants[sz], [field]: value }
+        }
+      };
+    });
+  };
+
   const availableSubcategories = editingProduct 
     ? subcategories.filter(s => s.category === editingProduct.category) 
     : [];
@@ -175,7 +255,12 @@ export default function AdminProductsPage() {
                       <div className="flex items-center gap-3">
                         <img src={p.image} alt={p.name} className="w-12 h-12 rounded-xl object-cover bg-gray-50 shrink-0" />
                         <div>
-                          <p className="text-sm font-semibold text-gray-800 line-clamp-1">{p.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-gray-800 line-clamp-1">{p.name}</p>
+                            {p.isActive === false && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 uppercase">Paused</span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-400 line-clamp-1">{p.description.slice(0, 50)}...</p>
                         </div>
                       </div>
@@ -273,6 +358,23 @@ export default function AdminProductsPage() {
                     required
                     className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all resize-none"
                   />
+                </div>
+
+                {/* Status / Visibility */}
+                <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={editingProduct.isActive !== false} 
+                      onChange={(e) => setEditingProduct(prev => prev ? {...prev, isActive: e.target.checked} : null)} 
+                    />
+                    <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Active / Visible to Customers</p>
+                    <p className="text-xs text-gray-500">Turn this off to pause the product and show &quot;Currently Unavailable&quot;</p>
+                  </div>
                 </div>
 
                 {/* Stock & Category */}
@@ -407,6 +509,81 @@ export default function AdminProductsPage() {
                   <span className="font-bold text-violet-900 text-lg">{formatPrice(editingProduct.finalPrice)}</span>
                 </div>
 
+                {/* Dimensions & Size Variants */}
+                <div className="pt-2">
+                  <h3 className="font-semibold text-gray-800 mb-3">Dimensions & Size Variants</h3>
+                  
+                  <div className="mb-6">
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Select Available Sizes</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Standard', 'Custom'].map(sz => {
+                        const isSelected = !!((editingProduct.variants as any)?.[sz]);
+                        return (
+                          <button
+                            key={sz}
+                            type="button"
+                            onClick={() => toggleEditSize(sz)}
+                            className={`px-4 py-2 border rounded-xl text-sm font-bold shadow-sm transition-colors ${
+                              isSelected 
+                                ? 'border-blue-600 bg-blue-600 text-white' 
+                                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                            }`}
+                          >
+                            {sz}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {Object.keys((editingProduct.variants as any) || {}).length > 0 ? (
+                    <div className="space-y-6">
+                      {Object.entries((editingProduct.variants as any) || {}).map(([sz, data]: any) => (
+                        <div key={sz} className="border border-blue-100 bg-blue-50/30 rounded-xl p-4">
+                          <h3 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                            Size: {sz}
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Weight</label><input type="number" value={data.weight || ''} onChange={(e) => updateEditVariant(sz, 'weight', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Length</label><input type="number" value={data.length || ''} onChange={(e) => updateEditVariant(sz, 'length', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Width</label><input type="number" value={data.width || ''} onChange={(e) => updateEditVariant(sz, 'width', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Height</label><input type="number" value={data.height || ''} onChange={(e) => updateEditVariant(sz, 'height', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Diameter</label><input type="number" value={data.diameter || ''} onChange={(e) => updateEditVariant(sz, 'diameter', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Price Override</label><input type="number" value={data.price || ''} onChange={(e) => updateEditVariant(sz, 'price', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Stock Override</label><input type="number" value={data.stock || ''} onChange={(e) => updateEditVariant(sz, 'stock', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-xs text-gray-500 mb-4">No specific sizes selected. You can provide general dimensions for the product below.</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label htmlFor="weight" className="text-sm font-medium text-gray-700">Weight (kg/g)</label>
+                          <input id="weight" type="number" placeholder="e.g. 1.5" value={editingProduct.weight ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label htmlFor="length" className="text-sm font-medium text-gray-700">Length (cm)</label>
+                          <input id="length" type="number" placeholder="e.g. 20" value={editingProduct.length ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label htmlFor="width" className="text-sm font-medium text-gray-700">Width (cm)</label>
+                          <input id="width" type="number" placeholder="e.g. 15" value={editingProduct.width ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label htmlFor="height" className="text-sm font-medium text-gray-700">Height (cm)</label>
+                          <input id="height" type="number" placeholder="e.g. 10" value={editingProduct.height ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label htmlFor="diameter" className="text-sm font-medium text-gray-700">Diameter (cm)</label>
+                          <input id="diameter" type="number" placeholder="e.g. 12" value={editingProduct.diameter ?? ''} onChange={handleEditChange} className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 transition-all" />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
                 {/* Image Upload Option */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-gray-700">Product Image</label>
@@ -421,6 +598,29 @@ export default function AdminProductsPage() {
                     <label className="flex-1 cursor-pointer px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors text-center border-dashed border-2">
                       <span className="text-blue-600 font-medium">Click to upload new image</span>
                       <input type="file" accept="image/*" className="hidden" onChange={handleEditImageUpload} />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Sub Images Upload Option */}
+                <div className="flex flex-col gap-1.5 mt-2 pt-4 border-t border-gray-100">
+                  <label className="text-sm font-medium text-gray-700">Additional Images (Optional)</label>
+                  <div className="flex items-center gap-4 flex-wrap">
+                    {(editingProduct.subImages || []).map((imgSrc, idx) => (
+                      <div key={idx} className="relative group">
+                        <img src={imgSrc} alt={`Sub image ${idx + 1}`} className="w-16 h-16 object-cover rounded-xl border border-gray-200" />
+                        <button 
+                          type="button" 
+                          onClick={() => removeEditSubImage(idx)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    <label className="w-16 h-16 cursor-pointer flex items-center justify-center text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors border-dashed border-2">
+                      <Upload size={18} />
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={handleEditSubImageUpload} />
                     </label>
                   </div>
                 </div>

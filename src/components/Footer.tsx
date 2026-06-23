@@ -1,9 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Apple, Play } from 'lucide-react';
-import logoImg from '../images/logo.jpeg';
 
 const socialLinks = [
   {
@@ -62,15 +60,11 @@ export default function Footer() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10">
 
             {/* Brand – spans 2 cols on large screens */}
-            <div className="lg:col-span-2 flex flex-col gap-5">
-              <Link href="/">
-                <Image
-                  src={logoImg}
-                  alt="KitchenBay Logo"
-                  width={540}
-                  height={190}
-                  className="object-contain h-28 sm:h-36 lg:h-40 w-auto max-w-[320px] sm:max-w-sm"
-                />
+            <div className="lg:col-span-2 flex flex-col gap-4">
+              <Link href="/" className="inline-block">
+                <h2 className="text-3xl md:text-4xl font-black tracking-wider text-white font-[family-name:var(--font-heading)] mb-2">
+                  KITCHENBAY
+                </h2>
               </Link>
               <p className="text-sm text-white/80 leading-relaxed max-w-xs">
                 India&apos;s Premium Destination for Authentic Handcrafted Kitchenware,

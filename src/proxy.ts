@@ -1,72 +1,21 @@
-import { clerkMiddleware, createRouteMatcher, clerkClient } from "@clerk/nextjs/server";
-import { getAdminEmails } from "./lib/adminEmails";
+import { type NextRequest } from 'next/server';
+import { createClient } from '@/utils/supabase/middleware';
 
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/login(.*)",
-  "/signup(.*)",
-  "/products(.*)",
-  "/story(.*)",
-  "/blog(.*)",
-  "/Kitchenbays(.*)",
-  "/contact(.*)",
-  "/collections(.*)",
-  "/track(.*)",
-  "/cart(.*)",
-  "/wishlist(.*)",
-  "/api/videos(.*)",
-  "/api/send-email(.*)",
-  "/api/bulk-inquiries(.*)",
-  "/api/products(.*)",
-  // Category & subcategory reads — used by product dropdowns on all pages
-  "/api/admin/categories",
-  "/api/admin/subcategories",
-]);
-
-const isAdminRoute = createRouteMatcher([
-  "/admin(.*)"
-]);
-
-export default clerkMiddleware(async (auth, request) => {
-  // 1. If it's an admin route, check authentication and email configuration
-  if (isAdminRoute(request)) {
-    const session = await auth();
-
-    // If not signed in, redirect to login page
-    if (!session.userId) {
-      await auth.protect();
-      return;
-    }
-
-    try {
-      const client = await clerkClient();
-      const user = await client.users.getUser(session.userId);
-      const email = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress || user.emailAddresses[0]?.emailAddress;
-
-      const adminEmails = getAdminEmails();
-
-      if (!email || !adminEmails.includes(email.toLowerCase())) {
-        // Redirect non-admin users away from /admin to the home page "/"
-        return Response.redirect(new URL("/", request.url));
-      }
-    } catch (e) {
-      console.error("Admin check failed in middleware:", e);
-      // Safety redirect to home page
-      return Response.redirect(new URL("/", request.url));
-    }
-  } else {
-    // 2. Protect non-public routes (e.g. checkout, orders)
-    if (!isPublicRoute(request)) {
-      await auth.protect();
-    }
-  }
-});
+export async function proxy(request: NextRequest) {
+  // refresh session if expired
+  const response = createClient(request);
+  return response;
+}
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
-    "/(api|trpc)(.*)",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

@@ -126,12 +126,8 @@ export async function POST(request: Request) {
                         <td style="padding: 4px 0; text-align: right; color: #1f2937;">${formatPrice(order.subtotal)}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">CGST</td>
-                        <td style="padding: 4px 0; text-align: right; color: #10b981;">${formatPrice(order.cgstAmount)}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">SGST</td>
-                        <td style="padding: 4px 0; text-align: right; color: #10b981;">${formatPrice(order.sgstAmount)}</td>
+                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Tax</td>
+                        <td style="padding: 4px 0; text-align: right; color: #6b7280; font-size: 11px;">Inclusive of all taxes</td>
                       </tr>
                       <tr style="font-size: 15px; font-weight: bold;">
                         <td style="padding: 15px 0 0 0; color: #1f2937; border-top: 1px solid #f1f1f1; margin-top: 10px; text-align: left;">Total Paid</td>

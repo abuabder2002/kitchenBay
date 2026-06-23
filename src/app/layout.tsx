@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${playfair.variable} ${nunitoSans.variable} font-[family-name:var(--font-body)] bg-[--color-brand-bg] text-[--color-brand-text] antialiased selection:bg-[--color-brand-accent] selection:text-white`}>
         <NextAuthProvider>
           <AuthProvider>

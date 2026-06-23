@@ -16,14 +16,24 @@ export interface Product {
   subcategory: string;  // e.g. cast-iron-cookwares
   material: string;     // Cast Iron | Stainless Steel | Soapstone | Brass | Copper | Bronze
   image: string;
+  subImages?: string[];
   rating: number;
   reviewCount: number;
   featured: boolean;
+  isActive?: boolean;
+  height?: number;
+  width?: number;
+  length?: number;
+  diameter?: number;
+  weight?: number;
+  sizeCategory?: string;
+  variants?: Record<string, any>;
 }
 
 export interface CartItem {
   product: Product;
   quantity: number;
+  size?: string;
 }
 
 export interface Order {
