@@ -98,11 +98,6 @@ const defaultHampers = [
 ];
 
 export default function GiftConciergePage() {
-  const [finderState, setFinderState] = useState({
-    occasion: '',
-    budget: '',
-    quantity: ''
-  });
 
   const { isAdmin } = useAuth();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -367,67 +362,6 @@ export default function GiftConciergePage() {
           </div>
         </section>
 
-        {/* SECTION 3 - GIFT FINDER */}
-        <section className="py-24 bg-white border-b border-[#BFDBFE]">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <Gift size={48} className="mx-auto text-[--color-brand-accent-yellow] mb-6 animate-pulse" />
-            <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-4">The Gift Finder</h2>
-            <p className="text-[--color-brand-muted] mb-12 text-lg">Let us help you find the perfect match for your requirements.</p>
-
-            <div className="bg-[#EFF6FF] p-8 md:p-12 rounded-2xl shadow-xl border border-[#BFDBFE]">
-
-              <div className="mb-10 text-left">
-                <label className="block text-[--color-brand-text] font-bold uppercase tracking-widest text-sm mb-4">Step 1: Choose Occasion</label>
-                <div className="flex flex-wrap gap-3">
-                  {['Wedding', 'Housewarming', 'Festival', 'Corporate', 'Return Gift'].map(occ => (
-                    <button
-                      key={occ}
-                      onClick={() => setFinderState(p => ({ ...p, occasion: occ }))}
-                      className={`px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 border ${finderState.occasion === occ ? 'bg-[--color-brand-accent] text-white border-[--color-brand-accent] shadow-md scale-105' : 'bg-white text-[--color-brand-text] border-[--color-brand-border] hover:border-[--color-brand-accent] hover:shadow-sm'}`}
-                    >
-                      {occ}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-10 text-left">
-                <label className="block text-[--color-brand-text] font-bold uppercase tracking-widest text-sm mb-4">Step 2: Choose Budget (Per Gift)</label>
-                <div className="flex flex-wrap gap-3">
-                  {['₹500–1000', '₹1000–2500', '₹2500–5000', 'Premium'].map(bud => (
-                    <button
-                      key={bud}
-                      onClick={() => setFinderState(p => ({ ...p, budget: bud }))}
-                      className={`px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 border ${finderState.budget === bud ? 'bg-[--color-brand-accent] text-white border-[--color-brand-accent] shadow-md scale-105' : 'bg-white text-[--color-brand-text] border-[--color-brand-border] hover:border-[--color-brand-accent] hover:shadow-sm'}`}
-                    >
-                      {bud}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-12 text-left">
-                <label className="block text-[--color-brand-text] font-bold uppercase tracking-widest text-sm mb-4">Step 3: Choose Quantity</label>
-                <div className="flex flex-wrap gap-3">
-                  {['10+', '50+', '100+', '500+'].map(qty => (
-                    <button
-                      key={qty}
-                      onClick={() => setFinderState(p => ({ ...p, quantity: qty }))}
-                      className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 border ${finderState.quantity === qty ? 'bg-[--color-brand-accent] text-white border-[--color-brand-accent] shadow-md scale-105' : 'bg-white text-[--color-brand-text] border-[--color-brand-border] hover:border-[--color-brand-accent] hover:shadow-sm'}`}
-                    >
-                      {qty}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button className="w-full md:w-auto px-12 py-5 bg-[--color-brand-text] text-white font-bold tracking-[0.15em] uppercase text-sm rounded hover:bg-[--color-brand-accent] transition-all duration-300 flex items-center justify-center gap-3 mx-auto shadow-lg hover:shadow-xl hover:-translate-y-1">
-                Get Personalized Recommendations <ChevronRight size={20} />
-              </button>
-
-            </div>
-          </div>
-        </section>
 
         {/* SECTION 4 - WHY CHOOSE KITCHENBAY GIFTS */}
         <section className="py-24 bg-[#E6F2FF] max-w-full px-4 sm:px-6 lg:px-8">
