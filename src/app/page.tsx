@@ -85,7 +85,7 @@ export default function HomePage() {
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   const [isEditMode, setIsEditMode] = useState(false);
-  const [modalConfig, setModalConfig] = useState<{isOpen: boolean; sectionId: string; sectionTitle: string; schema: any[]; initialData: any[] } | null>(null);
+  const [modalConfig, setModalConfig] = useState<{ isOpen: boolean; sectionId: string; sectionTitle: string; schema: any[]; initialData: any[] } | null>(null);
 
   const handleEditClick = (sectionId: string, sectionTitle: string, schema: any[], initialData: any[]) => {
     setModalConfig({ isOpen: true, sectionId, sectionTitle, schema, initialData });
@@ -104,9 +104,9 @@ export default function HomePage() {
   const [materials, setMaterials] = useState(defaultMaterials);
   const [journalEntries, setJournalEntries] = useState(defaultJournalEntries);
   const [testimonials, setTestimonials] = useState(defaultTestimonials);
-  const [manualBestsellers, setManualBestsellers] = useState<{productId: string}[]>([]);
-  const [manualNewArrivals, setManualNewArrivals] = useState<{productId: string}[]>([]);
-  const [manualRecommended, setManualRecommended] = useState<{productId: string}[]>([]);
+  const [manualBestsellers, setManualBestsellers] = useState<{ productId: string }[]>([]);
+  const [manualNewArrivals, setManualNewArrivals] = useState<{ productId: string }[]>([]);
+  const [manualRecommended, setManualRecommended] = useState<{ productId: string }[]>([]);
 
   useEffect(() => {
     // Fetch CMS content
@@ -119,11 +119,11 @@ export default function HomePage() {
             const getParsed = (key: string, fallback: any) => {
               const record = data.content.find((c: any) => c.key === key);
               if (record && record.value) {
-                try { return JSON.parse(record.value); } catch(e) { return fallback; }
+                try { return JSON.parse(record.value); } catch (e) { return fallback; }
               }
               return fallback;
             };
-            
+
             setMainHeroBanner(getParsed('mainHeroBanner', defaultMainHeroBanner));
             setSecondaryBanners(getParsed('secondaryBanners', defaultSecondaryBanners));
             setPromoSlides(getParsed('promoSlides', defaultPromoSlides));
@@ -208,18 +208,18 @@ export default function HomePage() {
                 {mainHeroBanner.map((banner, idx) => (
                   <Link key={idx} href={banner.link || '/products'} className="absolute inset-0 z-0">
                     <Image
-                    src={banner.image || "/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"}
-                    alt={banner.title || "Collection for Everyday Cooking"}
-                    fill
-                    className="object-contain object-center group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
-                  <div className="absolute inset-0 z-0 flex flex-col justify-center items-center text-center p-6 sm:p-8 lg:p-12 pointer-events-none">
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-md">{banner.title}</h2>
-                  </div>
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-0 pointer-events-none">
-                    <span className="bg-white text-black font-semibold py-2 px-4 rounded hover:bg-gray-100 transition-colors mt-4 inline-block shadow-sm">Explore Collection</span>
-                  </div>
+                      src={banner.image || "/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"}
+                      alt={banner.title || "Collection for Everyday Cooking"}
+                      fill
+                      className="object-contain object-center group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
+                    <div className="absolute inset-0 z-0 flex flex-col justify-center items-center text-center p-6 sm:p-8 lg:p-12 pointer-events-none">
+                      <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-md">{banner.title}</h2>
+                    </div>
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-0 pointer-events-none">
+                      <span className="bg-white text-black font-semibold py-2 px-4 rounded hover:bg-gray-100 transition-colors mt-4 inline-block shadow-sm">Explore Collection</span>
+                    </div>
                   </Link>
                 ))}
               </div>
@@ -288,11 +288,11 @@ export default function HomePage() {
               </div>
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
                 <Users className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">150+ Stores Across 100+ Cities</span>
+                <span className="text-sm md:text-base font-bold text-gray-800">Premium Kitchenware Collection</span>
               </div>
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
                 <RotateCcw className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">7 Day Easy Return Policy</span>
+                <span className="text-sm md:text-base font-bold text-gray-800">48 Hour Easy Return Policy</span>
               </div>
             </div>
           </div>
@@ -578,7 +578,7 @@ export default function HomePage() {
             <div className="flex items-center gap-5 flex-1 justify-center w-full pt-10 md:pt-0">
               <RotateCcw size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
-                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">7 Day Easy</h4>
+                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">48 Hour Easy Return Policy</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Return Policy</p>
               </div>
             </div>
@@ -607,10 +607,10 @@ export default function HomePage() {
 
       </main>
       <Footer />
-      
+
       {/* CMS Modals */}
       {modalConfig && (
-        <CMSModal 
+        <CMSModal
           isOpen={modalConfig.isOpen}
           onClose={() => setModalConfig(null)}
           onSaveSuccess={() => {

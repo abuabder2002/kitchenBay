@@ -6,7 +6,6 @@
 
 import { useAuth } from '@/lib/authContext';
 import { useOrders } from '@/lib/ordersContext';
-import { orders as mockOrders } from '@/lib/mockData';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
@@ -37,34 +36,8 @@ export default function TrackOrdersPage() {
     );
   }
 
-  // Combine dynamic orders from localStorage and mock orders
-  const allOrders = [
-    ...dynamicOrders,
-    ...mockOrders.map(o => ({
-      id: o.id,
-      customer: o.customer,
-      email: o.email,
-      phone: '',
-      address: o.address,
-      city: '',
-      state: '',
-      pincode: '',
-      date: o.date,
-      status: o.status as any,
-      total: o.total,
-      paymentMethod: o.paymentMethod,
-      items: o.items.map(item => ({
-        productId: item.product.id,
-        name: item.product.name,
-        image: item.product.image,
-        quantity: item.quantity,
-        price: item.product.finalPrice || item.product.price,
-      }))
-    }))
-  ];
-
-  // Filter orders specifically for the logged-in user's email
-  const myOrders = allOrders.filter(
+  // Show only orders belonging to the logged-in user
+  const myOrders = dynamicOrders.filter(
     o => o.email.toLowerCase() === user.email.toLowerCase()
   );
 

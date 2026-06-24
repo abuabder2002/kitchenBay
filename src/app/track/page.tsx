@@ -5,7 +5,6 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Package, Search, ArrowRight, X } from 'lucide-react';
 import { useOrders } from '@/lib/ordersContext';
-import { orders as mockOrders } from '@/lib/mockData';
 import { useRouter } from 'next/navigation';
 
 export default function TrackOrderPage() {
@@ -27,17 +26,10 @@ export default function TrackOrderPage() {
       return;
     }
 
-    // Search in dynamic orders (from localStorage) first
-    let matchedOrder = orders.find(
+    // Search in orders from ordersContext (DB-backed)
+    const matchedOrder = orders.find(
       o => o.id.toLowerCase() === cleanOrderId.toLowerCase()
     );
-
-    // Fallback to mock orders
-    if (!matchedOrder) {
-      matchedOrder = mockOrders.find(
-        o => o.id.toLowerCase() === cleanOrderId.toLowerCase()
-      ) as typeof orders[0] | undefined;
-    }
 
     if (!matchedOrder) {
       setError('Could not find an order with this Order ID. Please check the ID and try again.');

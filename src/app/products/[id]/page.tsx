@@ -11,6 +11,7 @@ import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/lib/productsContext';
 import { useCart } from '@/lib/cartContext';
 import { useWishlist } from '@/lib/wishlistContext';
+import { getItemBasePrice, getItemStock } from '@/lib/pricing';
 import {
   Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus, Heart
 } from 'lucide-react';
@@ -54,11 +55,19 @@ export default function ProductDetailPage() {
   if (!product) return notFound();
 
   const related = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
-  const gstAmount = Math.round(product.price * product.gstPercent / 100);
-  const cgstPercent = product.gstPercent / 2;
-  const sgstPercent = product.gstPercent / 2;
-  const cgstAmount = Math.floor(gstAmount / 2);
-  const sgstAmount = gstAmount - cgstAmount;
+
+  // ── Display Price: BASE PRICE ONLY (no GST on product page) ──
+  // Uses the selected variant price, or falls back to product.price.
+  // GST is NOT displayed or added here per business rule.
+  const displayBasePrice = getItemBasePrice(product, selectedSize || undefined);
+  const displayStock = getItemStock(product, selectedSize || undefined);
+
+  // Show MRP (crossed-out) only if product has an explicit discount
+  const hasDiscount = product.discount > 0;
+  // displayOriginalPrice is a purely cosmetic MRP figure for strikethrough
+  const displayOriginalPrice = hasDiscount
+    ? Math.round(displayBasePrice / (1 - product.discount / 100))
+    : 0;
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
@@ -148,15 +157,18 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
 
-                {/* Price block */}
+                {/* Price block — Base MRP only. GST applied only at checkout. */}
                 <div className="pt-6 border-t border-[--color-brand-border]">
                   <div className="flex items-baseline gap-4 mb-2">
-                    <span className="text-3xl font-bold text-[--color-brand-text]">{formatPrice(product.finalPrice)}</span>
-                    {product.discount > 0 && (
-                      <span className="text-xl line-through text-[--color-brand-muted]">{formatPrice(product.originalPrice)}</span>
+                    <span className="text-3xl font-bold text-[--color-brand-text]">{formatPrice(displayBasePrice)}</span>
+                    {hasDiscount && displayOriginalPrice > 0 && (
+                      <span className="text-xl line-through text-[--color-brand-muted]">{formatPrice(displayOriginalPrice)}</span>
+                    )}
+                    {hasDiscount && (
+                      <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{product.discount}% off</span>
                     )}
                   </div>
-                  <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-6">Inclusive of all taxes</p>
+                  <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-1">+ GST & shipping at checkout</p>
 
 
                 </div>
@@ -197,14 +209,14 @@ export default function ProductDetailPage() {
                         Currently Unavailable
                      </div>
                   </div>
-                ) : product.stock > 0 ? (
+                ) : displayStock > 0 ? (
                   <div className="space-y-4 pt-6 border-t border-[--color-brand-border]">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                       {/* Quantity selector */}
                       <div className="flex items-center justify-between sm:justify-center border border-[--color-brand-text] rounded-sm">
                         <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-6 sm:px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Minus size={16}/></button>
                         <span className="w-12 sm:w-8 text-center font-bold text-[--color-brand-text]">{quantity}</span>
-                        <button onClick={() => setQuantity(q => Math.min(product.stock, q + 1))} className="px-6 sm:px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Plus size={16}/></button>
+                        <button onClick={() => setQuantity(q => Math.min(displayStock, q + 1))} className="px-6 sm:px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Plus size={16}/></button>
                       </div>
                       
                       <button
@@ -250,7 +262,7 @@ export default function ProductDetailPage() {
                     </Link>
 
                     <p className="text-xs font-bold text-[--color-brand-success] uppercase tracking-widest text-center mt-4 flex items-center justify-center gap-2">
-                       <Check size={14}/> Ready to ship — {product.stock} in stock
+                       <Check size={14}/> Ready to ship — {displayStock} in stock
                     </p>
                   </div>
                 ) : (

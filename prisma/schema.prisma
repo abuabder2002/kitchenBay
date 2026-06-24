@@ -106,17 +106,20 @@ model Product {
 }
 
 model Order {
-  id             String      @id @default(cuid())
-  userId         String
-  user           User        @relation(fields: [userId], references: [id])
-  totalAmount    Int
-  status         OrderStatus @default(PENDING)
-  razorpayId     String?     @unique
-  paymentStatus  String      @default("PENDING")
-  shippingAddrId String?
-  items          OrderItem[]
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  totalAmount     Int
+  subtotalAmount  Int         @default(0)  // Base prices sum (no GST, no shipping)
+  gstAmount       Int         @default(0)  // Total GST collected
+  shippingAmount  Int         @default(9900) // Shipping in paise (default ₹99)
+  status          OrderStatus @default(PENDING)
+  razorpayId      String?     @unique
+  paymentStatus   String      @default("PENDING")
+  shippingAddrId  String?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 enum OrderStatus {
@@ -132,7 +135,8 @@ model OrderItem {
   orderId   String
   productId String
   quantity  Int
-  price     Int     // Price at the time of purchase in paise
+  price     Int     // Final price per unit (basePrice + GST) in paise
+  basePrice Int     @default(0) // Base price without GST in paise
   size      String  @default("")
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
@@ -233,6 +237,7 @@ model StoreSettings {
   id                String   @id @default("default")
   razorpayKeyId     String?
   razorpayKeySecret String?
+  shippingFee       Int      @default(9900) // Shipping fee in paise (default ₹99)
   updatedAt         DateTime @updatedAt
 }
 

@@ -16,9 +16,14 @@ export default function AdminProductsPage() {
   const formatPrice = (p: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p);
 
-  const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      deleteProduct(id);
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+      const result = await deleteProduct(id);
+      if (result.success) {
+        alert('✅ Product deleted successfully.');
+      } else {
+        alert(`❌ Failed to delete product: ${result.message}`);
+      }
     }
   };
 
@@ -189,11 +194,34 @@ export default function AdminProductsPage() {
   const score = Math.round((validCount / 8) * 100);
   const allValid = validCount === 8;
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingProduct) {
-      updateProduct(editingProduct.id, editingProduct);
-      setEditingProduct(null);
+      // Ensure variants have numeric price and stock before saving
+      let processedVariants = editingProduct.variants;
+      if (processedVariants && Object.keys(processedVariants).length > 0) {
+        processedVariants = Object.fromEntries(
+          Object.entries(processedVariants as Record<string, any>).map(([sz, data]) => [
+            sz,
+            { ...data, price: parseFloat(data.price) || 0, stock: parseInt(data.stock) || 0 }
+          ])
+        );
+      } else {
+        processedVariants = undefined;
+      }
+
+      const payload = {
+        ...editingProduct,
+        variants: processedVariants
+      };
+
+      const result = await updateProduct(editingProduct.id, payload);
+      if (result.success) {
+        setEditingProduct(null);
+        alert('✅ Product updated successfully.');
+      } else {
+        alert(`❌ Failed to update product: ${result.message}`);
+      }
     }
   };
 

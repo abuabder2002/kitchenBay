@@ -3,11 +3,35 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/lib/mockData';
 import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
 
-export default function GiftingPage() {
-  const giftingProducts = products.slice(0, 8); // Mocking with existing products
+async function getGiftingProducts() {
+  try {
+    const dbProducts = await prisma.product.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 8,
+    });
+    return dbProducts.map(p => {
+      const basePrice = p.price / 100;
+      const finalPrice = basePrice;
+      const originalPrice = p.discountPrice ? p.discountPrice / 100 : finalPrice;
+      const discount = originalPrice > finalPrice ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
+      return {
+        id: p.id, name: p.name, description: p.description, price: basePrice,
+        originalPrice, finalPrice, discount, gstPercent: p.gstPercent,
+        stock: p.stock, category: p.category, subcategory: p.subcategory || p.category,
+        material: p.material || 'Standard', image: p.image, subImages: p.subImages,
+        rating: p.rating, reviewCount: p.reviewCount, featured: p.featured, isFromDb: true
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+export default async function GiftingPage() {
+  const giftingProducts = await getGiftingProducts();
 
   return (
     <div className="min-h-screen flex flex-col bg-[--color-brand-bg]">
@@ -83,11 +107,15 @@ export default function GiftingPage() {
         {/* Product Grid */}
         <section className="py-16 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl md:text-3xl font-[family-name:var(--font-heading)] font-bold text-center text-[--color-brand-text] mb-12">For Bulk Orders</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {giftingProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {giftingProducts.length === 0 ? (
+            <p className="text-center text-[--color-brand-muted] py-16">No products available yet. Add products from the Admin Panel.</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {giftingProducts.map((product) => (
+                <ProductCard key={product.id} product={product as any} />
+              ))}
+            </div>
+          )}
         </section>
 
       </main>

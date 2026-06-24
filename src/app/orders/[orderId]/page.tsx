@@ -8,7 +8,6 @@ import React, { use } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useOrders } from '@/lib/ordersContext';
-import { orders as mockOrders } from '@/lib/mockData';
 import { Package, Truck, Check, Clock, X, ChevronRight, MapPin, CreditCard, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -37,11 +36,8 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
   const { orderId } = use(params);
   const { getOrderById } = useOrders();
 
-  // Find order in local storage first, fallback to mock orders
-  let order = getOrderById(orderId);
-  if (!order) {
-    order = mockOrders.find(o => o.id === orderId) as any;
-  }
+  // Find order in ordersContext (DB-backed)
+  const order = getOrderById(orderId);
 
   const formatPrice = (p: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p);

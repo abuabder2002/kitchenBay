@@ -70,6 +70,26 @@ export async function POST(req: NextRequest) {
       include: { items: true },
     });
 
+    // ── Deduct inventory ────────────────────────────────────
+    for (const item of updated.items) {
+      const dbProduct = await prisma.product.findUnique({ where: { id: item.productId } });
+      if (dbProduct) {
+        if (item.size && dbProduct.variants && (dbProduct.variants as Record<string, any>)[item.size]) {
+          const variants = dbProduct.variants as Record<string, any>;
+          variants[item.size].stock = Math.max(0, variants[item.size].stock - item.quantity);
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: { variants }
+          });
+        } else {
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: { stock: Math.max(0, dbProduct.stock - item.quantity) }
+          });
+        }
+      }
+    }
+
     // ── Clear user's cart ───────────────────────────────────
     if (user) {
       const cart = await prisma.cart.findUnique({ where: { userId: user.id } });

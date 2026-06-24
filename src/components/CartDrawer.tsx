@@ -8,7 +8,18 @@ import { useCart } from '@/lib/cartContext';
 import { useRouter } from 'next/navigation';
 
 export default function CartDrawer() {
-  const { items, itemCount, subtotal, removeItem, updateQuantity, isDrawerOpen, closeDrawer } = useCart();
+  const {
+    isDrawerOpen,
+    closeDrawer,
+    items,
+    removeItem,
+    updateQuantity,
+    itemCount,
+    subtotal,
+    gstAmount,
+    shippingFee,
+    total
+  } = useCart();
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -97,10 +108,18 @@ export default function CartDrawer() {
             </div>
           ) : (
             <ul className="divide-y divide-gray-50 px-4 py-2">
-              {items.map((item, idx) => (
-                <li key={`${item.product.id}-${item.size || idx}`} className="flex gap-4 py-4 group animate-in fade-in slide-in-from-right-2 duration-200">
-                  {/* Product Image */}
-                  <Link href={`/products/${item.product.id}`} onClick={closeDrawer} className="shrink-0">
+              {items.map((item, idx) => {
+                let basePrice = item.product.price;
+                if (item.size && item.product.variants && (item.product.variants as any)[item.size]) {
+                  basePrice = (item.product.variants as any)[item.size].price || item.product.price;
+                }
+                const itemGst = Math.round(basePrice * item.product.gstPercent / 100);
+                const itemFinalPrice = basePrice + itemGst;
+
+                return (
+                  <li key={`${item.product.id}-${item.size || idx}`} className="flex gap-4 py-4 group animate-in fade-in slide-in-from-right-2 duration-200">
+                    {/* Product Image */}
+                    <Link href={`/products/${item.product.id}`} onClick={closeDrawer} className="shrink-0">
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
                       <Image
                         src={item.product.image || '/images/marketing/everyday_cooking.jpg'}
@@ -155,7 +174,7 @@ export default function CartDrawer() {
                       {/* Price & Remove */}
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-bold text-[--color-brand-text]">
-                          {formatPrice(item.product.finalPrice * item.quantity)}
+                          {formatPrice(basePrice * item.quantity)}
                         </span>
                         <button
                           onClick={() => removeItem(item.product.id, item.size)}
@@ -168,7 +187,7 @@ export default function CartDrawer() {
                     </div>
                   </div>
                 </li>
-              ))}
+              )})}
             </ul>
           )}
         </div>
@@ -182,21 +201,14 @@ export default function CartDrawer() {
                 <span>Subtotal ({itemCount} item{itemCount !== 1 ? 's' : ''})</span>
                 <span className="font-semibold text-[--color-brand-text]">{formatPrice(subtotal)}</span>
               </div>
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>Tax</span>
-                <span>Inclusive of all taxes</span>
-              </div>
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>Shipping</span>
-                <span className="text-green-600 font-semibold">FREE</span>
-              </div>
             </div>
 
             <div className="border-t border-dashed border-gray-200 pt-3">
-              <div className="flex justify-between font-bold text-[--color-brand-text] mb-4">
+              <div className="flex justify-between font-bold text-[--color-brand-text] mb-1">
                 <span>Estimated Total</span>
                 <span className="text-lg">{formatPrice(subtotal)}</span>
               </div>
+              <p className="text-xs text-[--color-brand-muted] mb-4 text-right">+ GST & shipping at checkout</p>
 
               {/* CTA Buttons */}
               <div className="flex flex-col gap-2">

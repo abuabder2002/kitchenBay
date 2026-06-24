@@ -27,7 +27,7 @@ export interface Product {
   diameter?: number;
   weight?: number;
   sizeCategory?: string;
-  variants?: Record<string, any>;
+  variants?: Record<string, { price: number; stock: number }>;
 }
 
 export interface CartItem {

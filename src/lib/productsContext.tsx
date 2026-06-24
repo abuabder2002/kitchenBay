@@ -1,54 +1,71 @@
 'use client';
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, products as initialProducts } from './mockData';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Product } from './mockData';
 
 interface ProductsContextType {
   products: Product[];
-  toggleFeatured: (id: string) => void;
-  addProduct: (product: Omit<Product, 'id'>) => void;
-  deleteProduct: (id: string) => void;
-  updateProduct: (id: string, product: Partial<Product>) => void;
+  isLoading: boolean;
+  toggleFeatured: (id: string) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<{ success: boolean; message: string }>;
+  deleteProduct: (id: string) => Promise<{ success: boolean; message: string }>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<{ success: boolean; message: string }>;
+  refreshProducts: () => Promise<void>;
 }
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
 
 export function ProductsProvider({ children }: { children: React.ReactNode }) {
-  // Initialize with mock data, then merge with database data
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const refreshProducts = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/products', { cache: 'no-store' });
+      if (res.ok) {
+        const dbProducts: Product[] = await res.json();
+        if (Array.isArray(dbProducts)) {
+          setProducts(dbProducts);
+        }
+      } else {
+        console.error('Failed to load products from DB, status:', res.status);
+      }
+    } catch (err) {
+      console.error('Failed to load products from DB', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    fetch('/api/products')
-      .then(res => res.json())
-      .then((dbProducts: Product[]) => {
-        if (Array.isArray(dbProducts)) {
-          setProducts(prev => {
-            const existingIds = new Set(prev.map(p => p.id));
-            const newProducts = dbProducts.filter(p => !existingIds.has(p.id));
-            return [...newProducts, ...prev];
-          });
-        }
-      })
-      .catch(err => console.error('Failed to load products from DB', err));
-  }, []);
+    refreshProducts();
+  }, [refreshProducts]);
 
   const toggleFeatured = async (id: string) => {
     const product = products.find(p => p.id === id);
     if (!product) return;
-
-    setProducts(prev => prev.map(p => (p.id === id ? { ...p, featured: !p.featured } : p)));
-    
+    const newFeatured = !product.featured;
+    // Optimistic UI update
+    setProducts(prev => prev.map(p => (p.id === id ? { ...p, featured: newFeatured } : p)));
     try {
-      await fetch(`/api/products/${id}`, {
+      const res = await fetch(`/api/products/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ featured: !product.featured })
+        body: JSON.stringify({ featured: newFeatured })
       });
+      if (!res.ok) {
+        // Revert on failure
+        setProducts(prev => prev.map(p => (p.id === id ? { ...p, featured: product.featured } : p)));
+        console.error('Failed to toggle featured in DB');
+      }
     } catch (err) {
-      console.error("Failed to toggle featured in DB", err);
+      // Revert on failure
+      setProducts(prev => prev.map(p => (p.id === id ? { ...p, featured: product.featured } : p)));
+      console.error('Failed to toggle featured in DB', err);
     }
   };
 
-  const addProduct = async (product: Omit<Product, 'id'>) => {
+  const addProduct = async (product: Omit<Product, 'id'>): Promise<{ success: boolean; message: string }> => {
     try {
       const res = await fetch('/api/products', {
         method: 'POST',
@@ -56,44 +73,69 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify(product)
       });
       if (res.ok) {
-        const savedProduct = await res.json();
+        const savedProduct: Product = await res.json();
         setProducts(prev => [savedProduct, ...prev]);
+        return { success: true, message: 'Product created successfully.' };
       } else {
-        console.error("API returned error", await res.text());
-        const newProduct: Product = { ...product, id: Math.random().toString(36).substring(2, 9) };
-        setProducts(prev => [newProduct, ...prev]);
+        const errBody = await res.json().catch(() => ({ error: 'Unknown error' }));
+        const msg = errBody?.error || `Server error ${res.status}`;
+        console.error('addProduct API error:', msg);
+        return { success: false, message: msg };
       }
     } catch (err) {
-      console.error("Failed to add product to DB", err);
-      const newProduct: Product = { ...product, id: Math.random().toString(36).substring(2, 9) };
-      setProducts(prev => [newProduct, ...prev]);
+      console.error('Failed to add product to DB', err);
+      return { success: false, message: 'Network error. Please try again.' };
     }
   };
 
-  const deleteProduct = async (id: string) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
+  const deleteProduct = async (id: string): Promise<{ success: boolean; message: string }> => {
     try {
-      await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setProducts(prev => prev.filter(p => p.id !== id));
+        return { success: true, message: 'Product deleted successfully.' };
+      } else {
+        const errBody = await res.json().catch(() => ({ error: 'Unknown error' }));
+        const msg = errBody?.error || `Server error ${res.status}`;
+        console.error('deleteProduct API error:', msg);
+        return { success: false, message: msg };
+      }
     } catch (err) {
-      console.error("Failed to delete product from DB", err);
+      console.error('Failed to delete product from DB', err);
+      return { success: false, message: 'Network error. Please try again.' };
     }
   };
 
-  const updateProduct = async (id: string, updatedFields: Partial<Product>) => {
+  const updateProduct = async (id: string, updatedFields: Partial<Product>): Promise<{ success: boolean; message: string }> => {
+    const original = products.find(p => p.id === id);
+    // Optimistic update
     setProducts(prev => prev.map(p => (p.id === id ? { ...p, ...updatedFields } : p)));
     try {
-      await fetch(`/api/products/${id}`, {
+      const res = await fetch(`/api/products/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedFields)
       });
+      if (res.ok) {
+        return { success: true, message: 'Product updated successfully.' };
+      } else {
+        // Revert optimistic update
+        if (original) setProducts(prev => prev.map(p => (p.id === id ? original : p)));
+        const errBody = await res.json().catch(() => ({ error: 'Unknown error' }));
+        const msg = errBody?.error || `Server error ${res.status}`;
+        console.error('updateProduct API error:', msg);
+        return { success: false, message: msg };
+      }
     } catch (err) {
-      console.error("Failed to update product in DB", err);
+      // Revert on failure
+      if (original) setProducts(prev => prev.map(p => (p.id === id ? original : p)));
+      console.error('Failed to update product in DB', err);
+      return { success: false, message: 'Network error. Please try again.' };
     }
   };
 
   return (
-    <ProductsContext.Provider value={{ products, toggleFeatured, addProduct, deleteProduct, updateProduct }}>
+    <ProductsContext.Provider value={{ products, isLoading, toggleFeatured, addProduct, deleteProduct, updateProduct, refreshProducts }}>
       {children}
     </ProductsContext.Provider>
   );
@@ -104,3 +146,4 @@ export function useProducts() {
   if (!context) throw new Error('useProducts must be used within a ProductsProvider');
   return context;
 }
+

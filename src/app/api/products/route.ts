@@ -9,8 +9,7 @@ export async function GET() {
 
     const formattedProducts = dbProducts.map(p => {
       const basePrice = p.price / 100;
-      const gstAmount = Math.round(basePrice * p.gstPercent / 100);
-      const finalPrice = basePrice + gstAmount;
+      const finalPrice = basePrice;
       const originalPrice = p.discountPrice ? p.discountPrice / 100 : finalPrice;
       const discount = originalPrice > finalPrice ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
 
@@ -40,6 +39,7 @@ export async function GET() {
         rating: p.rating,
         reviewCount: p.reviewCount,
         featured: p.featured,
+        variants: p.variants,
         isFromDb: true
       };
     });
@@ -82,12 +82,12 @@ export async function POST(req: Request) {
         rating: data.rating || 0,
         reviewCount: data.reviewCount || 0,
         featured: data.featured || false,
+        variants: data.variants ? data.variants : undefined,
       }
     });
 
     const basePrice = newProduct.price / 100;
-    const gstAmount = Math.round(basePrice * newProduct.gstPercent / 100);
-    const finalPrice = basePrice + gstAmount;
+    const finalPrice = basePrice;
     const originalPrice = newProduct.discountPrice ? newProduct.discountPrice / 100 : finalPrice;
     const discount = originalPrice > finalPrice ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
 
@@ -117,6 +117,7 @@ export async function POST(req: Request) {
       rating: newProduct.rating,
       reviewCount: newProduct.reviewCount,
       featured: newProduct.featured,
+      variants: newProduct.variants,
       isFromDb: true
     });
   } catch (error) {

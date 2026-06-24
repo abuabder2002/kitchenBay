@@ -210,11 +210,11 @@ export default function AddProductPage() {
       ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p)
       : '—';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.image) return;
 
-    addProduct({
+    const result = await addProduct({
       name: form.name,
       description: form.description,
       price: basePrice,
@@ -237,14 +237,29 @@ export default function AddProductPage() {
       diameter: form.diameter ? parseFloat(form.diameter) : undefined,
       weight: form.weight ? parseFloat(form.weight) : undefined,
       sizeCategory: form.sizeCategory || undefined,
-      variants: Object.keys(variants).length > 0 ? variants : undefined,
+      variants: Object.keys(variants).length > 0 
+        ? Object.fromEntries(
+            Object.entries(variants).map(([size, data]) => [
+              size, 
+              { 
+                ...data, 
+                price: parseFloat(data.price) || 0, 
+                stock: parseInt(data.stock) || 0 
+              }
+            ])
+          )
+        : undefined,
     });
 
-    setSaved(true);
-    setTimeout(() => {
-      setSaved(false);
-      router.push('/admin/products');
-    }, 1500);
+    if (result.success) {
+      setSaved(true);
+      setTimeout(() => {
+        setSaved(false);
+        router.push('/admin/products');
+      }, 1500);
+    } else {
+      alert(`❌ Failed to create product: ${result.message}`);
+    }
   };
 
   return (

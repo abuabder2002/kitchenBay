@@ -28,6 +28,7 @@ export interface Order {
   cgstAmount: number;
   sgstAmount: number;
   gstAmount: number;
+  shippingAmount: number;
   total: number;
   paymentMethod: string;
   status: OrderStatus;
@@ -89,14 +90,9 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
                 };
               });
 
-              // Calculate taxes dynamically
-              const subtotal = mappedItems.reduce((sum: number, i: { productId: string; quantity: number; price: number }) => {
-                const prod = products.find(p => p.id === i.productId);
-                const basePrice = prod ? prod.price : Math.round(i.price / 1.18);
-                return sum + basePrice * i.quantity;
-              }, 0);
-
-              const gstAmount = o.totalAmount - subtotal;
+              const subtotal = o.subtotalAmount ? o.subtotalAmount / 100 : 0;
+              const gstAmount = o.gstAmount ? o.gstAmount / 100 : 0;
+              const shippingAmount = o.shippingAmount ? o.shippingAmount / 100 : 99;
               const cgstAmount = Math.floor(gstAmount / 2);
               const sgstAmount = gstAmount - cgstAmount;
 
@@ -114,7 +110,8 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
                 cgstAmount,
                 sgstAmount,
                 gstAmount,
-                total: o.totalAmount,
+                shippingAmount,
+                total: o.totalAmount / 100,
                 paymentMethod: o.paymentStatus,
                 status: o.status.toLowerCase(),
                 date: o.createdAt,

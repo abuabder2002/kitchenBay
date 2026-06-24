@@ -4,6 +4,7 @@ import React, { createContext, useContext, useReducer, useCallback, useEffect, u
 import { Product, CartItem } from './mockData';
 import { useAuth } from './authContext';
 import { useProducts } from './productsContext';
+import { calcCartTotals, getItemBasePrice } from './pricing';
 
 interface CartState {
   items: CartItem[];
@@ -58,11 +59,12 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number, size?: string) => void;
   clearCart: () => void;
   itemCount: number;
-  subtotal: number;
-  gstAmount: number;
+  subtotal: number;       // Sum of base prices (NO GST)
+  gstAmount: number;      // Total GST
   cgstAmount: number;
   sgstAmount: number;
-  total: number;
+  shippingFee: number;    // Always ₹99 when cart has items
+  total: number;          // subtotal + gst + shipping
   isDrawerOpen: boolean;
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -207,15 +209,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [currentUser]);
 
+  // ── Pricing calculations using centralized utility ──
+  const { subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total } = calcCartTotals(state.items);
   const itemCount = state.items.reduce((sum, i) => sum + i.quantity, 0);
-  const subtotal = state.items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-  const gstAmount = state.items.reduce(
-    (sum, i) => sum + Math.round((i.product.price * i.product.gstPercent / 100) * i.quantity),
-    0
-  );
-  const cgstAmount = Math.floor(gstAmount / 2);
-  const sgstAmount = gstAmount - cgstAmount;
-  const total = subtotal + gstAmount;
 
   const openDrawer = useCallback(() => setIsDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
@@ -223,7 +219,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <CartContext.Provider value={{ 
       items: state.items, addItem, removeItem, updateQuantity, clearCart, 
-      itemCount, subtotal, gstAmount, cgstAmount, sgstAmount, total,
+      itemCount, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total,
       isDrawerOpen, openDrawer, closeDrawer
     }}>
       {children}

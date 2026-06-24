@@ -52,7 +52,17 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { totalAmount, items, shippingAddrId, paymentStatus, razorpayId, address } = body;
+    const { 
+      totalAmount, 
+      subtotalAmount = 0,
+      gstAmount = 0,
+      shippingAmount = 99,
+      items, 
+      shippingAddrId, 
+      paymentStatus, 
+      razorpayId, 
+      address 
+    } = body;
 
     if (!items || !items.length) {
        return NextResponse.json({ error: 'Order must contain items' }, { status: 400 });
@@ -82,7 +92,10 @@ export async function POST(req: NextRequest) {
       data: {
         id: numericId,
         userId: user.id,
-        totalAmount,
+        totalAmount: Math.round(totalAmount * 100), // convert to paise
+        subtotalAmount: Math.round(subtotalAmount * 100),
+        gstAmount: Math.round(gstAmount * 100),
+        shippingAmount: Math.round(shippingAmount * 100),
         status: 'PENDING',
         paymentStatus: paymentStatus || 'PENDING',
         razorpayId: razorpayId || null,
@@ -91,7 +104,9 @@ export async function POST(req: NextRequest) {
           create: items.map((item: any) => ({
             productId: item.productId,
             quantity: item.quantity,
-            price: item.price
+            price: Math.round(item.price * 100), // legacy finalPrice field fallback 
+            basePrice: Math.round(item.price * 100), // send base price from frontend in COD
+            size: item.size || ""
           }))
         }
       },

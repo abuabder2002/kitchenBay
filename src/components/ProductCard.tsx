@@ -137,9 +137,9 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         {/* Price Row */}
         <div className="flex items-baseline flex-wrap gap-1 sm:gap-2 mb-3">
           <span className="text-lg font-bold text-[--color-brand-text]">
-            ₹{formatPrice(product.finalPrice)}
+            ₹{formatPrice(product.price)}
           </span>
-          {product.originalPrice > product.finalPrice && (
+          {product.originalPrice > product.price && (
             <span className="text-sm line-through text-gray-400">
               ₹{formatPrice(product.originalPrice)}
             </span>

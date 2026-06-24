@@ -10,7 +10,7 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Tag } from 'lucide-react'
 import Link from 'next/link';
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, subtotal, gstAmount, cgstAmount, sgstAmount, total, itemCount } = useCart();
+  const { items, removeItem, updateQuantity, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total, itemCount } = useCart();
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
@@ -45,11 +45,20 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map(({ product, quantity }) => {
-              const itemGst = Math.round(product.price * product.gstPercent / 100) * quantity;
-              const itemTotal = product.finalPrice * quantity;
+            {items.map(({ product, quantity, size }, idx) => {
+              let basePrice = product.price;
+              let maxStock = product.stock;
+              if (size && product.variants && (product.variants as any)[size]) {
+                const variant = (product.variants as any)[size];
+                basePrice = variant.price || product.price;
+                maxStock = variant.stock || product.stock;
+              }
+              const itemGst = Math.round(basePrice * product.gstPercent / 100);
+              const itemFinalPrice = basePrice + itemGst;
+              const itemTotal = itemFinalPrice * quantity;
+
               return (
-                <div key={product.id} className="bg-white rounded-2xl border border-gray-100 p-5 flex gap-4 hover:shadow-md transition-shadow">
+                <div key={`${product.id}-${size || idx}`} className="bg-white rounded-2xl border border-gray-100 p-5 flex gap-4 hover:shadow-md transition-shadow">
                   <Link href={`/products/${product.id}`} className="shrink-0">
                     <img
                       src={product.image}
@@ -66,17 +75,19 @@ export default function CartPage() {
                             {product.name}
                           </h3>
                         </Link>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <span className="text-xs text-gray-400">Base: {formatPrice(product.price)}</span>
-                          {product.gstPercent > 0 && (
-                            <span className="text-xs text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full font-medium">
-                              Inclusive of Tax
+                        {size && (
+                          <div className="mt-1">
+                            <span className="text-xs font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              Size: {size}
                             </span>
-                          )}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span className="text-xs text-gray-400">Base: {formatPrice(basePrice)}</span>
                         </div>
                       </div>
                       <button
-                        onClick={() => removeItem(product.id)}
+                        onClick={() => removeItem(product.id, size)}
                         className="self-start text-gray-400 hover:text-red-500 transition-colors p-1"
                       >
                         <Trash2 size={16} />
@@ -86,15 +97,15 @@ export default function CartPage() {
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
                         <button
-                          onClick={() => updateQuantity(product.id, quantity - 1)}
+                          onClick={() => updateQuantity(product.id, quantity - 1, size)}
                           className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
                         >
                           <Minus size={14} />
                         </button>
                         <span className="w-10 text-center text-sm font-semibold text-gray-800">{quantity}</span>
                         <button
-                          onClick={() => updateQuantity(product.id, quantity + 1)}
-                          disabled={quantity >= product.stock}
+                          onClick={() => updateQuantity(product.id, quantity + 1, size)}
+                          disabled={quantity >= maxStock}
                           className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40"
                         >
                           <Plus size={14} />
@@ -116,28 +127,19 @@ export default function CartPage() {
             <div className="sticky top-20 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
               <h2 className="font-bold text-gray-900 text-lg mb-5">Order Summary</h2>
 
-              {/* CGST / SGST Breakdown */}
               <div className="space-y-3 mb-5">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal ({itemCount} items)</span>
                   <span className="font-medium text-gray-800">{formatPrice(subtotal)}</span>
-                </div>
-                <div className="flex justify-between text-xs text-gray-400 border-t border-dashed border-gray-100 pt-2">
-                  <span>Tax</span>
-                  <span>Inclusive of all taxes</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Delivery</span>
-                  <span className="font-medium text-emerald-600">FREE</span>
                 </div>
               </div>
 
               <div className="border-t border-gray-100 pt-4 mb-6">
                 <div className="flex justify-between">
                   <span className="font-bold text-gray-900">Total</span>
-                  <span className="text-xl font-bold text-blue-700">{formatPrice(total)}</span>
+                  <span className="text-xl font-bold text-blue-700">{formatPrice(subtotal)}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Invoice will be provided</p>
+                <p className="text-xs text-gray-400 mt-1">+ GST & Shipping at checkout</p>
               </div>
 
               <Link

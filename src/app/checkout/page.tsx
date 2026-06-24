@@ -11,7 +11,7 @@ import Footer from '@/components/Footer';
 import FormInput from '@/components/FormInput';
 import { useCart } from '@/lib/cartContext';
 import { useAuth } from '@/lib/authContext';
-import { products as catalog } from '@/lib/mockData';
+
 import {
   Check,
   CreditCard,
@@ -64,7 +64,7 @@ const fmtTime = (s: number) =>
 // CHECKOUT PAGE
 // ════════════════════════════════════════════════════════════
 export default function CheckoutPage() {
-  const { items, subtotal, gstAmount, cgstAmount, sgstAmount, total, clearCart } = useCart();
+  const { items, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total, clearCart } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
 
@@ -166,7 +166,9 @@ export default function CheckoutPage() {
           items: items.map((item) => ({
             productId: item.product.id,
             quantity: item.quantity,
+            ...(item.size ? { size: item.size } : {})
           })),
+          shippingAmount: shippingFee,
           address: {
             street: form.address,
             city: form.city,
@@ -296,11 +298,15 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           totalAmount: total,
+          subtotalAmount: subtotal,
+          gstAmount: gstAmount,
+          shippingAmount: shippingFee,
           paymentStatus: 'COD_PENDING',
           items: items.map((item) => ({
             productId: item.product.id,
             quantity: item.quantity,
-            price: item.product.finalPrice,
+            size: item.size || "",
+            price: item.product.price // Backend expects basePrice now, but frontend sends item price for reference
           })),
           address: {
             street: form.address,
@@ -533,11 +539,11 @@ export default function CheckoutPage() {
                       {product.name}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      Qty: {quantity} × {formatPrice(product.finalPrice)}
+                      Qty: {quantity} × {formatPrice(product.price)}
                     </p>
                   </div>
                   <p className="text-sm font-bold text-gray-900 shrink-0">
-                    {formatPrice(product.finalPrice * quantity)}
+                    {formatPrice(product.price * quantity)}
                   </p>
                 </div>
               ))}
@@ -731,22 +737,33 @@ export default function CheckoutPage() {
 
                 {/* Product list */}
                 <div className="space-y-3.5 mb-5 max-h-[260px] overflow-y-auto pr-1">
-                  {items.map(({ product, quantity }) => (
-                    <div key={product.id} className="flex items-center gap-3">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-12 h-12 object-cover rounded-xl bg-gray-50 border border-gray-100 shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-gray-800 line-clamp-1">{product.name}</p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">Qty: {quantity} &bull; {formatPrice(product.finalPrice)}</p>
+                  {items.map(({ product, quantity, size }, idx) => {
+                    let basePrice = product.price;
+                    if (size && product.variants && (product.variants as any)[size]) {
+                      basePrice = (product.variants as any)[size].price || product.price;
+                    }
+                    const itemGst = Math.round(basePrice * product.gstPercent / 100);
+                    const itemFinalPrice = basePrice + itemGst;
+
+                    return (
+                      <div key={`${product.id}-${size || idx}`} className="flex items-center gap-3">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded-xl bg-gray-50 border border-gray-100 shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-gray-800 line-clamp-1">{product.name}</p>
+                          <p className="text-[10px] text-gray-400 mt-0.5">
+                            Qty: {quantity} {size ? `• Size: ${size} ` : ''}&bull; {formatPrice(basePrice)}
+                          </p>
+                        </div>
+                        <p className="text-xs font-bold text-gray-900 shrink-0">
+                          {formatPrice(basePrice * quantity)}
+                        </p>
                       </div>
-                      <p className="text-xs font-bold text-gray-900 shrink-0">
-                        {formatPrice(product.finalPrice * quantity)}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Bill breakdown */}
@@ -755,16 +772,20 @@ export default function CheckoutPage() {
                     <span className="text-gray-500">Subtotal</span>
                     <span className="font-semibold text-gray-700">{formatPrice(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-[11px] text-gray-400 pb-2 border-b border-gray-100">
-                    <span>Tax</span>
-                    <span>Inclusive of all taxes</span>
+                  <div className="flex justify-between text-xs text-gray-500 pb-2 border-b border-gray-100">
+                    <span>GST (18%)</span>
+                    <span>{formatPrice(gstAmount)}</span>
                   </div>
-                  <div className="flex justify-between text-xs">
+                  <div className="flex justify-between text-xs pt-2">
                     <span className="text-gray-500">Shipping</span>
-                    <span className="font-bold text-emerald-600">FREE</span>
+                    {shippingFee > 0 ? (
+                      <span className="font-bold text-gray-700">{formatPrice(shippingFee)}</span>
+                    ) : (
+                      <span className="font-bold text-emerald-600">FREE</span>
+                    )}
                   </div>
                   <div className="pt-2 flex justify-between items-center">
-                    <span className="font-bold text-gray-900 text-sm">Total amount</span>
+                    <span className="font-bold text-gray-900 text-sm">Grand Total</span>
                     <span className="text-2xl font-black text-blue-700">{formatPrice(total)}</span>
                   </div>
                 </div>

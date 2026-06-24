@@ -209,7 +209,7 @@ export default function AdminOrdersPage() {
             <table className="w-full min-w-[900px]">
               <thead className="bg-gray-50">
                 <tr>
-                  {['Order ID', 'Customer', 'Items', 'Subtotal', 'GST (CGST + SGST)', 'Total', 'Payment', 'Current Status', 'Actions'].map(h => (
+                  {['Order ID', 'Customer', 'Items', 'Subtotal', 'Tax & Ship', 'Total', 'Payment', 'Current Status', 'Actions'].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       {h}
                     </th>
@@ -238,8 +238,8 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-4 py-4 text-sm font-medium text-gray-700">{formatPrice(order.subtotal)}</td>
                     <td className="px-4 py-4">
-                      <p className="text-xs font-medium text-emerald-600">CGST: {formatPrice(order.cgstAmount)}</p>
-                      <p className="text-xs font-medium text-emerald-600">SGST: {formatPrice(order.sgstAmount)}</p>
+                      <p className="text-xs font-medium text-emerald-600">GST: {formatPrice(order.gstAmount)}</p>
+                      <p className="text-xs font-medium text-blue-600">Ship: {formatPrice(order.shippingAmount)}</p>
                     </td>
                     <td className="px-4 py-4 text-sm font-bold text-gray-900">{formatPrice(order.total)}</td>
                     <td className="px-4 py-4">
@@ -598,12 +598,12 @@ export default function AdminOrdersPage() {
                       <span className="font-bold">{formatPrice(selectedOrder.subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-emerald-400">
-                      <span>CGST</span>
-                      <span>+ {formatPrice(selectedOrder.cgstAmount)}</span>
+                      <span>GST (18%)</span>
+                      <span>+ {formatPrice(selectedOrder.gstAmount)}</span>
                     </div>
-                    <div className="flex justify-between text-emerald-400">
-                      <span>SGST</span>
-                      <span>+ {formatPrice(selectedOrder.sgstAmount)}</span>
+                    <div className="flex justify-between text-blue-300">
+                      <span>Shipping Fee</span>
+                      <span>+ {formatPrice(selectedOrder.shippingAmount)}</span>
                     </div>
                     <div className="flex justify-between border-t border-blue-800 pt-3 mt-2 text-sm font-extrabold text-yellow-400">
                       <span>Grand Total Paid</span>

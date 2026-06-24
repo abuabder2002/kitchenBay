@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { prisma } from '@/lib/prisma';
 import { getDbUser } from '@/lib/serverAuth';
-import { products as productCatalog } from '@/lib/mockData';
 
 /**
  * POST /api/checkout/razorpay
@@ -24,45 +23,59 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { items, address } = body;
+    const { items, address, shippingAmount = 99 } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
     }
 
-    // ── Calculate total from server-side product catalog ────
-    const catalogMap = new Map(productCatalog.map(p => [p.id, p]));
-    let totalRupees = 0;
-    const orderItems: { productId: string; quantity: number; price: number }[] = [];
+    // ── Calculate totals from database product prices only ───
+    let subtotalRupees = 0;
+    let totalGstRupees = 0;
+    const orderItems: { productId: string; quantity: number; price: number; basePrice: number; size?: string }[] = [];
 
     for (const item of items) {
-      let product = catalogMap.get(item.productId);
-      let unitPrice = 0;
-
-      if (product) {
-        unitPrice = product.finalPrice;
-      } else {
-        // Fallback to database product
-        const dbProduct = await prisma.product.findUnique({ where: { id: item.productId } });
-        if (dbProduct) {
-          const basePrice = dbProduct.price / 100;
-          const gstAmount = Math.round(basePrice * dbProduct.gstPercent / 100);
-          unitPrice = basePrice + gstAmount;
-        } else {
-          return NextResponse.json(
-            { error: `Product "${item.productId}" not found in catalog` },
-            { status: 400 }
-          );
-        }
+      const dbProduct = await prisma.product.findUnique({ where: { id: item.productId } });
+      if (!dbProduct) {
+        return NextResponse.json(
+          { error: `Product "${item.productId}" not found` },
+          { status: 400 }
+        );
+      }
+      
+      let basePrice = dbProduct.price / 100;
+      let availableStock = dbProduct.stock;
+      
+      if (item.size && dbProduct.variants && (dbProduct.variants as Record<string, any>)[item.size]) {
+        const variant = (dbProduct.variants as Record<string, any>)[item.size];
+        basePrice = variant.price || (dbProduct.price / 100);
+        availableStock = variant.stock || 0;
+      }
+      
+      if (availableStock < item.quantity) {
+        return NextResponse.json(
+          { error: `Not enough stock for ${dbProduct.name} ${item.size ? `(${item.size})` : ''}` },
+          { status: 400 }
+        );
       }
 
-      totalRupees += unitPrice * item.quantity;
+      const gstAmount = Math.round(basePrice * dbProduct.gstPercent) / 100;
+      const unitPrice = basePrice + gstAmount;
+
+      subtotalRupees += basePrice * item.quantity;
+      totalGstRupees += gstAmount * item.quantity;
+
       orderItems.push({
         productId: item.productId,
         quantity: item.quantity,
-        price: unitPrice,
+        price: Math.round(unitPrice * 100), // stored in paise
+        basePrice: Math.round(basePrice * 100), // stored in paise
+        ...(item.size ? { size: item.size } : {})
       });
     }
+
+    totalGstRupees = Math.round(totalGstRupees);
+    const totalRupees = subtotalRupees + totalGstRupees + shippingAmount;
 
     // ── Save shipping address ───────────────────────────────
     let shippingAddrId: string | null = null;
@@ -117,7 +130,10 @@ export async function POST(req: NextRequest) {
       data: {
         id: numericId,
         userId: user.id,
-        totalAmount: totalRupees,
+        totalAmount: Math.round(totalRupees * 100), // stored in paise
+        subtotalAmount: Math.round(subtotalRupees * 100),
+        gstAmount: Math.round(totalGstRupees * 100),
+        shippingAmount: Math.round(shippingAmount * 100),
         status: 'PENDING',
         paymentStatus: 'PENDING',
         razorpayId: razorpayOrder.id,
