@@ -9,6 +9,7 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/lib/productsContext';
 import { categories, subcategories, materials } from '@/lib/mockData';
+import type { Product } from '@/lib/mockData';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 
 const priceRanges = [
@@ -28,14 +29,19 @@ export default function ProductsPage() {
 }
 
 function ProductsContent() {
-  const { products } = useProducts();
+  const { products, isLoading: ctxLoading } = useProducts();
   const searchParams = useSearchParams();
-  const searchQuery = searchParams.get('search')?.toLowerCase() || '';
+  const searchQuery = searchParams.get('search')?.trim() || '';
+  const searchQueryLower = searchQuery.toLowerCase();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const urlCategory = searchParams.get('category') ?? '';
   const urlSubcategory = searchParams.get('subcategory') ?? '';
+
+  // DB search results state (used when a search query is active)
+  const [searchResults, setSearchResults] = useState<Product[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
     if (urlCategory) setSelectedCategory(urlCategory);
@@ -43,6 +49,28 @@ function ProductsContent() {
     if (urlSubcategory) setSelectedSubcategory(urlSubcategory);
     else setSelectedSubcategory('');
   }, [urlCategory, urlSubcategory]);
+
+  // When a search query is present, hit /api/search for real DB results
+  useEffect(() => {
+    if (!searchQuery) {
+      setSearchResults(null);
+      return;
+    }
+    setSearchLoading(true);
+    console.log(`[ProductsPage] Searching DB for: "${searchQuery}"`);
+    fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`)
+      .then(r => r.json())
+      .then((results: Product[]) => {
+        console.log(`[ProductsPage] /api/search returned ${results.length} results for "${searchQuery}"`);
+        setSearchResults(Array.isArray(results) ? results : []);
+      })
+      .catch(err => {
+        console.error('[ProductsPage] Search API error:', err);
+        // Fall back to client-side filter on error
+        setSearchResults(null);
+      })
+      .finally(() => setSearchLoading(false));
+  }, [searchQuery]);
 
   const [selectedMaterial, setSelectedMaterial] = useState<string>('');
   const [selectedPriceRange, setSelectedPriceRange] = useState<number>(-1);
@@ -52,10 +80,30 @@ function ProductsContent() {
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
 
   const filtered = useMemo(() => {
-    let list = [...products];
+    // Base list: DB search results take priority over full product list
+    let list: Product[];
     if (searchQuery) {
-      list = list.filter(p => p.name.toLowerCase().includes(searchQuery) || p.description?.toLowerCase().includes(searchQuery));
+      if (searchResults !== null) {
+        // Already filtered by /api/search — use those results directly
+        list = [...searchResults];
+      } else {
+        // Fallback: client-side partial-match across all text fields
+        list = products.filter(p => {
+          const hay = [
+            p.name,
+            p.description,
+            p.category,
+            p.subcategory,
+            p.material,
+            ...(Array.isArray(p.tags) ? p.tags : []),
+          ].join(' ').toLowerCase();
+          return hay.includes(searchQueryLower);
+        });
+      }
+    } else {
+      list = [...products];
     }
+
     if (selectedCategory) list = list.filter(p => p.category === selectedCategory);
     if (selectedSubcategory) list = list.filter(p => p.subcategory === selectedSubcategory);
     if (urlCategory && !selectedCategory) list = list.filter(p => p.category === urlCategory);
@@ -73,7 +121,7 @@ function ProductsContent() {
       case 'popular': list.sort((a, b) => b.reviewCount - a.reviewCount); break;
     }
     return list;
-  }, [selectedCategory, selectedPriceRange, sortBy, inStockOnly, featuredOnly, searchQuery, urlCategory, urlSubcategory, selectedMaterial, products, selectedSubcategory]);
+  }, [selectedCategory, selectedPriceRange, sortBy, inStockOnly, featuredOnly, searchQuery, searchQueryLower, searchResults, urlCategory, urlSubcategory, selectedMaterial, products, selectedSubcategory]);
 
   const clearFilters = () => {
     setSelectedCategory('');
@@ -223,7 +271,9 @@ function ProductsContent() {
       <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-[1600px]">
         {/* Controls */}
         <div className="flex items-center justify-between mb-12 pb-4 border-b border-[--color-brand-border]">
-          <p className="text-sm font-medium text-[--color-brand-muted] tracking-wide">{filtered.length} curated products</p>
+          <p className="text-sm font-medium text-[--color-brand-muted] tracking-wide">
+            {searchLoading ? 'Searching…' : `${filtered.length} curated products`}
+          </p>
           <div className="flex items-center gap-6">
             <div className="relative hidden sm:block">
               <select
@@ -292,13 +342,32 @@ function ProductsContent() {
 
           {/* Products Grid */}
           <div className="flex-1">
-            {filtered.length === 0 ? (
+            {/* Search header */}
+            {searchQuery && !searchLoading && (
+              <div className="mb-6">
+                <p className="text-sm font-medium text-[--color-brand-muted]">
+                  Search results for <span className="font-bold text-[--color-brand-text]">&quot;{searchQuery}&quot;</span> — {filtered.length} product{filtered.length !== 1 ? 's' : ''} found
+                </p>
+              </div>
+            )}
+
+            {searchLoading ? (
+              <div className="flex flex-col items-center justify-center py-32 text-center">
+                <div className="w-12 h-12 border-4 border-[--color-brand-accent] border-t-transparent rounded-full animate-spin mb-6" />
+                <p className="text-[--color-brand-muted] font-medium">Searching products…</p>
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-32 text-center bg-white border border-[--color-brand-border]">
                 <div className="w-16 h-16 bg-[--color-brand-card] rounded-full flex items-center justify-center mb-6">
                   <X className="text-[--color-brand-muted]" size={24} />
                 </div>
                 <p className="font-[family-name:var(--font-heading)] text-3xl font-bold text-[--color-brand-text] mb-4">Nothing Found</p>
-                <p className="text-[--color-brand-muted] max-w-md text-lg">We couldn&apos;t find any Kitchenbays works matching your criteria.</p>
+                <p className="text-[--color-brand-muted] max-w-md text-lg">
+                  {searchQuery
+                    ? `No products matched "${searchQuery}". Try a different keyword.`
+                    : `We couldn't find any products matching your criteria.`
+                  }
+                </p>
                 <button onClick={clearFilters} className="mt-8 bg-transparent border border-[--color-brand-text] text-[--color-brand-text] px-8 py-3 text-sm font-bold uppercase tracking-widest hover:bg-[--color-brand-text] hover:text-[--color-brand-bg] transition-colors">
                   Clear Filters
                 </button>

@@ -45,7 +45,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
             alt={product.name} 
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500" 
+            className="object-contain object-center group-hover:scale-105 transition-transform duration-500 bg-white" 
             loading="lazy"
           />
         </Link>

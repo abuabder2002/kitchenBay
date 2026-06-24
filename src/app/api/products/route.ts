@@ -1,11 +1,31 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const search = searchParams.get('search')?.trim() || searchParams.get('q')?.trim() || '';
+
+  console.log(`[GET /api/products] search="${search}"`);
+
   try {
+    const whereClause = search
+      ? {
+          OR: [
+            { name:        { contains: search, mode: 'insensitive' as const } },
+            { description: { contains: search, mode: 'insensitive' as const } },
+            { category:    { contains: search, mode: 'insensitive' as const } },
+            { subcategory: { contains: search, mode: 'insensitive' as const } },
+            { material:    { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : {};
+
     const dbProducts = await prisma.product.findMany({
+      where: whereClause,
       orderBy: { createdAt: 'desc' }
     });
+
+    console.log(`[GET /api/products] search="${search}" → ${dbProducts.length} results`);
 
     const formattedProducts = dbProducts.map(p => {
       const basePrice = p.price / 100;

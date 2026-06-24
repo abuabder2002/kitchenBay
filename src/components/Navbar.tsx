@@ -28,7 +28,16 @@ export default function Navbar() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   const searchSuggestions = searchQuery.trim()
-    ? products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5)
+    ? products.filter(p => {
+        const q = searchQuery.toLowerCase();
+        return (
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          (p.subcategory || '').toLowerCase().includes(q) ||
+          (p.material || '').toLowerCase().includes(q) ||
+          (p.description || '').toLowerCase().includes(q)
+        );
+      }).slice(0, 6)
     : [];
 
   useEffect(() => {

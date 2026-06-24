@@ -62,9 +62,12 @@ export default function Footer() {
             {/* Brand – spans 2 cols on large screens */}
             <div className="lg:col-span-2 flex flex-col gap-4">
               <Link href="/" className="inline-block">
-                <h2 className="text-3xl md:text-4xl font-black tracking-wider text-white font-[family-name:var(--font-heading)] mb-2">
+                <h2 className="text-3xl md:text-4xl font-black tracking-wider text-white font-[family-name:var(--font-heading)] mb-1">
                   KITCHENBAY
                 </h2>
+                <p className="text-sm md:text-base font-light italic tracking-[0.15em] text-white/90 mb-3">
+                  The Home Needs
+                </p>
               </Link>
               <p className="text-sm text-white/80 leading-relaxed max-w-xs">
                 India&apos;s Premium Destination for Authentic Handcrafted Kitchenware,

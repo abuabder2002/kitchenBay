@@ -3,8 +3,9 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { X, ShoppingCart, Plus, Minus, Trash2, ArrowRight, ShoppingBag } from 'lucide-react';
+import { X, ShoppingCart, Plus, Minus, Trash2, ArrowRight, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { useCart } from '@/lib/cartContext';
+import { getItemStock, getItemBasePrice } from '@/lib/pricing';
 import { useRouter } from 'next/navigation';
 
 export default function CartDrawer() {
@@ -109,15 +110,16 @@ export default function CartDrawer() {
           ) : (
             <ul className="divide-y divide-gray-50 px-4 py-2">
               {items.map((item, idx) => {
-                let basePrice = item.product.price;
-                if (item.size && item.product.variants && (item.product.variants as any)[item.size]) {
-                  basePrice = (item.product.variants as any)[item.size].price || item.product.price;
-                }
+                const basePrice = getItemBasePrice(item.product, item.size);
+                const maxStock = getItemStock(item.product, item.size);
+                
                 const itemGst = Math.round(basePrice * item.product.gstPercent / 100);
                 const itemFinalPrice = basePrice + itemGst;
+                const isOutOfStock = maxStock <= 0;
+                const isReduced = item.quantity > maxStock && maxStock > 0;
 
                 return (
-                  <li key={`${item.product.id}-${item.size || idx}`} className="flex gap-4 py-4 group animate-in fade-in slide-in-from-right-2 duration-200">
+                  <li key={`${item.product.id}-${item.size || idx}`} className={`flex gap-4 py-4 group animate-in fade-in slide-in-from-right-2 duration-200 ${isOutOfStock ? 'bg-red-50/50 px-2 rounded-lg' : ''}`}>
                     {/* Product Image */}
                     <Link href={`/products/${item.product.id}`} onClick={closeDrawer} className="shrink-0">
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
@@ -126,7 +128,7 @@ export default function CartDrawer() {
                         alt={item.product.name}
                         fill
                         sizes="80px"
-                        className="object-cover"
+                        className="object-contain bg-white"
                       />
                     </div>
                   </Link>
@@ -148,6 +150,16 @@ export default function CartDrawer() {
                           </>
                         )}
                       </div>
+                      {isOutOfStock && (
+                        <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-md w-fit">
+                          <AlertTriangle size={10} /> Out of Stock
+                        </div>
+                      )}
+                      {isReduced && (
+                        <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md w-fit">
+                          <AlertTriangle size={10} /> Reduced to {maxStock}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       {/* Quantity Controls */}

@@ -6,8 +6,9 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCart } from '@/lib/cartContext';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Tag } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { getItemStock, getItemBasePrice } from '@/lib/pricing';
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total, itemCount } = useCart();
@@ -46,24 +47,22 @@ export default function CartPage() {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map(({ product, quantity, size }, idx) => {
-              let basePrice = product.price;
-              let maxStock = product.stock;
-              if (size && product.variants && (product.variants as any)[size]) {
-                const variant = (product.variants as any)[size];
-                basePrice = variant.price || product.price;
-                maxStock = variant.stock || product.stock;
-              }
+              const basePrice = getItemBasePrice(product, size);
+              const maxStock = getItemStock(product, size);
+              
               const itemGst = Math.round(basePrice * product.gstPercent / 100);
               const itemFinalPrice = basePrice + itemGst;
               const itemTotal = itemFinalPrice * quantity;
+              const isOutOfStock = maxStock <= 0;
+              const isReduced = quantity > maxStock && maxStock > 0;
 
               return (
-                <div key={`${product.id}-${size || idx}`} className="bg-white rounded-2xl border border-gray-100 p-5 flex gap-4 hover:shadow-md transition-shadow">
+                <div key={`${product.id}-${size || idx}`} className={`bg-white rounded-2xl border ${isOutOfStock ? 'border-red-200 bg-red-50/50' : 'border-gray-100'} p-5 flex gap-4 hover:shadow-md transition-shadow`}>
                   <Link href={`/products/${product.id}`} className="shrink-0">
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="w-24 h-24 object-cover rounded-xl bg-gray-50"
+                      className="w-24 h-24 object-contain rounded-xl bg-white"
                     />
                   </Link>
                   <div className="flex-1 min-w-0">
@@ -85,6 +84,16 @@ export default function CartPage() {
                         <div className="flex items-center gap-2 mt-1.5">
                           <span className="text-xs text-gray-400">Base: {formatPrice(basePrice)}</span>
                         </div>
+                        {isOutOfStock && (
+                          <div className="mt-2 flex items-center gap-1 text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded-md w-fit">
+                            <AlertTriangle size={12} /> Out of Stock
+                          </div>
+                        )}
+                        {isReduced && (
+                          <div className="mt-2 flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-md w-fit">
+                            <AlertTriangle size={12} /> Quantity reduced to available stock ({maxStock})
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={() => removeItem(product.id, size)}

@@ -303,7 +303,7 @@ export default function HomePage() {
           <div className="max-w-[1600px] mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
               <span className="text-xl sm:text-2xl italic font-[family-name:var(--font-heading)] font-medium">Now Serving:</span>
-              <span className="text-lg sm:text-xl md:text-2xl font-extrabold">Get Upto Rs.1,500 Off On Your First Order</span>
+              <span className="text-lg sm:text-xl md:text-2xl font-extrabold">Get Upto Rs.100 Off On Your First Order</span>
             </div>
             <Link href="/login" className="flex items-center gap-2 text-lg font-bold border-b border-black transition-all duration-300 ease-in-out hover:text-gray-700 hover:border-gray-700 hover:scale-105">
               Sign Up Now <span className="text-xl">&gt;</span>

@@ -27,6 +27,7 @@ export interface Product {
   diameter?: number;
   weight?: number;
   sizeCategory?: string;
+  tags?: string[];
   variants?: Record<string, { price: number; stock: number }>;
 }
 

@@ -425,7 +425,7 @@ export default function GiftConciergePage() {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-10 py-5 bg-[#25D366] text-white font-bold rounded-lg hover:bg-[#1DA851] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl text-lg">
+                <a href="https://wa.me/917502777766?text=Hello%20KitchenBay%2C%0AI%20would%20like%20assistance%20in%20selecting%20a%20gift.%20Please%20help%20me%20choose%20the%20right%20product." target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-10 py-5 bg-[#25D366] text-white font-bold rounded-lg hover:bg-[#1DA851] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl text-lg">
                   <MessageCircle size={24} />
                   WhatsApp Gift Expert
                 </a>

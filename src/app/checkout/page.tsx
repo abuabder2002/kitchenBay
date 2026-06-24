@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import FormInput from '@/components/FormInput';
 import { useCart } from '@/lib/cartContext';
 import { useAuth } from '@/lib/authContext';
+import { getItemStock } from '@/lib/pricing';
 
 import {
   Check,
@@ -141,6 +142,11 @@ export default function CheckoutPage() {
     setForm((prev) => ({ ...prev, [e.target.id]: e.target.value }));
     setErrorMsg(null);
   };
+
+  // ── Stock Validation ──────────────────────────────────────
+  const outOfStockItems = items.filter(
+    (item) => getItemStock(item.product, item.size) < item.quantity
+  );
 
   // ════════════════════════════════════════════════════════════
   // RAZORPAY PAYMENT
@@ -368,6 +374,12 @@ export default function CheckoutPage() {
     setErrorMsg(null);
     setPaymentFailed(false);
 
+    if (outOfStockItems.length > 0) {
+      setErrorMsg('Some items in your cart are no longer available in the requested quantity.');
+      setLoading(false);
+      return;
+    }
+
     if (paymentMethod === 'RAZORPAY') {
       await handleRazorpayPayment();
     } else {
@@ -393,6 +405,33 @@ export default function CheckoutPage() {
             className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-all shadow-md"
           >
             Browse Products
+          </button>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // OUT OF STOCK VIEW
+  // ════════════════════════════════════════════════════════════
+  if (outOfStockItems.length > 0 && !ordered && !paymentFailed) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Navbar />
+        <main className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-lg mx-auto">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-5">
+            <Package size={36} className="text-red-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Items Unavailable</h1>
+          <p className="text-gray-500 mb-6">
+            Some items in your cart have gone out of stock. Please return to the cart to review and update your quantities.
+          </p>
+          <button
+            onClick={() => router.push('/cart')}
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold rounded-xl text-sm transition-all shadow-lg"
+          >
+            Return to Cart
           </button>
         </main>
         <Footer />

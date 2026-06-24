@@ -78,6 +78,18 @@ export default function ProductDetailPage() {
       return;
     }
     setSizeError(false);
+    
+    if (displayStock <= 0) {
+      alert('This item is out of stock.');
+      return;
+    }
+    
+    const currentInCart = items.find(i => i.product.id === product.id && (i.size || "") === (selectedSize || ""))?.quantity || 0;
+    if (currentInCart + quantity > displayStock) {
+      alert(`You can only add up to ${displayStock} units. You already have ${currentInCart} in your cart.`);
+      return;
+    }
+
     for (let i = 0; i < quantity; i++) addItem(product, selectedSize);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -104,12 +116,12 @@ export default function ProductDetailPage() {
             
             {/* Left: Image Gallery */}
             <div className="space-y-6">
-              <div className="relative w-full aspect-[4/5] md:aspect-[3/4] bg-white rounded-sm overflow-hidden shadow-md">
+              <div className="relative w-full aspect-square bg-white rounded-sm overflow-hidden shadow-md">
                 <Image
                   src={selectedImage || product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop'}
                   alt={product.name}
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   priority
                 />
               </div>
@@ -124,7 +136,7 @@ export default function ProductDetailPage() {
                          : 'border-transparent opacity-60 hover:opacity-100'
                      }`}
                    >
-                      <Image src={img || ''} alt={`Thumb ${idx + 1}`} fill className="object-cover" />
+                      <Image src={img || ''} alt={`Thumb ${idx + 1}`} fill className="object-contain" />
                    </div>
                  ))}
               </div>
@@ -174,8 +186,23 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Description */}
-                <div className="text-[--color-brand-text] leading-relaxed">
-                  {product.description}
+                <div className="border-t border-[--color-brand-border] pt-6">
+                  <p className="text-xs font-bold text-[--color-brand-muted] uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Info size={12} />
+                    About this Product
+                  </p>
+                  <div className="space-y-3">
+                    {product.description
+                      .split(/\n+/)
+                      .map((para, i) => para.trim())
+                      .filter(para => para.length > 0)
+                      .map((para, i) => (
+                        <p key={i} className="text-[--color-brand-text] leading-relaxed text-sm">
+                          {para}
+                        </p>
+                      ))
+                    }
+                  </div>
                 </div>
 
                 {/* Available Sizes */}
@@ -327,17 +354,17 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Bulk Wholesale */}
-                <div className="bg-gradient-to-br from-[#3E322A] to-[#2A221C] p-6 rounded-sm text-[--color-brand-bg] shadow-xl mt-8">
-                  <div className="flex items-center gap-3 text-[--color-brand-accent-yellow] mb-2 uppercase tracking-widest text-xs font-bold">
+                <div className="p-6 rounded-sm shadow-sm mt-8 border border-[#E8DDD0]" style={{ backgroundColor: '#F5EFE6' }}>
+                  <div className="flex items-center gap-3 mb-2 uppercase tracking-widest text-xs font-bold" style={{ color: '#8B6914' }}>
                     <Package size={16} /> Wholesale / B2B
                   </div>
-                  <h3 className="font-[family-name:var(--font-heading)] text-2xl font-bold mb-2">Curating for a project?</h3>
-                  <p className="text-sm text-[--color-brand-bg]/80 mb-6">
+                  <h3 className="font-[family-name:var(--font-heading)] text-2xl font-bold mb-2" style={{ color: '#2D2D2D' }}>Curating for a project?</h3>
+                  <p className="text-sm mb-6" style={{ color: '#555555' }}>
                     Special pricing available for restaurants, hotels, and corporate gifting. Minimum order {product.category === 'kitchenware' ? '50' : '30'} units.
                   </p>
                   <button
                     onClick={() => setIsBulkModalOpen(true)}
-                    className="w-full bg-[--color-brand-accent-yellow] hover:bg-[--color-brand-accent-yellow-hover] text-[--color-brand-text] font-bold py-3 uppercase tracking-widest text-xs transition-colors rounded-sm"
+                    className="w-full bg-[--color-brand-text] hover:bg-[--color-brand-accent] text-white font-bold py-3 uppercase tracking-widest text-xs transition-colors rounded-sm"
                   >
                     Request Trade Quote
                   </button>

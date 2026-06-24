@@ -8,6 +8,7 @@ import FormInput from '@/components/FormInput';
 import { useProducts } from '@/lib/productsContext';
 import { Package, Calculator, Check, Upload, ShieldCheck, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { processProductImage } from '@/lib/imageProcessor';
 
 interface DbCategory { id: string; name: string; slug: string; }
 interface DbSubcategory { id: string; name: string; categoryId: string; slug: string; }
@@ -95,82 +96,31 @@ export default function AddProductPage() {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new window.Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxSize = 800;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxSize) {
-            height *= maxSize / width;
-            width = maxSize;
-          }
-        } else {
-          if (height > maxSize) {
-            width *= maxSize / height;
-            height = maxSize;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
-        
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        setForm(prev => ({ ...prev, image: dataUrl }));
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+    try {
+      const dataUrl = await processProductImage(file);
+      setForm(prev => ({ ...prev, image: dataUrl }));
+    } catch (error) {
+      console.error('Failed to process image:', error);
+      alert('Failed to process image. Please try another file.');
+    }
   };
 
-  const handleSubImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSubImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new window.Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const maxSize = 800;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height) {
-            if (width > maxSize) {
-              height *= maxSize / width;
-              width = maxSize;
-            }
-          } else {
-            if (height > maxSize) {
-              width *= maxSize / height;
-              height = maxSize;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-          
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-          setForm(prev => ({ ...prev, subImages: [...prev.subImages, dataUrl] }));
-        };
-        img.src = event.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
+    for (let i = 0; i < files.length; i++) {
+      try {
+        const dataUrl = await processProductImage(files[i]);
+        setForm(prev => ({ ...prev, subImages: [...prev.subImages, dataUrl] }));
+      } catch (error) {
+        console.error('Failed to process sub-image:', error);
+      }
+    }
   };
 
   const removeSubImage = (indexToRemove: number) => {

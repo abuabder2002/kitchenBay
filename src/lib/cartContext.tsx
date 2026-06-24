@@ -4,7 +4,7 @@ import React, { createContext, useContext, useReducer, useCallback, useEffect, u
 import { Product, CartItem } from './mockData';
 import { useAuth } from './authContext';
 import { useProducts } from './productsContext';
-import { calcCartTotals, getItemBasePrice } from './pricing';
+import { calcCartTotals, getItemBasePrice, getItemStock } from './pricing';
 
 interface CartState {
   items: CartItem[];
@@ -169,6 +169,32 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dispatch({ type: 'SET_ITEMS', items: mapped });
     }
   }, [serverData, products]);
+
+  // ── STEP 5: Auto-validate cart against live products stock ──
+  useEffect(() => {
+    if (!products.length || state.items.length === 0) return;
+    
+    let needsUpdate = false;
+    const validatedItems = state.items.map(item => {
+      const liveProduct = products.find(p => p.id === item.product.id);
+      if (!liveProduct) return item; // Skip if product not found in live data
+      
+      const availableStock = getItemStock(liveProduct, item.size);
+      if (availableStock <= 0) {
+        needsUpdate = true;
+        return null;
+      }
+      if (item.quantity > availableStock) {
+        needsUpdate = true;
+        return { ...item, quantity: availableStock, product: liveProduct };
+      }
+      return item;
+    }).filter((i): i is CartItem => i !== null);
+
+    if (needsUpdate) {
+      dispatch({ type: 'SET_ITEMS', items: validatedItems });
+    }
+  }, [products, state.items]);
 
   const addItem = useCallback(async (product: Product, size?: string) => {
     dispatch({ type: 'ADD_ITEM', product, size });
