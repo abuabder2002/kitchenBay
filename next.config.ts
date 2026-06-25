@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   images: {
-    // Disable optimization in development to prevent 504 Gateway Timeout errors
-    unoptimized: process.env.NODE_ENV === 'development',
+    // Disable optimization globally to prevent 400 errors with unknown external hosts
+    unoptimized: true,
     // Allow Next.js <Image> to optimise images from these external hosts
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },

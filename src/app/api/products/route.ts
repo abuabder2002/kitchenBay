@@ -5,20 +5,32 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search')?.trim() || searchParams.get('q')?.trim() || '';
 
-  console.log(`[GET /api/products] search="${search}"`);
+  const categoryParam = searchParams.get('category')?.trim() || '';
+  const subcategoryParam = searchParams.get('subcategory')?.trim() || '';
+
+  console.log(`[GET /api/products] search="${search}", category="${categoryParam}", subcategory="${subcategoryParam}"`);
 
   try {
-    const whereClause = search
-      ? {
-          OR: [
-            { name:        { contains: search, mode: 'insensitive' as const } },
-            { description: { contains: search, mode: 'insensitive' as const } },
-            { category:    { contains: search, mode: 'insensitive' as const } },
-            { subcategory: { contains: search, mode: 'insensitive' as const } },
-            { material:    { contains: search, mode: 'insensitive' as const } },
-          ],
-        }
-      : {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const whereClause: any = {};
+    
+    if (search) {
+      whereClause.OR = [
+        { name:        { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { category:    { contains: search, mode: 'insensitive' } },
+        { subcategory: { contains: search, mode: 'insensitive' } },
+        { material:    { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    
+    if (categoryParam) {
+      whereClause.category = { equals: categoryParam, mode: 'insensitive' };
+    }
+    
+    if (subcategoryParam) {
+      whereClause.subcategory = { equals: subcategoryParam, mode: 'insensitive' };
+    }
 
     const dbProducts = await prisma.product.findMany({
       where: whereClause,
@@ -68,7 +80,7 @@ export async function GET(req: Request) {
     return NextResponse.json(formattedProducts);
   } catch (error) {
     console.error('Error fetching products:', error);
-    return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch products', details: (error as Error)?.message || String(error) }, { status: 500 });
   }
 }
 

@@ -169,21 +169,24 @@ export default function HomePage() {
 
   const bestsellers = useMemo(() => {
     if (manualBestsellers.length > 0) {
-      return manualBestsellers.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+      const validProducts = manualBestsellers.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+      if (validProducts.length > 0) return validProducts;
     }
     return products.slice(0, 4);
   }, [products, manualBestsellers]);
 
   const newArrivals = useMemo(() => {
     if (manualNewArrivals.length > 0) {
-      return manualNewArrivals.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+      const validProducts = manualNewArrivals.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+      if (validProducts.length > 0) return validProducts;
     }
     return products.slice(4, 8);
   }, [products, manualNewArrivals]);
 
   const recommendedProducts = useMemo(() => {
     if (manualRecommended.length > 0) {
-      return manualRecommended.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+      const validProducts = manualRecommended.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+      if (validProducts.length > 0) return validProducts;
     }
     return [...products].reverse().slice(0, 8);
   }, [products, manualRecommended]);
