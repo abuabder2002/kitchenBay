@@ -4,21 +4,31 @@ import { prisma } from '@/lib/prisma';
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search')?.trim() || searchParams.get('q')?.trim() || '';
+  const category = searchParams.get('category')?.trim() || '';
+  const subcategory = searchParams.get('subcategory')?.trim() || '';
 
-  console.log(`[GET /api/products] search="${search}"`);
+  console.log(`[GET /api/products] search="${search}", category="${category}", subcategory="${subcategory}"`);
 
   try {
-    const whereClause = search
-      ? {
-          OR: [
-            { name:        { contains: search, mode: 'insensitive' as const } },
-            { description: { contains: search, mode: 'insensitive' as const } },
-            { category:    { contains: search, mode: 'insensitive' as const } },
-            { subcategory: { contains: search, mode: 'insensitive' as const } },
-            { material:    { contains: search, mode: 'insensitive' as const } },
-          ],
-        }
-      : {};
+    const whereClause: any = {};
+
+    if (search) {
+      whereClause.OR = [
+        { name:        { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { category:    { contains: search, mode: 'insensitive' } },
+        { subcategory: { contains: search, mode: 'insensitive' } },
+        { material:    { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (category) {
+      whereClause.category = { equals: category, mode: 'insensitive' };
+    }
+
+    if (subcategory) {
+      whereClause.subcategory = { equals: subcategory, mode: 'insensitive' };
+    }
 
     const dbProducts = await prisma.product.findMany({
       where: whereClause,
@@ -65,9 +75,12 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json(formattedProducts);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching products:', error);
-    return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to fetch products', 
+      details: error?.message || String(error)
+    }, { status: 500 });
   }
 }
 

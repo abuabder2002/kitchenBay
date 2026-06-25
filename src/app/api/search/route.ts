@@ -70,8 +70,11 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json(formatted);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[GET /api/search] Error:', error);
-    return NextResponse.json({ error: 'Search failed' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Search failed', 
+      details: error?.message || String(error)
+    }, { status: 500 });
   }
 }
