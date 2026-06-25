@@ -282,9 +282,9 @@ export default function ProductDetailPage() {
                   <div className="space-y-3">
                     {product.description
                       .split(/\n+/)
-                      .map((para, i) => para.trim())
-                      .filter(para => para.length > 0)
-                      .map((para, i) => (
+                      .map((para: string) => para.trim())
+                      .filter((para: string) => para.length > 0)
+                      .map((para: string, i: number) => (
                         <p key={i} className="text-[--color-brand-text] leading-relaxed text-sm">
                           {para}
                         </p>
