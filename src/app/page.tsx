@@ -235,7 +235,7 @@ export default function HomePage() {
                 {promoSlides.map((slide, idx) => (
                   <Link
                     key={idx}
-                    href={slide.link}
+                    href={slide.link || '#'}
                     className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                       }`}
                   >
@@ -292,7 +292,7 @@ export default function HomePage() {
               </div>
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
                 <RotateCcw className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">48 Hour Easy Return Policy</span>
+                <span className="text-sm md:text-base font-bold text-gray-800">7 Days Easy Return Policy</span>
               </div>
             </div>
           </div>
@@ -569,16 +569,9 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-5 flex-1 justify-center w-full pt-10 md:pt-0">
-              <MapPin size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
-              <div className="text-left">
-                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">150+ Stores</h4>
-                <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Across 100+ Cities</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-5 flex-1 justify-center w-full pt-10 md:pt-0">
               <RotateCcw size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
-                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">48 Hour Easy Return Policy</h4>
+                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">7 Days Easy Return Policy</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Return Policy</p>
               </div>
             </div>

@@ -78,9 +78,6 @@ export default function Navbar() {
     <>
       {/* TIER 1: Top Utility Bar (Minimal) */}
       <div className="bg-[--color-brand-top-bar] text-[--color-brand-bg] h-8 text-[11px] flex items-center px-4 sm:px-6 lg:px-8 justify-between z-50 relative tracking-widest font-medium uppercase">
-        <div className="w-full text-center md:w-auto md:text-left truncate px-2">
-          Sign Up & Get ₹500 off on your First Purchase
-        </div>
         <div className="hidden md:flex items-center gap-6">
           {topBarLinks.map((link) => (
             <Link key={link.label} href={link.href} className="hover:text-[--color-brand-accent-yellow] transition-colors">
