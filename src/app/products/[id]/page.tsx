@@ -53,7 +53,7 @@ export default function ProductDetailPage() {
 
   const variants = product?.variants as Record<string, any> | undefined;
   const variantSizes = variants ? Object.keys(variants).filter(Boolean) : [];
-  const legacySizes = product?.sizeCategory ? product.sizeCategory.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const legacySizes = product?.sizeCategory ? product.sizeCategory.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
   const availableSizes = variantSizes.length > 0 ? variantSizes : legacySizes;
 
   const [selectedSize, setSelectedSize] = useState<string>(availableSizes[0] || '');
