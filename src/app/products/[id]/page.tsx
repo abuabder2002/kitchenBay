@@ -2,9 +2,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+// Normalize image src: handle URLs, /paths, data URIs, and raw base64
+function normalizeImgSrc(src: string | undefined | null): string {
+  if (!src) return '/artisan_kitchenware.png';
+  if (src.startsWith('http') || src.startsWith('/') || src.startsWith('data:')) return src;
+  return `data:image/jpeg;base64,${src}`;
+}
+
 
 import { useParams, notFound, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -23,7 +30,22 @@ import Image from 'next/image';
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { products } = useProducts();
-  const product = products.find((p: any) => p.id === id);
+  const contextProduct = products.find((p: any) => p.id === id);
+  const [product, setProduct] = useState<any>(contextProduct);
+  const [isLoading, setIsLoading] = useState(!contextProduct);
+
+  useEffect(() => {
+    fetch(`/api/products/${id}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && !data.error) setProduct(data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setIsLoading(false);
+      });
+  }, [id]);
   const { addItem, items } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
@@ -92,6 +114,7 @@ export default function ProductDetailPage() {
     setSelectedImage(allImages[nextIndex]);
   };
 
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[--color-brand-bg]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div></div>;
   if (!product) return notFound();
 
   const related = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
@@ -161,13 +184,12 @@ export default function ProductDetailPage() {
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
               >
-                <Image
-                  src={currentImage}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={normalizeImgSrc(currentImage)}
                   alt={product.name}
-                  fill
-                  className={`object-contain transition-transform ease-out duration-150 ${isZoomed ? 'scale-[2.5]' : 'scale-100'}`}
+                  className={`absolute inset-0 w-full h-full object-contain transition-transform ease-out duration-150 ${isZoomed ? 'scale-[2.5]' : 'scale-100'}`}
                   style={{ transformOrigin: isZoomed ? backgroundPosition : 'center center' }}
-                  priority
                 />
                 
                 {allImages.length > 1 && (
@@ -200,7 +222,8 @@ export default function ProductDetailPage() {
                           : 'border-transparent opacity-60 hover:opacity-100'
                       }`}
                     >
-                        <Image src={img || ''} alt={`Thumb ${idx + 1}`} fill className="object-contain" />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={normalizeImgSrc(img)} alt={`Thumb ${idx + 1}`} className="absolute inset-0 w-full h-full object-contain" />
                     </div>
                   ))}
                 </div>

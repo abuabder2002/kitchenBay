@@ -61,3 +61,30 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
   }
 }
+
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const existing = await prisma.product.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Product not found in database' }, { status: 404 });
+    }
+
+    const basePrice = existing.price / 100;
+    const originalPrice = existing.discountPrice ? existing.discountPrice / 100 : basePrice;
+    const discount = originalPrice > basePrice ? Math.round(((originalPrice - basePrice) / originalPrice) * 100) : 0;
+
+    const formattedProduct = {
+      ...existing,
+      price: basePrice,
+      originalPrice,
+      finalPrice: basePrice,
+      discount
+    };
+
+    return NextResponse.json(formattedProduct);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return NextResponse.json({ error: 'Failed to fetch product', details: (error as Error)?.message || String(error) }, { status: 500 });
+  }
+}

@@ -12,6 +12,17 @@ import { Check, Heart, Pencil, ShoppingCart } from 'lucide-react';
 // Created once at module level — not on every render
 const priceFormatter = new Intl.NumberFormat('en-IN');
 
+// Normalize image src: handle URLs, /paths, data URIs, and raw base64 blobs
+function normalizeImageSrc(image: string | undefined | null): string {
+  if (!image) return '/artisan_kitchenware.png';
+  // Already a valid URL or local path
+  if (image.startsWith('http') || image.startsWith('/') || image.startsWith('data:')) {
+    return image;
+  }
+  // Raw base64 blob stored in DB — prepend the data URI header
+  return `data:image/jpeg;base64,${image}`;
+}
+
 interface ProductCardProps {
   product: Product;
   isHero?: boolean;
@@ -40,12 +51,11 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
       {/* Image Area */}
       <div className={`relative ${isHero ? 'aspect-auto h-[300px] md:h-full' : 'aspect-square'} overflow-hidden`}>
         <Link href={`/products/${product.id}`} className="block w-full h-full relative">
-          <Image 
-            src={product.image || '/images/marketing/everyday_cooking.jpg'} 
-            alt={product.name} 
-            fill
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-            className="object-contain object-center group-hover:scale-105 transition-transform duration-500 bg-white" 
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={normalizeImageSrc(product.image)}
+            alt={product.name}
+            className="absolute inset-0 w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500 bg-white"
             loading="lazy"
           />
         </Link>
