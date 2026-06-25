@@ -58,7 +58,7 @@ export default function ProductDetailPage() {
 
   const [activeTab, setActiveTab] = useState<'story' | 'Kitchenbay' | 'care'>('story');
 
-  const allImages = [product?.image, ...(product?.subImages || [])].filter(Boolean);
+  const allImages = [product?.image, ...(product?.subImages || [])].filter(Boolean) as string[];
   const currentImage = selectedImage || allImages[0] || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop';
   const currentIndex = allImages.indexOf(currentImage);
 
