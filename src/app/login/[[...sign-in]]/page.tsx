@@ -3,18 +3,23 @@ import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/utils/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { Mail, Lock, Loader2 } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+  
+  const nextParam = searchParams.get('next') || '/';
+  const messageParam = searchParams.get('message');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +35,7 @@ export default function LoginPage() {
       setError(signInError.message);
       setLoading(false);
     } else {
-      router.push('/');
+      router.push(nextParam);
       router.refresh();
     }
   };
@@ -40,7 +45,7 @@ export default function LoginPage() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
+        redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(nextParam)}`,
       },
     });
   };
@@ -52,6 +57,12 @@ export default function LoginPage() {
         <div className="w-full max-w-md bg-white shadow-xl border border-gray-100 rounded-3xl overflow-hidden p-8">
           <h1 className="text-2xl font-bold text-gray-800 text-center mb-2">Welcome Back</h1>
           <p className="text-gray-500 text-sm text-center mb-8">Sign in to continue to KitchenBay</p>
+
+          {messageParam === 'checkout' && (
+            <div className="mb-6 p-3 bg-blue-50 border border-blue-100 text-blue-700 rounded-xl text-sm text-center font-medium">
+              Please login to continue your purchase.
+            </div>
+          )}
 
           {error && (
             <div className="mb-6 p-3 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm text-center">
@@ -137,5 +148,13 @@ export default function LoginPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

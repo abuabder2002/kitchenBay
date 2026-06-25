@@ -3,13 +3,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/lib/productsContext';
 import { useCart } from '@/lib/cartContext';
+import { useAuth } from '@/lib/authContext';
 import { useWishlist } from '@/lib/wishlistContext';
 import { getItemBasePrice, getItemStock } from '@/lib/pricing';
 import {
@@ -22,8 +23,10 @@ import Image from 'next/image';
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { products } = useProducts();
-  const product = products.find(p => p.id === id);
+  const product = products.find((p: any) => p.id === id);
   const { addItem, items } = useCart();
+  const { currentUser } = useAuth();
+  const router = useRouter();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist, isItemLoading } = useWishlist();
 
   const variants = product?.variants as Record<string, any> | undefined;
@@ -281,12 +284,18 @@ export default function ProductDetailPage() {
                       </button>
                     </div>
 
-                    <Link
-                      href="/cart"
+                    <button
+                      onClick={() => {
+                        if (!currentUser) {
+                          router.push('/login?next=/checkout&message=checkout');
+                        } else {
+                          router.push('/checkout');
+                        }
+                      }}
                       className="block w-full text-center py-4 border-2 border-[--color-brand-text] text-[--color-brand-text] font-bold uppercase tracking-widest text-sm hover:bg-[--color-brand-text] hover:text-[--color-brand-bg] transition-colors rounded-sm"
                     >
                       Buy It Now
-                    </Link>
+                    </button>
 
                     <p className="text-xs font-bold text-[--color-brand-success] uppercase tracking-widest text-center mt-4 flex items-center justify-center gap-2">
                        <Check size={14}/> Ready to ship — {displayStock} in stock

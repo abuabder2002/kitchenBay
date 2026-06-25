@@ -8,10 +8,14 @@ import Footer from '@/components/Footer';
 import { useCart } from '@/lib/cartContext';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { getItemStock, getItemBasePrice } from '@/lib/pricing';
+import { useAuth } from '@/lib/authContext';
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total, itemCount } = useCart();
+  const { currentUser } = useAuth();
+  const router = useRouter();
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
@@ -151,12 +155,18 @@ export default function CartPage() {
                 <p className="text-xs text-gray-400 mt-1">+ GST & Shipping at checkout</p>
               </div>
 
-              <Link
-                href="/checkout"
+              <button
+                onClick={() => {
+                  if (!currentUser) {
+                    router.push('/login?next=/checkout&message=checkout');
+                  } else {
+                    router.push('/checkout');
+                  }
+                }}
                 className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-200"
               >
                 Proceed to Checkout <ArrowRight size={18} />
-              </Link>
+              </button>
               <Link
                 href="/products"
                 className="w-full flex items-center justify-center mt-3 text-sm font-medium text-blue-600 hover:text-blue-700 py-2"

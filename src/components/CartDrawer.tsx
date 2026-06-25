@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { X, ShoppingCart, Plus, Minus, Trash2, ArrowRight, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { useCart } from '@/lib/cartContext';
+import { useAuth } from '@/lib/authContext';
 import { getItemStock, getItemBasePrice } from '@/lib/pricing';
 import { useRouter } from 'next/navigation';
 
@@ -21,6 +22,7 @@ export default function CartDrawer() {
     shippingFee,
     total
   } = useCart();
+  const { currentUser } = useAuth();
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -225,7 +227,14 @@ export default function CartDrawer() {
               {/* CTA Buttons */}
               <div className="flex flex-col gap-2">
                 <button
-                  onClick={() => { closeDrawer(); router.push('/checkout'); }}
+                  onClick={() => { 
+                    closeDrawer(); 
+                    if (!currentUser) {
+                      router.push('/login?next=/checkout&message=checkout');
+                    } else {
+                      router.push('/checkout'); 
+                    }
+                  }}
                   className="w-full flex items-center justify-center gap-2 bg-[--color-brand-text] hover:bg-[--color-brand-accent] text-white font-bold py-3.5 rounded-full text-sm transition-colors group shadow-sm"
                 >
                   Proceed to Checkout
