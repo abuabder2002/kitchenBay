@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, Search, Star, X, Upload, ShieldCheck } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Star, X, Upload, ShieldCheck, Package } from 'lucide-react';
 import { useProducts } from '@/lib/productsContext';
 import { categories, subcategories, Product } from '@/lib/mockData';
 
@@ -176,6 +176,30 @@ export default function AdminProductsPage() {
     });
   };
 
+  const addEditAttribute = () => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      return { ...prev, attributes: [...(prev.attributes || []), { name: '', value: '' }] };
+    });
+  };
+
+  const removeEditAttribute = (idx: number) => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      return { ...prev, attributes: (prev.attributes || []).filter((_, i) => i !== idx) };
+    });
+  };
+
+  const updateEditAttribute = (idx: number, field: 'name' | 'value', val: string) => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      return { 
+        ...prev, 
+        attributes: (prev.attributes || []).map((attr, i) => i === idx ? { ...attr, [field]: val } : attr)
+      };
+    });
+  };
+
   const availableSubcategories = editingProduct 
     ? subcategories.filter(s => s.category === editingProduct.category) 
     : [];
@@ -212,7 +236,8 @@ export default function AdminProductsPage() {
 
       const payload = {
         ...editingProduct,
-        variants: processedVariants
+        variants: processedVariants,
+        attributes: editingProduct.attributes?.filter(a => a.name.trim() !== '' && a.value.trim() !== '') || undefined
       };
 
       const result = await updateProduct(editingProduct.id, payload);
@@ -610,6 +635,45 @@ export default function AdminProductsPage() {
                       </div>
                     </>
                   )}
+                </div>
+
+                {/* Dynamic Attributes */}
+                <div className="pt-2 mt-4 border-t border-gray-100">
+                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2"><Package size={16} className="text-blue-600"/> Custom Attributes</h3>
+                  <div className="space-y-3 mb-4">
+                    {(editingProduct.attributes || []).map((attr, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Capacity (Liters)" 
+                          value={attr.name} 
+                          onChange={(e) => updateEditAttribute(idx, 'name', e.target.value)}
+                          className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="e.g. 2L" 
+                          value={attr.value} 
+                          onChange={(e) => updateEditAttribute(idx, 'value', e.target.value)}
+                          className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200"
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => removeEditAttribute(idx)}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={addEditAttribute}
+                    className="text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    + Add Attribute
+                  </button>
                 </div>
 
                 {/* Image Upload Option */}

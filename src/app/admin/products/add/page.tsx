@@ -23,6 +23,7 @@ export default function AddProductPage() {
     height: '', width: '', length: '', diameter: '', weight: '', sizeCategory: ''
   });
   const [variants, setVariants] = useState<{ [size: string]: { weight: string, length: string, width: string, height: string, diameter: string, price: string, stock: string } }>({});
+  const [attributes, setAttributes] = useState<{name: string, value: string}[]>([]);
   const [saved, setSaved] = useState(false);
 
   // Dynamic categories/subcategories from DB
@@ -147,6 +148,12 @@ export default function AddProductPage() {
     setVariants(prev => ({ ...prev, [size]: { ...prev[size], [field]: value } }));
   };
 
+  const addAttribute = () => setAttributes(prev => [...prev, { name: '', value: '' }]);
+  const removeAttribute = (idx: number) => setAttributes(prev => prev.filter((_, i) => i !== idx));
+  const updateAttribute = (idx: number, field: 'name' | 'value', val: string) => {
+    setAttributes(prev => prev.map((attr, i) => i === idx ? { ...attr, [field]: val } : attr));
+  };
+
   const basePrice = parseFloat(form.price) || 0;
   const gst = parseFloat(form.gstPercent) || 0;
   const gstAmount = Math.round(basePrice * gst / 100);
@@ -187,6 +194,7 @@ export default function AddProductPage() {
       diameter: form.diameter ? parseFloat(form.diameter) : undefined,
       weight: form.weight ? parseFloat(form.weight) : undefined,
       sizeCategory: form.sizeCategory || undefined,
+      attributes: attributes.filter(a => a.name.trim() !== '' && a.value.trim() !== ''),
       variants: Object.keys(variants).length > 0 
         ? Object.fromEntries(
             Object.entries(variants).map(([size, data]) => [
@@ -436,6 +444,50 @@ export default function AddProductPage() {
               </div>
             </>
           )}
+        </div>
+
+        {/* Dynamic Attributes */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Package size={18} className="text-blue-600" /> Custom Attributes
+          </h2>
+          <p className="text-xs text-gray-500 mb-4">Add custom key-value pairs like Capacity (Liters), Color, Finish, or Pattern.</p>
+          
+          <div className="space-y-3 mb-4">
+            {attributes.map((attr, idx) => (
+              <div key={idx} className="flex items-center gap-3">
+                <input 
+                  type="text" 
+                  placeholder="e.g. Capacity (Liters)" 
+                  value={attr.name} 
+                  onChange={(e) => updateAttribute(idx, 'name', e.target.value)}
+                  className="flex-1 px-4 py-2 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200"
+                />
+                <input 
+                  type="text" 
+                  placeholder="e.g. 2L" 
+                  value={attr.value} 
+                  onChange={(e) => updateAttribute(idx, 'value', e.target.value)}
+                  className="flex-1 px-4 py-2 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200"
+                />
+                <button 
+                  type="button" 
+                  onClick={() => removeAttribute(idx)}
+                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+          
+          <button 
+            type="button" 
+            onClick={addAttribute}
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-4 py-2 rounded-lg transition-colors"
+          >
+            + Add Attribute
+          </button>
         </div>
 
         {/* Validation Checklist */}

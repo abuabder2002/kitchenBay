@@ -14,7 +14,7 @@ import { useAuth } from '@/lib/authContext';
 import { useWishlist } from '@/lib/wishlistContext';
 import { getItemBasePrice, getItemStock } from '@/lib/pricing';
 import {
-  Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus, Heart
+  Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus, Heart, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import BulkInquiryModal from '@/components/BulkInquiryModal';
@@ -53,7 +53,44 @@ export default function ProductDetailPage() {
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [backgroundPosition, setBackgroundPosition] = useState('center center');
+
   const [activeTab, setActiveTab] = useState<'story' | 'Kitchenbay' | 'care'>('story');
+
+  const allImages = [product?.image, ...(product?.subImages || [])].filter(Boolean);
+  const currentImage = selectedImage || allImages[0] || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop';
+  const currentIndex = allImages.indexOf(currentImage);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button')) {
+      setIsZoomed(false);
+      return;
+    }
+    setIsZoomed(true);
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setBackgroundPosition(`${x}% ${y}%`);
+  };
+
+  const handleMouseLeave = () => {
+    setIsZoomed(false);
+  };
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (allImages.length <= 1) return;
+    const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+    setSelectedImage(allImages[prevIndex]);
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (allImages.length <= 1) return;
+    const nextIndex = (currentIndex + 1) % allImages.length;
+    setSelectedImage(allImages[nextIndex]);
+  };
 
   if (!product) return notFound();
 
@@ -119,30 +156,55 @@ export default function ProductDetailPage() {
             
             {/* Left: Image Gallery */}
             <div className="space-y-6">
-              <div className="relative w-full aspect-square bg-white rounded-sm overflow-hidden shadow-md">
+              <div 
+                className="group relative w-full aspect-square bg-white rounded-sm overflow-hidden shadow-md cursor-crosshair"
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              >
                 <Image
-                  src={selectedImage || product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop'}
+                  src={currentImage}
                   alt={product.name}
                   fill
-                  className="object-contain"
+                  className={`object-contain transition-transform ease-out duration-150 ${isZoomed ? 'scale-[2.5]' : 'scale-100'}`}
+                  style={{ transformOrigin: isZoomed ? backgroundPosition : 'center center' }}
                   priority
                 />
+                
+                {allImages.length > 1 && (
+                  <>
+                    <button 
+                      onClick={handlePrevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button 
+                      onClick={handleNextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </>
+                )}
               </div>
-              <div className="grid grid-cols-4 gap-4">
-                 {[product.image, ...(product.subImages || [])].filter(Boolean).map((img, idx) => (
-                   <div 
-                     key={idx} 
-                     onClick={() => setSelectedImage(img)}
-                     className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${
-                       (selectedImage === img) || (!selectedImage && idx === 0) 
-                         ? 'border-[--color-brand-text] opacity-100' 
-                         : 'border-transparent opacity-60 hover:opacity-100'
-                     }`}
-                   >
-                      <Image src={img || ''} alt={`Thumb ${idx + 1}`} fill className="object-contain" />
-                   </div>
-                 ))}
-              </div>
+              
+              {allImages.length > 1 && (
+                <div className="grid grid-cols-4 gap-4">
+                  {allImages.map((img, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => setSelectedImage(img)}
+                      className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${
+                        currentImage === img 
+                          ? 'border-[--color-brand-text] opacity-100' 
+                          : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                        <Image src={img || ''} alt={`Thumb ${idx + 1}`} fill className="object-contain" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Right: Sticky Details */}
@@ -310,7 +372,7 @@ export default function ProductDetailPage() {
                 )}
 
                 {/* Dimensions / Specifications */}
-                {hasDimensions && (
+                {(hasDimensions || (product.attributes && product.attributes.length > 0)) && (
                   <div className="pt-8 mt-8 border-t border-[--color-brand-border]">
                     <h3 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-4">Specifications</h3>
                     <div className="grid grid-cols-2 gap-y-3 text-sm">
@@ -344,6 +406,12 @@ export default function ProductDetailPage() {
                           <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.diameter} cm</span>
                         </>
                       )}
+                      {product.attributes?.map((attr: {name: string, value: string}, idx: number) => (
+                        <div className="contents" key={idx}>
+                          <span className="text-[--color-brand-muted]">{attr.name}</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{attr.value}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

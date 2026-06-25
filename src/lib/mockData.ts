@@ -29,6 +29,7 @@ export interface Product {
   sizeCategory?: string;
   tags?: string[];
   variants?: Record<string, { price: number; stock: number }>;
+  attributes?: { name: string; value: string }[];
 }
 
 export interface CartItem {

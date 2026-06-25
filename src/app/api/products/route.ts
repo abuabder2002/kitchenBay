@@ -60,6 +60,7 @@ export async function GET(req: Request) {
         reviewCount: p.reviewCount,
         featured: p.featured,
         variants: p.variants,
+        attributes: p.attributes,
         isFromDb: true
       };
     });
@@ -103,6 +104,7 @@ export async function POST(req: Request) {
         reviewCount: data.reviewCount || 0,
         featured: data.featured || false,
         variants: data.variants ? data.variants : undefined,
+        attributes: data.attributes ? data.attributes : undefined,
       }
     });
 
@@ -138,6 +140,7 @@ export async function POST(req: Request) {
       reviewCount: newProduct.reviewCount,
       featured: newProduct.featured,
       variants: newProduct.variants,
+      attributes: newProduct.attributes,
       isFromDb: true
     });
   } catch (error) {

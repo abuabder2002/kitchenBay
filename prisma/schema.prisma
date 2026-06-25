@@ -94,6 +94,7 @@ model Product {
   moq              Int?              // Minimum Order Quantity for bulk
   bulkPricingTiers Json?             // [{ qty: number, price: number }]
   variants         Json?             // Size-specific dimensions/prices
+  attributes       Json?             // [{ name: string, value: string }]
   image            String
   subImages        String[]          @default([])
   rating           Float             @default(0)
