@@ -68,7 +68,6 @@ export async function GET(req: Request) {
         tags: p.tags,
         image: p.image,
         subImages: [], // OMIT to prevent 4.5MB Vercel limit
-        attributes: [], // OMIT to prevent 4.5MB Vercel limit
         rating: p.rating,
         reviewCount: p.reviewCount,
         featured: p.featured,
