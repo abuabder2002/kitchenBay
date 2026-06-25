@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   const connectionString = process.env.DATABASE_URL;
@@ -19,6 +20,20 @@ export async function GET() {
     username = urlObj.username;
   } catch (e) {
     host = 'invalid url';
+  }
+
+  // Verify Prisma directly
+  let prismaResult = '';
+  let prismaError = null;
+  try {
+    const testProducts = await prisma.product.findMany({ take: 1 });
+    prismaResult = `Success! Fetched ${testProducts.length} product(s).`;
+  } catch (err) {
+    prismaError = {
+      message: (err as Error).message,
+      name: (err as Error).name,
+      stack: (err as Error).stack?.substring(0, 500)
+    };
   }
 
   try {
@@ -58,7 +73,9 @@ export async function GET() {
       username,
       tables: tablesRes.rows.map(r => r.table_name),
       productCount: count,
-      columns: colRes.rows
+      columns: colRes.rows,
+      prismaResult,
+      prismaError
     });
   } catch (err) {
     return NextResponse.json({
@@ -66,7 +83,10 @@ export async function GET() {
       details: (err as Error).message,
       host,
       database: pathname,
-      username
+      username,
+      prismaResult,
+      prismaError
     }, { status: 500 });
   }
 }
+
