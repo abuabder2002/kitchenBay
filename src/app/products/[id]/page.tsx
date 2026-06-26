@@ -519,7 +519,7 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-3 gap-4 pt-8">
                   {[
                     { icon: Truck, label: 'Free Shipping Above Rs. 2000' },
-                    { icon: Shield, label: 'Quality Handcrafted Products' },
+                    { icon: ShieldCheck, label: 'Quality Handcrafted Products' },
                     { icon: Package, label: 'Secure Packaging' },
                   ].map(({ icon: Icon, label }) => (
                     <div key={label} className="flex flex-col items-center text-center gap-2 p-4 bg-white border border-[--color-brand-border] rounded-sm">
