@@ -52,6 +52,8 @@ export default function AdminProductsPage() {
         updated.rating = parseFloat(value) || 0;
       } else if (id === 'reviewCount') {
         updated.reviewCount = parseInt(value) || 0;
+      } else if (id === 'shippingFee') {
+        updated.shippingFee = value ? parseFloat(value) : undefined;
       }
       
       return updated;
@@ -478,9 +480,20 @@ export default function AdminProductsPage() {
                       id="material"
                       type="text"
                       placeholder="e.g. Cast Iron, Copper"
-                      value={editingProduct.material}
+                      value={editingProduct.material || ''}
                       onChange={handleEditChange}
                       required
+                      className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="brand" className="text-sm font-medium text-gray-700">Brand</label>
+                    <input
+                      id="brand"
+                      type="text"
+                      placeholder="e.g. KitchenBay"
+                      value={editingProduct.brand || ''}
+                      onChange={handleEditChange}
                       className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
                     />
                   </div>
@@ -553,6 +566,29 @@ export default function AdminProductsPage() {
                       <option value="18">18% — Standard</option>
                       <option value="28">28% — Luxury</option>
                     </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="shippingFee" className="text-sm font-medium text-gray-700">Shipping Fee (₹)</label>
+                    <input
+                      id="shippingFee"
+                      type="number"
+                      value={editingProduct.shippingFee ?? ''}
+                      onChange={handleEditChange}
+                      className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="shippingMethod" className="text-sm font-medium text-gray-700">Shipping Method</label>
+                    <input
+                      id="shippingMethod"
+                      type="text"
+                      value={editingProduct.shippingMethod || ''}
+                      onChange={handleEditChange}
+                      className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
+                    />
                   </div>
                 </div>
 

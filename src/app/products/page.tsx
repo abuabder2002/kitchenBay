@@ -73,11 +73,17 @@ function ProductsContent() {
   }, [searchQuery]);
 
   const [selectedMaterial, setSelectedMaterial] = useState<string>('');
+  const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [selectedPriceRange, setSelectedPriceRange] = useState<number>(-1);
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [featuredOnly, setFeaturedOnly] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>('default');
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
+
+  const brands = useMemo(() => {
+    const list = products.map((p: any) => p.brand).filter(Boolean);
+    return Array.from(new Set(list)) as string[];
+  }, [products]);
 
   const filtered = useMemo(() => {
     // Base list: DB search results take priority over full product list
@@ -109,6 +115,7 @@ function ProductsContent() {
     if (urlCategory && !selectedCategory) list = list.filter(p => p.category === urlCategory);
     if (urlSubcategory && !selectedSubcategory) list = list.filter(p => p.subcategory === urlSubcategory);
     if (selectedMaterial) list = list.filter(p => p.material === selectedMaterial);
+    if (selectedBrand) list = list.filter(p => (p as any).brand === selectedBrand);
     if (selectedPriceRange >= 0) {
       const range = priceRanges[selectedPriceRange];
       list = list.filter(p => p.finalPrice >= range.min && p.finalPrice < range.max);
@@ -121,19 +128,20 @@ function ProductsContent() {
       case 'popular': list.sort((a, b) => b.reviewCount - a.reviewCount); break;
     }
     return list;
-  }, [selectedCategory, selectedPriceRange, sortBy, inStockOnly, featuredOnly, searchQuery, searchQueryLower, searchResults, urlCategory, urlSubcategory, selectedMaterial, products, selectedSubcategory]);
+  }, [selectedCategory, selectedPriceRange, sortBy, inStockOnly, featuredOnly, searchQuery, searchQueryLower, searchResults, urlCategory, urlSubcategory, selectedMaterial, selectedBrand, products, selectedSubcategory]);
 
   const clearFilters = () => {
     setSelectedCategory('');
     setSelectedSubcategory('');
     setSelectedMaterial('');
+    setSelectedBrand('');
     setSelectedPriceRange(-1);
     setInStockOnly(false);
     setFeaturedOnly(false);
     setSortBy('default');
   };
 
-  const hasFilters = selectedCategory || selectedSubcategory || selectedMaterial || selectedPriceRange >= 0 || inStockOnly || featuredOnly;
+  const hasFilters = selectedCategory || selectedSubcategory || selectedMaterial || selectedBrand || selectedPriceRange >= 0 || inStockOnly || featuredOnly;
 
   const FilterPanel = () => (
     <div className="space-y-10">
@@ -204,6 +212,30 @@ function ProductsContent() {
           ))}
         </div>
       </div>
+
+      {/* Brand */}
+      {brands.length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold text-[--color-brand-text] mb-4 uppercase tracking-widest font-[family-name:var(--font-heading)] border-b border-[--color-brand-border] pb-2">Brand</h3>
+          <div className="space-y-2 mt-4">
+            <button
+              onClick={() => setSelectedBrand('')}
+              className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${!selectedBrand ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
+            >
+              All Brands
+            </button>
+            {brands.map(br => (
+              <button
+                key={br}
+                onClick={() => setSelectedBrand(br)}
+                className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${selectedBrand === br ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
+              >
+                {br}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Price Range */}
       <div>

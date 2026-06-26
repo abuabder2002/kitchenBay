@@ -17,10 +17,11 @@ export default function AddProductPage() {
   const router = useRouter();
   const { addProduct } = useProducts();
   const [form, setForm] = useState({
-    name: '', description: '', price: '', originalPrice: '', gstPercent: '18',
+    name: '', description: '', price: '', originalPrice: '', gstPercent: '5',
     stock: '', category: '', subcategory: '', categoryId: '', subcategoryId: '',
     material: '', image: '', subImages: [] as string[], rating: '5.0', reviewCount: '0',
-    height: '', width: '', length: '', diameter: '', weight: '', sizeCategory: ''
+    height: '', width: '', length: '', diameter: '', weight: '', sizeCategory: '',
+    brand: '', shippingFee: '', shippingMethod: ''
   });
   const [variants, setVariants] = useState<{ [size: string]: { weight: string, length: string, width: string, height: string, diameter: string, price: string, stock: string } }>({});
   const [attributes, setAttributes] = useState<{name: string, value: string}[]>([]);
@@ -183,6 +184,9 @@ export default function AddProductPage() {
       category: form.category,
       subcategory: form.subcategory,
       material: form.material || 'Standard',
+      brand: form.brand || undefined,
+      shippingFee: form.shippingFee ? parseFloat(form.shippingFee) : undefined,
+      shippingMethod: form.shippingMethod || undefined,
       image: form.image,
       subImages: form.subImages,
       rating: parseFloat(form.rating) || 5.0,
@@ -259,6 +263,7 @@ export default function AddProductPage() {
                 ))}
               </FormInput>
               <FormInput id="material" label="Material" placeholder="e.g. Cast Iron, Copper" value={form.material} onChange={handleChange} required />
+              <FormInput id="brand" label="Brand" placeholder="e.g. KitchenBay" value={form.brand} onChange={handleChange} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormInput id="rating" label="Star Rating (0 to 5)" type="number" step="0.1" min="0" max="5" placeholder="e.g. 4.5" value={form.rating} onChange={handleChange} required />
@@ -322,6 +327,11 @@ export default function AddProductPage() {
               <option value="18">18% — Standard</option>
               <option value="28">28% — Luxury</option>
             </FormInput>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+            <FormInput id="shippingFee" label="Shipping Fee (₹)" type="number" placeholder="e.g. 99" value={form.shippingFee} onChange={handleChange} />
+            <FormInput id="shippingMethod" label="Shipping Method" placeholder="e.g. Standard Delivery" value={form.shippingMethod} onChange={handleChange} />
           </div>
 
           {/* Live Calculator */}

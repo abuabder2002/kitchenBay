@@ -35,10 +35,30 @@ export default function ProductDetailPage() {
   const [isLoading, setIsLoading] = useState(!contextProduct);
 
   useEffect(() => {
+    setSelectedImage(null);
+    setQuantity(1);
+    setIsDescriptionExpanded(false);
+    
+    // Reset selected size when product changes
+    if (contextProduct) {
+      const vSizes = contextProduct.variants ? Object.keys(contextProduct.variants).filter(Boolean) : [];
+      const lSizes = contextProduct.sizeCategory ? String(contextProduct.sizeCategory).split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+      const aSizes = vSizes.length > 0 ? vSizes : lSizes;
+      setSelectedSize(aSizes[0] || '');
+    } else {
+      setSelectedSize('');
+    }
+
     fetch(`/api/products/${id}`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data && !data.error) setProduct(data);
+        if (data && !data.error) {
+          setProduct(data);
+          const vSizes = data.variants ? Object.keys(data.variants).filter(Boolean) : [];
+          const lSizes = data.sizeCategory ? String(data.sizeCategory).split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+          const aSizes = vSizes.length > 0 ? vSizes : lSizes;
+          setSelectedSize(aSizes[0] || '');
+        }
         setIsLoading(false);
       })
       .catch(err => {
@@ -74,6 +94,7 @@ export default function ProductDetailPage() {
   const [added, setAdded] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   
   const [isZoomed, setIsZoomed] = useState(false);
   const [backgroundPosition, setBackgroundPosition] = useState('center center');
@@ -236,9 +257,16 @@ export default function ProductDetailPage() {
                 
                 {/* Header */}
                 <div>
-                  <span className="inline-block text-xs font-bold text-[--color-brand-accent] uppercase tracking-widest mb-4 border border-[--color-brand-accent] px-3 py-1">
-                    {product.material}
-                  </span>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="inline-block text-xs font-bold text-[--color-brand-accent] uppercase tracking-widest border border-[--color-brand-accent] px-3 py-1">
+                      {product.material}
+                    </span>
+                    {product.brand && (
+                      <span className="inline-block text-xs font-bold text-gray-500 uppercase tracking-widest border border-gray-300 px-3 py-1">
+                        Brand: {product.brand}
+                      </span>
+                    )}
+                  </div>
                   <h1 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] leading-tight mb-4">
                     {product.name}
                   </h1>
@@ -260,9 +288,12 @@ export default function ProductDetailPage() {
                 {/* Price block — Base MRP only. GST applied only at checkout. */}
                 <div className="pt-6 border-t border-[--color-brand-border]">
                   <div className="flex items-baseline gap-4 mb-2">
-                    <span className="text-3xl font-bold text-[--color-brand-text]">{formatPrice(displayBasePrice)}</span>
+                    <span className="text-3xl font-bold text-[--color-brand-text]">{formatPrice(displayBasePrice * quantity)}</span>
+                    {quantity > 1 && (
+                      <span className="text-sm text-[--color-brand-muted]">({formatPrice(displayBasePrice)} each)</span>
+                    )}
                     {hasDiscount && displayOriginalPrice > 0 && (
-                      <span className="text-xl line-through text-[--color-brand-muted]">{formatPrice(displayOriginalPrice)}</span>
+                      <span className="text-xl line-through text-[--color-brand-muted]">{formatPrice(displayOriginalPrice * quantity)}</span>
                     )}
                     {hasDiscount && (
                       <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{product.discount}% off</span>
@@ -279,17 +310,41 @@ export default function ProductDetailPage() {
                     <Info size={12} />
                     About this Product
                   </p>
-                  <div className="space-y-3">
-                    {product.description
-                      .split(/\n+/)
-                      .map((para: string) => para.trim())
-                      .filter((para: string) => para.length > 0)
-                      .map((para: string, i: number) => (
-                        <p key={i} className="text-[--color-brand-text] leading-relaxed text-sm">
-                          {para}
-                        </p>
-                      ))
-                    }
+                  <div className="space-y-3 text-sm text-[--color-brand-text] leading-relaxed">
+                    {product.description.length > 250 && !isDescriptionExpanded ? (
+                      <p>
+                        {product.description.slice(0, 250)}...
+                        <button
+                          type="button"
+                          onClick={() => setIsDescriptionExpanded(true)}
+                          className="ml-2 font-bold text-[--color-brand-accent] hover:underline focus:outline-none"
+                        >
+                          Read More
+                        </button>
+                      </p>
+                    ) : (
+                      <>
+                        {product.description
+                          .split(/\n+/)
+                          .map((para: string) => para.trim())
+                          .filter((para: string) => para.length > 0)
+                          .map((para: string, i: number) => (
+                            <p key={i} className="mb-2">
+                              {para}
+                            </p>
+                          ))
+                        }
+                        {product.description.length > 250 && (
+                          <button
+                            type="button"
+                            onClick={() => setIsDescriptionExpanded(false)}
+                            className="mt-2 font-bold text-[--color-brand-accent] hover:underline block focus:outline-none"
+                          >
+                            Show Less
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -442,7 +497,7 @@ export default function ProductDetailPage() {
                 {/* Features */}
                 <div className="grid grid-cols-3 gap-4 pt-8">
                   {[
-                    { icon: Truck, label: 'Free Worldwide Shipping' },
+                    { icon: Truck, label: 'Free Shipping Above ₹1,999' },
                     { icon: ShieldCheck, label: 'Authentic Heritage' },
                     { icon: Package, label: 'Secure Packaging' },
                   ].map(({ icon: Icon, label }) => (

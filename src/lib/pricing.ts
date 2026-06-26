@@ -36,7 +36,22 @@ export function getItemStock(product: Product, size?: string): number {
 
 // ── Helper: Calculate GST on a base price ─────────────────────
 export function calcGst(basePrice: number, gstPercent: number): number {
-  return Math.round(basePrice * gstPercent) / 100;
+  // Always use 5% GST rate as requested
+  const effectiveGstPercent = 5;
+  return Math.round(basePrice * effectiveGstPercent) / 100;
+}
+
+// Get product-specific shipping fee in Rupees
+export function getProductShippingFee(product: any): number {
+  if (!product) return SHIPPING_FEE_RUPEES;
+  if (product.shippingFee !== undefined && product.shippingFee !== null) {
+    // If it's a raw DB value in paise (e.g. 9900), convert to Rupees
+    if (product.shippingFee > 1000) {
+      return Math.round(product.shippingFee / 100);
+    }
+    return product.shippingFee;
+  }
+  return SHIPPING_FEE_RUPEES;
 }
 
 // ── Cart-level totals (NO shipping on product/cart display) ────
@@ -45,7 +60,7 @@ export interface CartTotals {
   gstAmount: number;      // Total GST across all items
   cgstAmount: number;     // CGST (half of gstAmount)
   sgstAmount: number;     // SGST (half of gstAmount)
-  shippingFee: number;    // Always SHIPPING_FEE_RUPEES
+  shippingFee: number;    // Calculated based on items and subtotal
   total: number;          // subtotal + gstAmount + shippingFee
 }
 
@@ -55,7 +70,8 @@ export function calcCartTotals(items: CartItem[]): CartTotals {
 
   for (const item of items) {
     const basePrice = getItemBasePrice(item.product, item.size);
-    const gst = calcGst(basePrice * item.quantity, item.product.gstPercent);
+    // Force 5% GST calculation base
+    const gst = calcGst(basePrice * item.quantity, 5);
     subtotal += basePrice * item.quantity;
     gstAmount += gst;
   }
@@ -63,7 +79,19 @@ export function calcCartTotals(items: CartItem[]): CartTotals {
   gstAmount = Math.round(gstAmount);
   const cgstAmount = Math.floor(gstAmount / 2);
   const sgstAmount = gstAmount - cgstAmount;
-  const shippingFee = items.length > 0 ? SHIPPING_FEE_RUPEES : 0;
+
+  // Shipping Configuration:
+  // 1. Free Shipping above ₹1,999 subtotal
+  // 2. Otherwise, take the maximum shipping fee among all products in the cart
+  let shippingFee = 0;
+  if (items.length > 0) {
+    if (subtotal > 1999) {
+      shippingFee = 0;
+    } else {
+      shippingFee = Math.max(...items.map(item => getProductShippingFee(item.product)));
+    }
+  }
+
   const total = subtotal + gstAmount + shippingFee;
 
   return { subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total };

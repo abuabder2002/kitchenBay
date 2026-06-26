@@ -53,10 +53,6 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { 
-      totalAmount, 
-      subtotalAmount = 0,
-      gstAmount = 0,
-      shippingAmount = 99,
       items, 
       shippingAddrId, 
       paymentStatus, 
@@ -85,6 +81,100 @@ export async function POST(req: NextRequest) {
       finalAddrId = addr.id;
     }
 
+    // ── Recalculate totals from database product prices securely ──
+    const productIds = items.map((i: any) => i.productId);
+    const dbProducts = await prisma.product.findMany({
+      where: { id: { in: productIds } }
+    });
+    const productMap = new Map(dbProducts.map(p => [p.id, p]));
+
+    let calculatedSubtotalRupees = 0;
+    let calculatedGstRupees = 0;
+    const dbOrderItems = [];
+    const shippingFees: number[] = [];
+
+    for (const item of items) {
+      const dbProduct = productMap.get(item.productId);
+      if (!dbProduct) {
+        return NextResponse.json({ error: `Product "${item.productId}" not found` }, { status: 400 });
+      }
+      
+      let basePrice = dbProduct.price / 100;
+      let availableStock = dbProduct.stock;
+      
+      if (item.size && dbProduct.variants && (dbProduct.variants as Record<string, any>)[item.size]) {
+        const variant = (dbProduct.variants as Record<string, any>)[item.size];
+        basePrice = variant.price || (dbProduct.price / 100);
+        availableStock = variant.stock || 0;
+      }
+      
+      if (availableStock < item.quantity) {
+        return NextResponse.json({ error: `Not enough stock for ${dbProduct.name}` }, { status: 400 });
+      }
+
+      const gstAmount = Math.round(basePrice * dbProduct.gstPercent) / 100;
+      const unitPrice = basePrice + gstAmount;
+
+      calculatedSubtotalRupees += basePrice * item.quantity;
+      calculatedGstRupees += gstAmount * item.quantity;
+
+      // Shipping fee lookup for this product
+      let fee = 99;
+      if (dbProduct.shippingFee !== undefined && dbProduct.shippingFee !== null) {
+        if (dbProduct.shippingFee > 1000) {
+          fee = Math.round(dbProduct.shippingFee / 100);
+        } else {
+          fee = dbProduct.shippingFee;
+        }
+      }
+      shippingFees.push(fee);
+
+      dbOrderItems.push({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: Math.round(unitPrice * 100), // stored in paise
+        basePrice: Math.round(basePrice * 100), // stored in paise
+        size: item.size || ""
+      });
+    }
+
+    calculatedGstRupees = Math.round(calculatedGstRupees);
+    let calculatedShippingRupees = 99;
+    if (items.length > 0) {
+      if (calculatedSubtotalRupees > 1999) {
+        calculatedShippingRupees = 0;
+      } else {
+        calculatedShippingRupees = shippingFees.length > 0 ? Math.max(...shippingFees) : 99;
+      }
+    }
+
+    // ── Calculate discounts and final total ──
+    const completedOrdersCount = await prisma.order.count({
+      where: {
+        userId: user.id,
+        OR: [
+          { paymentStatus: 'PAID' },
+          { paymentStatus: 'COD_PENDING' },
+          { status: 'PROCESSING' },
+          { status: 'DELIVERED' }
+        ]
+      }
+    });
+    const isFirstOrder = completedOrdersCount === 0;
+    const firstOrderDiscount = isFirstOrder ? Math.min(100, calculatedSubtotalRupees) : 0;
+    
+    // Check if COD is used
+    const isCod = paymentStatus === 'COD_PENDING';
+    const netBankingDiscount = (!isCod && razorpayId) ? Math.round((calculatedSubtotalRupees + calculatedGstRupees) * 0.02) : 0;
+    
+    const totalSavings = firstOrderDiscount + netBankingDiscount;
+    const finalPayableRupees = Math.max(0, calculatedSubtotalRupees + calculatedGstRupees + calculatedShippingRupees - totalSavings);
+
+    // ── Enforce COD Limit of ₹5,999 ──
+    if (isCod && finalPayableRupees > 5999) {
+      return NextResponse.json({ error: 'Cash on Delivery (COD) is not allowed for orders above ₹5,999. Please choose Net Banking or card payment.' }, { status: 400 });
+    }
+
     // Generate a random 6-digit numerical string
     const numericId = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -92,22 +182,16 @@ export async function POST(req: NextRequest) {
       data: {
         id: numericId,
         userId: user.id,
-        totalAmount: Math.round(totalAmount * 100), // convert to paise
-        subtotalAmount: Math.round(subtotalAmount * 100),
-        gstAmount: Math.round(gstAmount * 100),
-        shippingAmount: Math.round(shippingAmount * 100),
+        totalAmount: Math.round(finalPayableRupees * 100), // convert to paise
+        subtotalAmount: Math.round(calculatedSubtotalRupees * 100),
+        gstAmount: Math.round(calculatedGstRupees * 100),
+        shippingAmount: Math.round(calculatedShippingRupees * 100),
         status: 'PENDING',
         paymentStatus: paymentStatus || 'PENDING',
         razorpayId: razorpayId || null,
         shippingAddrId: finalAddrId,
         items: {
-          create: items.map((item: any) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: Math.round(item.price * 100), // legacy finalPrice field fallback 
-            basePrice: Math.round(item.price * 100), // send base price from frontend in COD
-            size: item.size || ""
-          }))
+          create: dbOrderItems
         }
       },
       include: { items: true }

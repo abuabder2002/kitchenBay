@@ -191,6 +191,13 @@ export default function HomePage() {
     return [...products].reverse().slice(0, 8);
   }, [products, manualRecommended]);
 
+  const activePromoSlides = promoSlides && promoSlides.length > 0 ? promoSlides : defaultPromoSlides;
+  const activeSecondaryBanners = secondaryBanners && secondaryBanners.length > 0 ? secondaryBanners : defaultSecondaryBanners;
+  const activeCategories = categories && categories.length > 0 ? categories : defaultCategories;
+  const activeMaterials = materials && materials.length > 0 ? materials : defaultMaterials;
+  const activeJournalEntries = journalEntries && journalEntries.length > 0 ? journalEntries : defaultJournalEntries;
+  const activeTestimonials = testimonials && testimonials.length > 0 ? testimonials : defaultTestimonials;
+
   return (
     <div className="min-h-screen flex flex-col bg-[--color-brand-bg]">
       <Navbar />
@@ -234,8 +241,8 @@ export default function HomePage() {
                   { key: 'subtitle', label: 'Subtitle' },
                   { key: 'image', label: 'Image URL', type: 'image' },
                   { key: 'link', label: 'Link URL', type: 'product-link' }
-                ], promoSlides)} label="Edit Slides" />}
-                {promoSlides.map((slide, idx) => (
+                ], activePromoSlides)} label="Edit Slides" />}
+                {activePromoSlides.map((slide, idx) => (
                   <Link
                     key={idx}
                     href={slide.link || '#'}
@@ -266,7 +273,7 @@ export default function HomePage() {
 
                 {/* Navigation Dots */}
                 <div className="absolute bottom-5 left-0 right-0 z-20 flex justify-center gap-2">
-                  {promoSlides.map((_, idx) => (
+                  {activePromoSlides.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentSlide(idx)}
@@ -287,7 +294,7 @@ export default function HomePage() {
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
                 <ShieldCheck className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">11 Million Happy Deliveries</span>
+                <span className="text-sm md:text-base font-bold text-gray-800">15,000+ Happy Deliveries</span>
               </div>
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
                 <Users className="text-gray-600" size={28} />
@@ -295,7 +302,7 @@ export default function HomePage() {
               </div>
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
                 <RotateCcw className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">7 Days Easy Return Policy</span>
+                <span className="text-sm md:text-base font-bold text-gray-800">48-Hour Easy Return Policy</span>
               </div>
             </div>
           </div>
@@ -320,10 +327,10 @@ export default function HomePage() {
             { key: 'title', label: 'Title' },
             { key: 'image', label: 'Image URL', type: 'image' },
             { key: 'link', label: 'Link URL', type: 'product-link' }
-          ], secondaryBanners)} label="Edit Secondary Banners" />}
+          ], activeSecondaryBanners)} label="Edit Secondary Banners" />}
           <div className="max-w-[1600px] mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {secondaryBanners.slice(0, 3).map((banner, idx) => {
+              {activeSecondaryBanners.slice(0, 3).map((banner, idx) => {
                 const isDark = idx === 1;
                 return (
                   <Link key={idx} href={banner.link || '/products'} className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group/banner rounded-sm block bg-slate-100">
@@ -350,13 +357,13 @@ export default function HomePage() {
             { key: 'name', label: 'Name' },
             { key: 'sub', label: 'Subtitle' },
             { key: 'img', label: 'Image', type: 'image' }
-          ], categories)} label="Edit Categories" />}
+          ], activeCategories)} label="Edit Categories" />}
           <div className="text-center mb-16">
             <span className="text-[--color-brand-accent] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Curated Categories</span>
             <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Discover Our Collections</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {categories.map((cat, idx) => (
+            {activeCategories.map((cat, idx) => (
               <Link href={`/products?category=${cat.name.toLowerCase()}`} key={idx} className="group flex flex-col items-center cursor-pointer">
                 <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm mb-6 shadow-sm">
                   <Image
@@ -441,14 +448,14 @@ export default function HomePage() {
             { key: 'name', label: 'Name' },
             { key: 'desc', label: 'Description' },
             { key: 'img', label: 'Image', type: 'image' }
-          ], materials)} label="Edit Materials" />}
+          ], activeMaterials)} label="Edit Materials" />}
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">The Essence of Earth</h2>
               <p className="text-[--color-brand-muted] mt-4 max-w-2xl mx-auto">Explore our range categorized by the timeless, natural materials that form their foundation.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {materials.map((mat, idx) => (
+              {activeMaterials.map((mat, idx) => (
                 <Link href={`/products?material=${mat.name}`} key={idx} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer">
                   <Image src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -488,13 +495,13 @@ export default function HomePage() {
             { key: 'title', label: 'Title' },
             { key: 'category', label: 'Category' },
             { key: 'img', label: 'Image', type: 'image' }
-          ], journalEntries)} label="Edit Journal" />}
+          ], activeJournalEntries)} label="Edit Journal" />}
           <div className="text-center mb-16">
             <span className="text-[--color-brand-accent] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">The Kitchenbay Journal</span>
             <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Wisdom &amp; Stories</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {journalEntries.map((entry, idx) => (
+            {activeJournalEntries.map((entry, idx) => (
               <article key={idx} className="group cursor-pointer">
                 <div className="relative w-full aspect-[4/3] overflow-hidden rounded-sm mb-6">
                   <Image src={entry.img || '/images/marketing/everyday_cooking.jpg'} alt={entry.title || 'Journal Image'} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -514,18 +521,18 @@ export default function HomePage() {
             { key: 'rating', label: 'Rating (1-5)', type: 'number' },
             { key: 'avatar', label: 'Avatar Image', type: 'image' },
             { key: 'productImg', label: 'Product Image', type: 'image' }
-          ], testimonials)} label="Edit Testimonials" />}
+          ], activeTestimonials)} label="Edit Testimonials" />}
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_2.5fr] gap-8">
             <div className="bg-[#F8F9FE] rounded-sm p-12 flex flex-col justify-center relative overflow-hidden border border-[#EBEFFA]">
               <Quote size={120} className="absolute top-[-20px] left-[-20px] text-blue-50 opacity-50" />
               <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[#1E3A8A] mb-4 relative z-10 leading-tight">
                 See Why<br />They Love Us
               </h2>
-              <p className="text-sm font-semibold uppercase tracking-widest text-[#475569] relative z-10">Trusted By Over 11 Million Customers</p>
+              <p className="text-sm font-semibold uppercase tracking-widest text-[#475569] relative z-10">Trusted By Over 15,000+ Happy Customers</p>
               <Quote size={120} className="absolute bottom-[-20px] right-[-20px] text-blue-50 opacity-50 rotate-180" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {testimonials.map((t, idx) => (
+              {activeTestimonials.map((t, idx) => (
                 <div key={idx} className="bg-white p-6 rounded-sm shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-[--color-brand-border] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
                   <div className="flex items-start gap-5">
                     <Image src={t.avatar || 'https://i.pravatar.cc/150'} alt={t.name || 'Avatar'} width={50} height={50} className="rounded-full object-cover shrink-0 shadow-sm border border-gray-100" />
@@ -567,14 +574,14 @@ export default function HomePage() {
             <div className="flex items-center gap-5 flex-1 justify-center w-full">
               <Truck size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
-                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">11 Million</h4>
+                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">15,000+</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Happy Deliveries</p>
               </div>
             </div>
             <div className="flex items-center gap-5 flex-1 justify-center w-full pt-10 md:pt-0">
               <RotateCcw size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
-                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">7 Days Easy Return Policy</h4>
+                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">48-Hour Easy Return Policy</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Return Policy</p>
               </div>
             </div>
@@ -592,10 +599,10 @@ export default function HomePage() {
                 Welcome to KitchenBay, your one-stop shop for premium handcrafted kitchenware, fine dining essentials, and traditional Indian home décor online. Whether you are setting up an authentic traditional kitchen, seeking elegant brass and copper utensils, or decorating your home with beautiful diyas and pooja essentials, our extensive collection caters to every style. From durable cast iron cookware and traditional soapstone vessels to exquisite brass coffee dabaras and dining plates, our curated selection guarantees premium quality and unmatched longevity.
               </p>
               <p>
-                Shopping for kitchenware and décor online in India has never been easier. Benefit from our seasonal mega sales, offering up to 50% off along with exclusive cashback deals and free sitewide shipping. Experience the joy of a hassle-free shopping journey backed by a 7-day easy return policy and secure payment gateways. Our expert buying guides will help you choose the right cast iron skillet, soapstone pot, or pooja essentials perfectly tailored to your home.
+                Shopping for kitchenware and décor online in India has never been easier. Benefit from our seasonal mega sales, offering up to 50% off along with exclusive cashback deals and free shipping above ₹1,999. Experience the joy of a hassle-free shopping journey backed by a 48-hour easy return policy and secure payment gateways. Our expert buying guides will help you choose the right cast iron skillet, soapstone pot, or pooja essentials perfectly tailored to your home.
               </p>
               <p>
-                Join over 11 million happy customers and step into a world of traditional, premium, and handcrafted living spaces today!
+                Join over 15,000+ happy customers and step into a world of traditional, premium, and handcrafted living spaces today!
               </p>
             </div>
           </div>

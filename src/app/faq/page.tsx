@@ -9,7 +9,7 @@ const faqs = [
     category: 'Orders & Shipping', items: [
       { q: 'How long does delivery take?', a: 'Standard delivery takes 5-7 business days. Express delivery (1-2 days) is available for select pincodes at an additional charge.' },
       { q: 'Do you deliver pan India?', a: 'Yes! We deliver to all major cities and 20,000+ pincodes across India. Enter your pincode on the product page to check delivery availability.' },
-      { q: 'Can I change my delivery address?', a: 'Address changes can be made within 2 hours of placing your order. Please contact us immediately at support@Kitchenbay.in.' },
+      { q: 'Can I change my delivery address?', a: 'Address changes can be made within 2 hours of placing your order. Please contact us immediately at kitchenbay.co@gmail.com.' },
       { q: 'Is cash on delivery available?', a: 'Yes, COD is available for orders up to ₹5,000. A small convenience fee of ₹49 may apply.' },
     ]
   },
@@ -29,7 +29,7 @@ const faqs = [
   },
   {
     category: 'Returns & Refunds', items: [
-      { q: 'What is your return policy?', a: 'We offer a 7-day hassle-free return policy. Items must be unused, in original packaging, and returned with all original accessories.' },
+      { q: 'What is your return policy?', a: 'We offer a 48-hour hassle-free return policy. Items must be unused, in original packaging, and returned with all original accessories.' },
       { q: 'How do I initiate a return?', a: 'Go to My Orders in your account, select the item, and click "Request Return". Our team will arrange a free pickup.' },
     ]
   },

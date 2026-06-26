@@ -74,8 +74,24 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    totalGstRupees = Math.round(totalGstRupees);
-    const totalRupees = subtotalRupees + totalGstRupees + shippingAmount;
+    // ── Calculate discounts and payable total ───────────────
+    const { paymentMethod = 'RAZORPAY' } = body;
+    const completedOrdersCount = await prisma.order.count({
+      where: {
+        userId: user.id,
+        OR: [
+          { paymentStatus: 'PAID' },
+          { paymentStatus: 'COD_PENDING' },
+          { status: 'PROCESSING' },
+          { status: 'DELIVERED' }
+        ]
+      }
+    });
+    const isFirstOrder = completedOrdersCount === 0;
+    const firstOrderDiscount = isFirstOrder ? Math.min(100, subtotalRupees) : 0;
+    const netBankingDiscount = paymentMethod === 'NETBANKING' ? Math.round((subtotalRupees + totalGstRupees) * 0.02) : 0;
+    const totalSavings = firstOrderDiscount + netBankingDiscount;
+    const payableTotal = Math.max(0, subtotalRupees + totalGstRupees + shippingAmount - totalSavings);
 
     // ── Save shipping address ───────────────────────────────
     let shippingAddrId: string | null = null;
@@ -115,7 +131,7 @@ export async function POST(req: NextRequest) {
 
     // ── Create Razorpay order (amount must be in PAISE) ─────
     const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
-    const amountPaise = Math.round(totalRupees * 100);
+    const amountPaise = Math.round(payableTotal * 100);
 
     const razorpayOrder = await (razorpay.orders as any).create({
       amount: amountPaise,
@@ -130,7 +146,7 @@ export async function POST(req: NextRequest) {
       data: {
         id: numericId,
         userId: user.id,
-        totalAmount: Math.round(totalRupees * 100), // stored in paise
+        totalAmount: Math.round(payableTotal * 100), // stored in paise
         subtotalAmount: Math.round(subtotalRupees * 100),
         gstAmount: Math.round(totalGstRupees * 100),
         shippingAmount: Math.round(shippingAmount * 100),

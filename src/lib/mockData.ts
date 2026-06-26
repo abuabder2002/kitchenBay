@@ -30,6 +30,9 @@ export interface Product {
   tags?: string[];
   variants?: Record<string, { price: number; stock: number }>;
   attributes?: { name: string; value: string }[];
+  brand?: string;
+  shippingFee?: number;
+  shippingMethod?: string;
 }
 
 export interface CartItem {

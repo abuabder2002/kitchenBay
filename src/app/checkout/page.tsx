@@ -33,7 +33,7 @@ import {
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 
-type PaymentMethod = 'RAZORPAY' | 'COD';
+type PaymentMethod = 'RAZORPAY' | 'COD' | 'NETBANKING';
 
 // ── Load Razorpay checkout script dynamically ───────────────
 const loadRazorpayScript = () =>
@@ -100,6 +100,33 @@ export default function CheckoutPage() {
   const [countdown, setCountdown] = useState(TIMER_SECONDS);
   const [timerActive, setTimerActive] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [isFirstOrder, setIsFirstOrder] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetch('/api/orders')
+        .then(res => res.ok ? res.json() : [])
+        .then(orders => {
+          const completedOrders = orders.filter((o: any) => o.paymentStatus === 'PAID' || o.paymentStatus === 'COD_PENDING' || o.status === 'PROCESSING' || o.status === 'DELIVERED');
+          setIsFirstOrder(completedOrders.length === 0);
+        })
+        .catch(() => setIsFirstOrder(false));
+    } else {
+      setIsFirstOrder(false);
+    }
+  }, [currentUser]);
+
+  const firstOrderDiscount = isFirstOrder ? Math.min(100, subtotal) : 0;
+  const netBankingDiscount = paymentMethod === 'NETBANKING' ? Math.round((subtotal + gstAmount) * 0.02) : 0;
+  const totalSavings = firstOrderDiscount + netBankingDiscount;
+  const payableTotal = Math.max(0, subtotal + gstAmount + shippingFee - totalSavings);
+
+  useEffect(() => {
+    if (payableTotal > 5999 && paymentMethod === 'COD') {
+      setPaymentMethod('RAZORPAY');
+    }
+  }, [payableTotal, paymentMethod]);
 
   useEffect(() => {
     if (!timerActive) return;
@@ -175,6 +202,7 @@ export default function CheckoutPage() {
             ...(item.size ? { size: item.size } : {})
           })),
           shippingAmount: shippingFee,
+          paymentMethod: paymentMethod,
           address: {
             street: form.address,
             city: form.city,
@@ -228,8 +256,8 @@ export default function CheckoutPage() {
             setTransactionId(response.razorpay_payment_id);
             setOrderedItems([...items]);
             setOrderedAddress({ ...form });
-            setOrderedMethod('Razorpay (UPI / Card / Netbanking)');
-            setOrderedTotal(total);
+            setOrderedMethod(paymentMethod === 'NETBANKING' ? 'Net Banking' : 'Razorpay (UPI / Card / Netbanking)');
+            setOrderedTotal(payableTotal);
             setPlacedOrderId(verifyData.orderId);
             clearCart();
             setOrdered(true);
@@ -255,7 +283,7 @@ export default function CheckoutPage() {
                   subtotal,
                   cgstAmount,
                   sgstAmount,
-                  total
+                  total: payableTotal
                 },
                 status: 'processing'
               })
@@ -303,7 +331,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          totalAmount: total,
+          totalAmount: payableTotal,
           subtotalAmount: subtotal,
           gstAmount: gstAmount,
           shippingAmount: shippingFee,
@@ -329,7 +357,7 @@ export default function CheckoutPage() {
       setOrderedItems([...items]);
       setOrderedAddress({ ...form });
       setOrderedMethod('Cash on Delivery');
-      setOrderedTotal(total);
+      setOrderedTotal(payableTotal);
       setPlacedOrderId(data.id);
       clearCart();
       setOrdered(true);
@@ -355,7 +383,7 @@ export default function CheckoutPage() {
             subtotal,
             cgstAmount,
             sgstAmount,
-            total
+            total: payableTotal
           },
           status: 'processing'
         })
@@ -724,11 +752,32 @@ export default function CheckoutPage() {
                     </div>
                   </button>
 
+                  {/* Net Banking */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('NETBANKING')}
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'NETBANKING'
+                      ? 'border-blue-600 bg-blue-50/50'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'NETBANKING' ? 'border-blue-600' : 'border-gray-300'}`}>
+                      {paymentMethod === 'NETBANKING' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-950 flex items-center gap-1.5">
+                        Net Banking <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest bg-green-100 text-green-700 rounded-full leading-none whitespace-nowrap">2% OFF</span>
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">Pay direct via bank account and get an extra 2% discount.</p>
+                    </div>
+                  </button>
+
                   {/* COD */}
                   <button
                     type="button"
+                    disabled={payableTotal > 5999}
                     onClick={() => setPaymentMethod('COD')}
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'COD'
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${payableTotal > 5999 ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-200' : ''} ${paymentMethod === 'COD'
                       ? 'border-blue-600 bg-blue-50/50'
                       : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
@@ -738,7 +787,11 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-950">Cash on Delivery</p>
-                      <p className="text-xs text-gray-400 mt-1">Pay with cash when your parcel is delivered at home.</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {payableTotal > 5999 
+                          ? 'Not available for orders above ₹5,999' 
+                          : 'Pay with cash when your parcel is delivered at home.'}
+                      </p>
                     </div>
                   </button>
                 </div>
@@ -750,6 +803,18 @@ export default function CheckoutPage() {
                       <p className="text-xs font-bold text-blue-900">Seamless UPI checkout</p>
                       <p className="text-[11px] text-blue-800/80 leading-normal mt-0.5">
                         Includes automatic QR code generation, mobile app deep links (GPay, PhonePe, Paytm), and major cards/wallets natively inside the payment frame.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {paymentMethod === 'NETBANKING' && (
+                  <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-4 flex items-start gap-3">
+                    <Smartphone size={20} className="text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-bold text-emerald-900">Direct Net Banking Discount</p>
+                      <p className="text-[11px] text-emerald-800/80 leading-normal mt-0.5">
+                        Receive an additional 2% discount automatically applied. Select your bank inside the Razorpay modal.
                       </p>
                     </div>
                   </div>
@@ -808,11 +873,11 @@ export default function CheckoutPage() {
                 {/* Bill breakdown */}
                 <div className="border-t border-gray-100 pt-4 space-y-2.5">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Subtotal</span>
+                    <span className="text-gray-500">Product Price (Subtotal)</span>
                     <span className="font-semibold text-gray-700">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500 pb-2 border-b border-gray-100">
-                    <span>GST (18%)</span>
+                    <span>GST (5%)</span>
                     <span>{formatPrice(gstAmount)}</span>
                   </div>
                   <div className="flex justify-between text-xs pt-2">
@@ -823,9 +888,21 @@ export default function CheckoutPage() {
                       <span className="font-bold text-emerald-600">FREE</span>
                     )}
                   </div>
-                  <div className="pt-2 flex justify-between items-center">
+                  {firstOrderDiscount > 0 && (
+                    <div className="flex justify-between text-xs text-emerald-600 font-semibold">
+                      <span>First Order Discount</span>
+                      <span>-{formatPrice(firstOrderDiscount)}</span>
+                    </div>
+                  )}
+                  {netBankingDiscount > 0 && (
+                    <div className="flex justify-between text-xs text-emerald-600 font-semibold">
+                      <span>Net Banking Discount (2%)</span>
+                      <span>-{formatPrice(netBankingDiscount)}</span>
+                    </div>
+                  )}
+                  <div className="pt-2 flex justify-between items-center border-t border-gray-100">
                     <span className="font-bold text-gray-900 text-sm">Grand Total</span>
-                    <span className="text-2xl font-black text-blue-700">{formatPrice(total)}</span>
+                    <span className="text-2xl font-black text-blue-700">{formatPrice(payableTotal)}</span>
                   </div>
                 </div>
 
@@ -843,7 +920,7 @@ export default function CheckoutPage() {
                   ) : (
                     <>
                       <Lock size={16} />
-                      Pay Securely &mdash; {formatPrice(total)}
+                      Pay Securely &mdash; {formatPrice(payableTotal)}
                     </>
                   )}
                 </button>

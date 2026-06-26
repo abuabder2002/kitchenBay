@@ -73,7 +73,10 @@ export async function GET(req: Request) {
         featured: p.featured,
         variants: p.variants,
         attributes: p.attributes,
-        isFromDb: true
+        isFromDb: true,
+        brand: p.brand || undefined,
+        shippingFee: p.shippingFee ? p.shippingFee / 100 : undefined,
+        shippingMethod: p.shippingMethod || undefined
       };
     });
 
@@ -117,6 +120,9 @@ export async function POST(req: Request) {
         featured: data.featured || false,
         variants: data.variants ? data.variants : undefined,
         attributes: data.attributes ? data.attributes : undefined,
+        brand: data.brand || null,
+        shippingFee: data.shippingFee !== undefined && data.shippingFee !== null ? Math.round(parseFloat(data.shippingFee) * 100) : null,
+        shippingMethod: data.shippingMethod || null,
       }
     });
 
@@ -153,7 +159,10 @@ export async function POST(req: Request) {
       featured: newProduct.featured,
       variants: newProduct.variants,
       attributes: newProduct.attributes,
-      isFromDb: true
+      isFromDb: true,
+      brand: newProduct.brand || undefined,
+      shippingFee: newProduct.shippingFee ? newProduct.shippingFee / 100 : undefined,
+      shippingMethod: newProduct.shippingMethod || undefined
     });
   } catch (error) {
     console.error('Error creating product:', error);

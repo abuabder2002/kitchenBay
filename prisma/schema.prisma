@@ -73,7 +73,7 @@ model Product {
   description      String
   price            Int               // Stored in paise (currency * 100)
   discountPrice    Int?              // Optional discounted price in paise
-  gstPercent       Int               @default(18)
+  gstPercent       Int               @default(5)
   stock            Int               @default(0)
   category         String            // Legacy string field — kept for backward compat
   subcategory      String?           // Legacy string field — kept for backward compat
@@ -104,6 +104,9 @@ model Product {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   isActive         Boolean           @default(true)
+  brand            String?           // Brand assignment
+  shippingFee      Int?              // Optional shipping fee in paise
+  shippingMethod   String?           // Optional shipping method assignment
 }
 
 model Order {

@@ -67,7 +67,7 @@ export default function ShippingPolicyPage() {
         <>
           <p className="mb-4">We are committed to providing you with a smooth and transparent delivery experience. For any questions about your order status or shipping, feel free to contact our customer support team:</p>
           <div className="space-y-2">
-            <p>📧 <strong>Email:</strong> <a href="mailto:kitchenbay.co.in@gmail.com" className="text-blue-600 hover:underline">kitchenbay.co.in@gmail.com</a></p>
+            <p>📧 <strong>Email:</strong> <a href="mailto:kitchenbay.co@gmail.com" className="text-blue-600 hover:underline">kitchenbay.co@gmail.com</a></p>
             <p>🏢 <strong>Address:</strong> Kitchenbay Private Limited, 19/A, Line Street, Attur, Salem (DT) - 636102</p>
           </div>
         </>

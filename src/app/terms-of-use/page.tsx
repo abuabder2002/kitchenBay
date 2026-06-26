@@ -9,7 +9,7 @@ export default function TermsOfUsePage() {
     { title: '3. Account Responsibility', content: 'You are responsible for maintaining the confidentiality of your account and password. You agree to accept responsibility for all activities that occur under your account.' },
     { title: '4. Product Descriptions', content: 'We strive to ensure that all product descriptions, images, and prices are accurate. However, we do not warrant that product descriptions or other content is accurate, complete, or error-free.' },
     { title: '5. Pricing & Payments', content: 'All prices are listed in Indian Rupees (INR) and are inclusive of applicable taxes unless stated otherwise. We reserve the right to modify pricing at any time without prior notice.' },
-    { title: '6. Cancellations & Returns', content: 'Orders may be cancelled within 24 hours of placement. Returns are accepted within 7 days of delivery for undamaged goods in original packaging. Handcrafted items may have slight variations which are not considered defects.' },
+    { title: '6. Cancellations & Returns', content: 'Orders may be cancelled within 24 hours of placement. Returns are accepted within 48 hours of delivery for undamaged goods in original packaging. Handcrafted items may have slight variations which are not considered defects.' },
     { title: '7. Governing Law', content: 'These Terms of Use are governed by and construed in accordance with the laws of India. Any disputes will be subject to the exclusive jurisdiction of the courts in New Delhi, India.' },
   ];
 
