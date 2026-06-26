@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
   const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
   const userEmail = currentUser?.email?.toLowerCase();
-  const isAdmin = !!(userEmail && (adminEmails.includes(userEmail) || userEmail === 'yousufsuhaily@gmail.com' || userEmail === 'kitchenbaythehomeneeds@gmail.com' || userEmail === 'abdershaheen4@gmail.com'));
+  const isAdmin = !!(userEmail && (adminEmails.includes(userEmail) || userEmail === 'kitchenbaypvtltd@gmail.com' || userEmail === 'yousufsuhaily@gmail.com' || userEmail === 'kitchenbaythehomeneeds@gmail.com' || userEmail === 'abdershaheen4@gmail.com'));
 
   const login = () => false; // Let individual login forms handle this and redirect
   const signup = () => false;

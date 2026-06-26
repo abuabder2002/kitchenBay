@@ -143,7 +143,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-bold text-brand-text mb-1">Email Us</h3>
                     <p className="text-brand-muted leading-relaxed">
-                      kitchenbay.co@gmail.com
+                      kitchenbaypvtltd@gmail.com
                     </p>
                   </div>
                 </div>

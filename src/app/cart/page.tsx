@@ -18,7 +18,7 @@ export default function CartPage() {
   const router = useRouter();
 
   const formatPrice = (price: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
+    'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(price);
 
   if (items.length === 0) {
     return (
@@ -152,7 +152,7 @@ export default function CartPage() {
                   <span className="font-bold text-gray-900">Total</span>
                   <span className="text-xl font-bold text-blue-700">{formatPrice(subtotal)}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">+ GST & Shipping at checkout</p>
+                <p className="text-xs text-gray-400 mt-1">+ GST (5%) & shipping added at checkout</p>
               </div>
 
               <button

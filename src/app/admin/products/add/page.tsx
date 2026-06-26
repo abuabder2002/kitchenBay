@@ -165,7 +165,7 @@ export default function AddProductPage() {
 
   const formatPrice = (p: number) =>
     p > 0
-      ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p)
+      ? 'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(p)
       : '—';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -318,8 +318,8 @@ export default function AddProductPage() {
             <Calculator size={18} className="text-blue-600" /> Pricing & GST
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-            <FormInput id="originalPrice" label="MRP (₹)" type="number" placeholder="e.g. 1999" value={form.originalPrice} onChange={handleChange} />
-            <FormInput id="price" label="Base Price (₹)" type="number" placeholder="e.g. 999" value={form.price} onChange={handleChange} required />
+            <FormInput id="originalPrice" label="MRP (Rs.)" type="number" placeholder="e.g. 1999" value={form.originalPrice} onChange={handleChange} />
+            <FormInput id="price" label="Base Price (Rs.)" type="number" placeholder="e.g. 999" value={form.price} onChange={handleChange} required />
             <FormInput id="gstPercent" label="GST Rate (%)" as="select" value={form.gstPercent} onChange={handleChange} required>
               <option value="0">0% — Exempt</option>
               <option value="5">5% — Essential Goods</option>
@@ -330,7 +330,7 @@ export default function AddProductPage() {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-            <FormInput id="shippingFee" label="Shipping Fee (₹)" type="number" placeholder="e.g. 99" value={form.shippingFee} onChange={handleChange} />
+            <FormInput id="shippingFee" label="Shipping Fee (Rs.)" type="number" placeholder="e.g. 99" value={form.shippingFee} onChange={handleChange} />
             <FormInput id="shippingMethod" label="Shipping Method" placeholder="e.g. Standard Delivery" value={form.shippingMethod} onChange={handleChange} />
           </div>
 
@@ -383,9 +383,9 @@ export default function AddProductPage() {
                   )}
                   <p className="text-sm font-semibold text-gray-800 line-clamp-2 mb-1">{form.name}</p>
                   <div className="flex items-baseline flex-wrap gap-2">
-                    <span className="text-base font-bold text-gray-900">₹{finalPrice.toLocaleString('en-IN')}</span>
+                    <span className="text-base font-bold text-gray-900">Rs. {finalPrice.toLocaleString('en-IN')}</span>
                     {originalPriceInput > finalPrice && (
-                      <span className="text-sm line-through text-gray-400">₹{originalPrice.toLocaleString('en-IN')}</span>
+                      <span className="text-sm line-through text-gray-400">Rs. {originalPrice.toLocaleString('en-IN')}</span>
                     )}
                     {discount > 0 && (
                       <span className="text-xs text-green-600 font-semibold">{discount}% off</span>
@@ -436,7 +436,7 @@ export default function AddProductPage() {
                     <FormInput id={`width-${sz}`} label="Width (cm)" placeholder="e.g. 15" type="number" value={data.width} onChange={(e) => updateVariant(sz, 'width', e.target.value)} />
                     <FormInput id={`height-${sz}`} label="Height (cm)" placeholder="e.g. 10" type="number" value={data.height} onChange={(e) => updateVariant(sz, 'height', e.target.value)} />
                     <FormInput id={`diameter-${sz}`} label="Diameter (cm)" placeholder="e.g. 12" type="number" value={data.diameter} onChange={(e) => updateVariant(sz, 'diameter', e.target.value)} />
-                    <FormInput id={`price-${sz}`} label="Price Override (₹)" placeholder="Optional base price" type="number" value={data.price} onChange={(e) => updateVariant(sz, 'price', e.target.value)} />
+                    <FormInput id={`price-${sz}`} label="Price Override (Rs.)" placeholder="Optional base price" type="number" value={data.price} onChange={(e) => updateVariant(sz, 'price', e.target.value)} />
                     <FormInput id={`stock-${sz}`} label="Stock Override" placeholder="Optional" type="number" value={data.stock} onChange={(e) => updateVariant(sz, 'stock', e.target.value)} />
                   </div>
                 </div>

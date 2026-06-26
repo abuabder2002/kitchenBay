@@ -89,9 +89,11 @@ export async function POST(req: NextRequest) {
     });
     const isFirstOrder = completedOrdersCount === 0;
     const firstOrderDiscount = isFirstOrder ? Math.min(100, subtotalRupees) : 0;
-    const netBankingDiscount = paymentMethod === 'NETBANKING' ? Math.round((subtotalRupees + totalGstRupees) * 0.02) : 0;
+    const discountedSubtotal = subtotalRupees - firstOrderDiscount;
+    const gstAmountCheckout = Math.round(discountedSubtotal * 0.05);
+    const netBankingDiscount = paymentMethod === 'NETBANKING' ? Math.round((discountedSubtotal + gstAmountCheckout) * 0.02) : 0;
     const totalSavings = firstOrderDiscount + netBankingDiscount;
-    const payableTotal = Math.max(0, subtotalRupees + totalGstRupees + shippingAmount - totalSavings);
+    const payableTotal = Math.max(0, discountedSubtotal + gstAmountCheckout + shippingAmount - netBankingDiscount);
 
     // ── Save shipping address ───────────────────────────────
     let shippingAddrId: string | null = null;
@@ -148,7 +150,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         totalAmount: Math.round(payableTotal * 100), // stored in paise
         subtotalAmount: Math.round(subtotalRupees * 100),
-        gstAmount: Math.round(totalGstRupees * 100),
+        gstAmount: Math.round(gstAmountCheckout * 100),
         shippingAmount: Math.round(shippingAmount * 100),
         status: 'PENDING',
         paymentStatus: 'PENDING',

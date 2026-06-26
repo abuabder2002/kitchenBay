@@ -50,7 +50,7 @@ export default function WalletPage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
               <div>
                 <p className="text-blue-200 text-sm font-medium mb-2">Available Balance</p>
-                <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] mb-8">₹1,300.00</h2>
+                <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] mb-8">Rs. 1,300.00</h2>
               </div>
               <button className="w-full bg-yellow-400 hover:bg-yellow-500 text-blue-950 font-bold py-3 rounded-full flex items-center justify-center gap-2 transition-colors shadow-sm">
                 <Plus size={20} />
@@ -77,7 +77,7 @@ export default function WalletPage() {
                     </div>
                     <div className="text-right">
                       <p className={`font-bold ${txn.type === 'credit' ? 'text-green-600' : 'text-gray-900'}`}>
-                        {txn.type === 'credit' ? '+' : '-'}₹{txn.amount.toFixed(2)}
+                        {txn.type === 'credit' ? '+' : '-'}Rs. {txn.amount.toFixed(2)}
                       </p>
                       <p className="text-xs text-green-600 font-medium">{txn.status}</p>
                     </div>

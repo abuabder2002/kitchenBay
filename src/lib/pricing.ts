@@ -85,10 +85,10 @@ export function calcCartTotals(items: CartItem[]): CartTotals {
   // 2. Otherwise, take the maximum shipping fee among all products in the cart
   let shippingFee = 0;
   if (items.length > 0) {
-    if (subtotal > 1999) {
+    if (subtotal >= 2000) {
       shippingFee = 0;
     } else {
-      shippingFee = Math.max(...items.map(item => getProductShippingFee(item.product)));
+      shippingFee = 99;
     }
   }
 
@@ -99,9 +99,7 @@ export function calcCartTotals(items: CartItem[]): CartTotals {
 
 // ── Format price in INR ────────────────────────────────────────
 export function formatINR(amount: number): string {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
+  return 'Rs. ' + new Intl.NumberFormat('en-IN', {
     maximumFractionDigits: 2,
   }).format(amount);
 }

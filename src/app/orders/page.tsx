@@ -101,7 +101,7 @@ export default function TrackOrdersPage() {
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </span>
                       <p className="font-bold text-gray-900">
-                        {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(order.total)}
+                        Rs. {new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(order.total)}
                       </p>
                     </div>
                   </div>

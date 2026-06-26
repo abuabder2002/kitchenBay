@@ -9,8 +9,8 @@ import JourneyPreview from '@/components/JourneyPreview';
 
 export default function AboutUsPage() {
   const stats = [
-    { value: '5,000+', label: 'Kitchenbays Empowered' },
-    { value: '50,000+', label: 'Happy Customers' },
+    { value: '50+', label: 'Kitchenbays Empowered' },
+    { value: '500+', label: 'Happy Customers' },
     { value: '28', label: 'States Reached' },
     { value: '200+', label: 'Unique Products' },
   ];

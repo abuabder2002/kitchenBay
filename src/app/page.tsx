@@ -10,7 +10,7 @@ import Navbar from '@/components/Navbar';
 import TraditionVideoSection from '@/components/TraditionVideoSection';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { Truck, RotateCcw, ShieldCheck, HeartHandshake, Leaf, Users, Star, Quote, MapPin } from 'lucide-react';
+import { Truck, RotateCcw, ShieldCheck, HeartHandshake, Leaf, Users, Star, Quote, MapPin, X } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/lib/productsContext';
 import { useAuth } from '@/lib/authContext';
@@ -78,11 +78,34 @@ const defaultSecondaryBanners = [
   { title: "Bring Style Into Everyday Living →", image: "/images/home/apple-handi-banner-wide.png", link: "/products?category=decor" }
 ];
 
+const defaultHeritage = [
+  {
+    title: 'Reviving Ancient Kitchen Wisdom',
+    paragraph1: 'We journey to traditional clusters across India, from the Kansa makers of West Bengal to the cast-iron Kitchenbays of Tamil Nadu. By bringing their authentic, handcrafted cookware directly to your home, we help preserve generational skills that modern manufacturing has left behind.',
+    paragraph2: 'Every utensil is forged with purpose—designed not just to cook food, but to nourish the body according to timeless Ayurvedic principles.',
+    image: '/artisan_kitchenware.png'
+  }
+];
+
 export default function HomePage() {
   const { products } = useProducts();
-  const { isAdmin } = useAuth();
+  const { isAdmin, currentUser } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [showWelcomeOffer, setShowWelcomeOffer] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      const shown = localStorage.getItem(`welcomeOfferShown_${currentUser.id}`);
+      if (!shown) {
+        const timer = setTimeout(() => {
+          setShowWelcomeOffer(true);
+          localStorage.setItem(`welcomeOfferShown_${currentUser.id}`, 'true');
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [currentUser]);
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [modalConfig, setModalConfig] = useState<{ isOpen: boolean; sectionId: string; sectionTitle: string; schema: any[]; initialData: any[] } | null>(null);
@@ -104,6 +127,7 @@ export default function HomePage() {
   const [materials, setMaterials] = useState(defaultMaterials);
   const [journalEntries, setJournalEntries] = useState(defaultJournalEntries);
   const [testimonials, setTestimonials] = useState(defaultTestimonials);
+  const [heritage, setHeritage] = useState(defaultHeritage);
   const [manualBestsellers, setManualBestsellers] = useState<{ productId: string }[]>([]);
   const [manualNewArrivals, setManualNewArrivals] = useState<{ productId: string }[]>([]);
   const [manualRecommended, setManualRecommended] = useState<{ productId: string }[]>([]);
@@ -131,6 +155,7 @@ export default function HomePage() {
             setMaterials(getParsed('materials', defaultMaterials));
             setJournalEntries(getParsed('journalEntries', defaultJournalEntries));
             setTestimonials(getParsed('testimonials', defaultTestimonials));
+            setHeritage(getParsed('heritage', defaultHeritage));
             setManualBestsellers(getParsed('bestsellers', []));
             setManualNewArrivals(getParsed('newArrivals', []));
             setManualRecommended(getParsed('recommended', []));
@@ -197,6 +222,7 @@ export default function HomePage() {
   const activeMaterials = materials && materials.length > 0 ? materials : defaultMaterials;
   const activeJournalEntries = journalEntries && journalEntries.length > 0 ? journalEntries : defaultJournalEntries;
   const activeTestimonials = testimonials && testimonials.length > 0 ? testimonials : defaultTestimonials;
+  const activeHeritage = heritage && heritage.length > 0 ? heritage : defaultHeritage;
 
   return (
     <div className="min-h-screen flex flex-col bg-[--color-brand-bg]">
@@ -294,7 +320,7 @@ export default function HomePage() {
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
                 <ShieldCheck className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">15,000+ Happy Deliveries</span>
+                <span className="text-sm md:text-base font-bold text-gray-800">500+ Happy Deliveries</span>
               </div>
               <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
                 <Users className="text-gray-600" size={28} />
@@ -383,19 +409,25 @@ export default function HomePage() {
         </section>
 
         {/* ── Kitchenbay STORY SECTION ─────────────────────────────────────── */}
-        <section className="bg-[--color-brand-top-bar] text-[--color-brand-bg] py-24">
+        <section className="bg-[--color-brand-top-bar] text-[--color-brand-bg] py-24 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('heritage', 'Our Heritage', [
+            { key: 'title', label: 'Title' },
+            { key: 'paragraph1', label: 'Paragraph 1', type: 'textarea' },
+            { key: 'paragraph2', label: 'Paragraph 2', type: 'textarea' },
+            { key: 'image', label: 'Image URL', type: 'image' }
+          ], heritage)} label="Edit Our Heritage" />}
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-center gap-16">
               <div className="flex-1 lg:pr-12">
                 <span className="text-[--color-brand-accent-yellow] text-sm font-semibold tracking-[0.2em] uppercase mb-6 block">Our Heritage</span>
                 <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] mb-8 leading-tight">
-                  Reviving Ancient Kitchen Wisdom
+                  {activeHeritage[0]?.title}
                 </h2>
                 <p className="text-lg text-[--color-brand-bg]/80 mb-6 leading-relaxed">
-                  We journey to traditional clusters across India, from the Kansa makers of West Bengal to the cast-iron Kitchenbays of Tamil Nadu. By bringing their authentic, handcrafted cookware directly to your home, we help preserve generational skills that modern manufacturing has left behind.
+                  {activeHeritage[0]?.paragraph1}
                 </p>
                 <p className="text-lg text-[--color-brand-bg]/80 mb-10 leading-relaxed">
-                  Every utensil is forged with purpose—designed not just to cook food, but to nourish the body according to timeless Ayurvedic principles.
+                  {activeHeritage[0]?.paragraph2}
                 </p>
                 <Link href="/story" className="inline-block border-b-2 border-[--color-brand-accent-yellow] pb-1 text-sm font-bold uppercase tracking-widest hover:text-[--color-brand-accent-yellow] transition-colors">
                   Read Our Story
@@ -403,7 +435,7 @@ export default function HomePage() {
               </div>
               <div className="flex-1 relative w-full aspect-square max-w-lg mx-auto lg:max-w-none">
                 <Image
-                  src="/artisan_kitchenware.png"
+                  src={activeHeritage[0]?.image || '/artisan_kitchenware.png'}
                   alt="Traditional Indian handcrafted kitchenware"
                   fill
                   className="object-cover rounded-t-full shadow-2xl"
@@ -528,7 +560,7 @@ export default function HomePage() {
               <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[#1E3A8A] mb-4 relative z-10 leading-tight">
                 See Why<br />They Love Us
               </h2>
-              <p className="text-sm font-semibold uppercase tracking-widest text-[#475569] relative z-10">Trusted By Over 15,000+ Happy Customers</p>
+              <p className="text-sm font-semibold uppercase tracking-widest text-[#475569] relative z-10">Trusted By Over 500+ Happy Customers</p>
               <Quote size={120} className="absolute bottom-[-20px] right-[-20px] text-blue-50 opacity-50 rotate-180" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -574,7 +606,7 @@ export default function HomePage() {
             <div className="flex items-center gap-5 flex-1 justify-center w-full">
               <Truck size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
-                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">15,000+</h4>
+                <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">500+</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Happy Deliveries</p>
               </div>
             </div>
@@ -599,16 +631,50 @@ export default function HomePage() {
                 Welcome to KitchenBay, your one-stop shop for premium handcrafted kitchenware, fine dining essentials, and traditional Indian home décor online. Whether you are setting up an authentic traditional kitchen, seeking elegant brass and copper utensils, or decorating your home with beautiful diyas and pooja essentials, our extensive collection caters to every style. From durable cast iron cookware and traditional soapstone vessels to exquisite brass coffee dabaras and dining plates, our curated selection guarantees premium quality and unmatched longevity.
               </p>
               <p>
-                Shopping for kitchenware and décor online in India has never been easier. Benefit from our seasonal mega sales, offering up to 50% off along with exclusive cashback deals and free shipping above ₹1,999. Experience the joy of a hassle-free shopping journey backed by a 48-hour easy return policy and secure payment gateways. Our expert buying guides will help you choose the right cast iron skillet, soapstone pot, or pooja essentials perfectly tailored to your home.
+                Shopping for kitchenware and décor online in India has never been easier. Benefit from our seasonal mega sales, offering up to 50% off along with exclusive cashback deals and free shipping above Rs. 2000. Experience the joy of a hassle-free shopping journey backed by a 48-hour easy return policy and secure payment gateways. Our expert buying guides will help you choose the right cast iron skillet, soapstone pot, or pooja essentials perfectly tailored to your home.
               </p>
               <p>
-                Join over 15,000+ happy customers and step into a world of traditional, premium, and handcrafted living spaces today!
+                Join over 500+ happy customers and step into a world of traditional, premium, and handcrafted living spaces today!
               </p>
             </div>
           </div>
         </section>
 
       </main>
+
+      {/* WELCOME OFFER MODAL */}
+      {showWelcomeOffer && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md w-full relative animate-in zoom-in-95 duration-500">
+            <button 
+              onClick={() => setShowWelcomeOffer(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 bg-white/50 rounded-full p-1 transition-colors z-10"
+            >
+              <X size={24} />
+            </button>
+            <div className="relative h-48 w-full bg-[#E8F5E9]">
+              <Image src="/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg" alt="Welcome Offer" fill className="object-cover opacity-80 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
+                <h3 className="text-3xl font-bold text-white font-[family-name:var(--font-heading)]">Welcome to KitchenBay!</h3>
+              </div>
+            </div>
+            <div className="p-8 text-center">
+              <span className="inline-block bg-[#F5E6C8] text-[#4A3B18] text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4">First Order Exclusive</span>
+              <p className="text-xl font-bold text-gray-900 mb-2">Get Rs. 100 Off Your First Purchase</p>
+              <p className="text-sm text-gray-600 mb-8 leading-relaxed">
+                As a thank you for joining our community, a Rs. 100 discount has been automatically unlocked for your account. It will be seamlessly deducted at checkout!
+              </p>
+              <button 
+                onClick={() => setShowWelcomeOffer(false)}
+                className="w-full bg-[--color-brand-accent] hover:bg-green-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 uppercase tracking-widest text-sm"
+              >
+                Start Shopping Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
 
       {/* CMS Modals */}

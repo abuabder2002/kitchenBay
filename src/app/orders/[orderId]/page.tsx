@@ -40,7 +40,7 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
   const order = getOrderById(orderId);
 
   const formatPrice = (p: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p);
+    'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(p);
 
   if (!order) {
     return (

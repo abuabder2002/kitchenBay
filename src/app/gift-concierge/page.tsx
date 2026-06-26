@@ -75,26 +75,33 @@ const defaultHampers = [
     title: 'The Royal Wedding Hamper',
     desc: 'An exquisite collection of hand-hammered brass vessels, perfect for newlyweds.',
     img: 'https://images.unsplash.com/photo-1615486171448-4fb325087790?q=80&w=600&auto=format&fit=crop',
-    price: '₹15,000'
+    price: 'Rs. 15,000'
   },
   {
     title: 'Auspicious Housewarming Set',
     desc: 'Cast iron essentials and a traditional copper water dispenser for a healthy start.',
     img: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?q=80&w=600&auto=format&fit=crop',
-    price: '₹8,500'
+    price: 'Rs. 8,500'
   },
   {
     title: 'Diwali Festival Collection',
     desc: 'Shimmering brass diyas and copper serveware wrapped in festive elegance.',
     img: 'https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?q=80&w=600&auto=format&fit=crop',
-    price: '₹5,200'
+    price: 'Rs. 5,200'
   },
   {
     title: 'Executive Corporate Gift',
     desc: 'Premium copper tumblers and personalized note in a sleek wooden box.',
     img: 'https://images.unsplash.com/photo-1544715567-0c151121d5c2?q=80&w=600&auto=format&fit=crop',
-    price: '₹3,000'
+    price: 'Rs. 3,000'
   }
+];
+
+const defaultStatistics = [
+  { id: '1', value: '500+', label: 'Happy Customers' },
+  { id: '2', value: '1,500+', label: 'Gifts Delivered' },
+  { id: '3', value: '50+', label: 'Corporate Orders' },
+  { id: '4', value: '4.9/5', label: 'Average Rating' }
 ];
 
 export default function GiftConciergePage() {
@@ -105,6 +112,7 @@ export default function GiftConciergePage() {
 
   const [categories, setCategories] = useState(defaultCategories);
   const [hampers, setHampers] = useState(defaultHampers);
+  const [statistics, setStatistics] = useState(defaultStatistics);
 
   const handleEditClick = (sectionId: string, sectionTitle: string, schema: any[], initialData: any[]) => {
     setModalConfig({ isOpen: true, sectionId, sectionTitle, schema, initialData });
@@ -133,6 +141,7 @@ export default function GiftConciergePage() {
             
             setCategories(getParsed('categories', defaultCategories));
             setHampers(getParsed('hampers', defaultHampers));
+            setStatistics(getParsed('statistics', defaultStatistics));
           }
         }
       } catch (error) {
@@ -208,28 +217,27 @@ export default function GiftConciergePage() {
         </section>
 
         {/* SECTION - STATISTICS */}
-        <section className="py-8 sm:py-12 bg-white border border-[#BFDBFE] shadow-md relative z-20 -mt-10 mx-4 sm:mx-8 lg:mx-auto max-w-[1400px] rounded-2xl">
+        <section className="py-8 sm:py-12 bg-white border border-[#BFDBFE] shadow-md relative z-20 -mt-10 mx-4 sm:mx-8 lg:mx-auto max-w-[1400px] rounded-2xl group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('statistics', 'Statistics', [
+            { key: 'value', label: 'Statistic Value' },
+            { key: 'label', label: 'Statistic Label' },
+            { key: 'id', label: 'Statistic ID' }
+          ], statistics)} label="Edit Statistics" />}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
-            <div className="text-center group p-2 sm:p-4">
-              <Smile size={32} className="mx-auto text-[--color-brand-accent-yellow] mb-3 group-hover:scale-125 transition-transform duration-300" />
-              <h4 className="text-2xl sm:text-3xl md:text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-1">15,000+</h4>
-              <p className="text-[--color-brand-muted] text-[11px] uppercase tracking-[0.15em] font-bold">Happy Customers</p>
-            </div>
-            <div className="text-center group p-2 sm:p-4 border-l border-gray-100 sm:border-none md:border-l">
-              <Gift size={32} className="mx-auto text-[--color-brand-accent-yellow] mb-3 group-hover:scale-125 transition-transform duration-300" />
-              <h4 className="text-2xl sm:text-3xl md:text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-1">50,000+</h4>
-              <p className="text-[--color-brand-muted] text-[11px] uppercase tracking-[0.15em] font-bold">Gifts Delivered</p>
-            </div>
-            <div className="text-center group p-2 sm:p-4 md:border-l md:border-gray-100">
-              <Briefcase size={32} className="mx-auto text-[--color-brand-accent-yellow] mb-3 group-hover:scale-125 transition-transform duration-300" />
-              <h4 className="text-2xl sm:text-3xl md:text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-1">1,200+</h4>
-              <p className="text-[--color-brand-muted] text-[11px] uppercase tracking-[0.15em] font-bold">Corporate Orders</p>
-            </div>
-            <div className="text-center group p-2 sm:p-4 border-l border-gray-100 sm:border-none md:border-l">
-              <Star size={32} className="mx-auto text-[--color-brand-accent-yellow] mb-3 group-hover:scale-125 transition-transform duration-300" />
-              <h4 className="text-2xl sm:text-3xl md:text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-1">99.8%</h4>
-              <p className="text-[--color-brand-muted] text-[11px] uppercase tracking-[0.15em] font-bold">Satisfaction Rate</p>
-            </div>
+            {statistics.map((stat, idx) => {
+              const Icon = [Smile, Gift, Briefcase, Star][idx % 4];
+              let borderClass = "";
+              if (idx === 1 || idx === 3) borderClass = "border-l border-gray-100 sm:border-none md:border-l";
+              if (idx === 2) borderClass = "md:border-l md:border-gray-100";
+
+              return (
+                <div key={stat.id || idx} className={`text-center group/stat p-2 sm:p-4 ${borderClass}`.trim()}>
+                  <Icon size={32} className="mx-auto text-[--color-brand-accent-yellow] mb-3 group-hover/stat:scale-125 transition-transform duration-300" />
+                  <h4 className="text-2xl sm:text-3xl md:text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-1">{stat.value}</h4>
+                  <p className="text-[--color-brand-muted] text-[11px] uppercase tracking-[0.15em] font-bold">{stat.label}</p>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -429,7 +437,7 @@ export default function GiftConciergePage() {
                   <MessageCircle size={24} />
                   WhatsApp Gift Expert
                 </a>
-                <a href="mailto:gifting@kitchenbay.com" className="w-full sm:w-auto px-10 py-5 bg-white text-[--color-brand-text] font-bold rounded-lg border border-[--color-brand-border] hover:bg-gray-50 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl text-lg">
+                <a href="mailto:kitchenbaypvtltd@gmail.com" className="w-full sm:w-auto px-10 py-5 bg-white text-[--color-brand-text] font-bold rounded-lg border border-[--color-brand-border] hover:bg-gray-50 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl text-lg">
                   <Mail size={24} />
                   Email Gift Expert
                 </a>

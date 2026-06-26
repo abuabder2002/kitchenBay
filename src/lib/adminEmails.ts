@@ -1,5 +1,6 @@
 export function getAdminEmails(): string[] {
   const hardcoded = [
+    "kitchenbaypvtltd@gmail.com",
     "abdershaheen4@gmail.com",
     "yousufsuhaily@gmail.com",
     "kitchenbaythehomeneeds@gmail.com",

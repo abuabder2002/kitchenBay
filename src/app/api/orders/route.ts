@@ -141,10 +141,10 @@ export async function POST(req: NextRequest) {
     calculatedGstRupees = Math.round(calculatedGstRupees);
     let calculatedShippingRupees = 99;
     if (items.length > 0) {
-      if (calculatedSubtotalRupees > 1999) {
+      if (calculatedSubtotalRupees >= 2000) {
         calculatedShippingRupees = 0;
       } else {
-        calculatedShippingRupees = shippingFees.length > 0 ? Math.max(...shippingFees) : 99;
+        calculatedShippingRupees = 99;
       }
     }
 
@@ -162,17 +162,19 @@ export async function POST(req: NextRequest) {
     });
     const isFirstOrder = completedOrdersCount === 0;
     const firstOrderDiscount = isFirstOrder ? Math.min(100, calculatedSubtotalRupees) : 0;
+    const discountedSubtotal = calculatedSubtotalRupees - firstOrderDiscount;
+    const calculatedGstRupeesCheckout = Math.round(discountedSubtotal * 0.05);
     
     // Check if COD is used
     const isCod = paymentStatus === 'COD_PENDING';
-    const netBankingDiscount = (!isCod && razorpayId) ? Math.round((calculatedSubtotalRupees + calculatedGstRupees) * 0.02) : 0;
+    const netBankingDiscount = (!isCod && razorpayId) ? Math.round((discountedSubtotal + calculatedGstRupeesCheckout) * 0.02) : 0;
     
     const totalSavings = firstOrderDiscount + netBankingDiscount;
-    const finalPayableRupees = Math.max(0, calculatedSubtotalRupees + calculatedGstRupees + calculatedShippingRupees - totalSavings);
+    const finalPayableRupees = Math.max(0, discountedSubtotal + calculatedGstRupeesCheckout + calculatedShippingRupees - netBankingDiscount);
 
-    // ── Enforce COD Limit of ₹5,999 ──
+    // ── Enforce COD Limit of Rs:5999 ──
     if (isCod && finalPayableRupees > 5999) {
-      return NextResponse.json({ error: 'Cash on Delivery (COD) is not allowed for orders above ₹5,999. Please choose Net Banking or card payment.' }, { status: 400 });
+      return NextResponse.json({ error: 'There is no COD above Rs:5999. Please choose Net Banking or card payment.' }, { status: 400 });
     }
 
     // Generate a random 6-digit numerical string
@@ -184,7 +186,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         totalAmount: Math.round(finalPayableRupees * 100), // convert to paise
         subtotalAmount: Math.round(calculatedSubtotalRupees * 100),
-        gstAmount: Math.round(calculatedGstRupees * 100),
+        gstAmount: Math.round(calculatedGstRupeesCheckout * 100),
         shippingAmount: Math.round(calculatedShippingRupees * 100),
         status: 'PENDING',
         paymentStatus: paymentStatus || 'PENDING',

@@ -118,9 +118,13 @@ export default function CheckoutPage() {
   }, [currentUser]);
 
   const firstOrderDiscount = isFirstOrder ? Math.min(100, subtotal) : 0;
-  const netBankingDiscount = paymentMethod === 'NETBANKING' ? Math.round((subtotal + gstAmount) * 0.02) : 0;
+  const discountedSubtotal = subtotal - firstOrderDiscount;
+  const gstAmountCheckout = Math.round(discountedSubtotal * 0.05);
+  const cgstAmountCheckout = Math.floor(gstAmountCheckout / 2);
+  const sgstAmountCheckout = gstAmountCheckout - cgstAmountCheckout;
+  const netBankingDiscount = paymentMethod === 'NETBANKING' ? Math.round((discountedSubtotal + gstAmountCheckout) * 0.02) : 0;
   const totalSavings = firstOrderDiscount + netBankingDiscount;
-  const payableTotal = Math.max(0, subtotal + gstAmount + shippingFee - totalSavings);
+  const payableTotal = Math.max(0, discountedSubtotal + gstAmountCheckout + shippingFee - netBankingDiscount);
 
   useEffect(() => {
     if (payableTotal > 5999 && paymentMethod === 'COD') {
@@ -281,8 +285,8 @@ export default function CheckoutPage() {
                   email: form.email,
                   items: items,
                   subtotal,
-                  cgstAmount,
-                  sgstAmount,
+                  cgstAmount: cgstAmountCheckout,
+                  sgstAmount: sgstAmountCheckout,
                   total: payableTotal
                 },
                 status: 'processing'
@@ -333,7 +337,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           totalAmount: payableTotal,
           subtotalAmount: subtotal,
-          gstAmount: gstAmount,
+          gstAmount: gstAmountCheckout,
           shippingAmount: shippingFee,
           paymentStatus: 'COD_PENDING',
           items: items.map((item) => ({
@@ -381,8 +385,8 @@ export default function CheckoutPage() {
             email: form.email,
             items: items,
             subtotal,
-            cgstAmount,
-            sgstAmount,
+            cgstAmount: cgstAmountCheckout,
+            sgstAmount: sgstAmountCheckout,
             total: payableTotal
           },
           status: 'processing'
@@ -408,7 +412,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (paymentMethod === 'RAZORPAY') {
+    if (paymentMethod === 'RAZORPAY' || paymentMethod === 'NETBANKING') {
       await handleRazorpayPayment();
     } else {
       await handleCodPayment();
@@ -789,7 +793,7 @@ export default function CheckoutPage() {
                       <p className="text-sm font-bold text-gray-950">Cash on Delivery</p>
                       <p className="text-xs text-gray-400 mt-1">
                         {payableTotal > 5999 
-                          ? 'Not available for orders above ₹5,999' 
+                          ? 'There is no COD above Rs:5999' 
                           : 'Pay with cash when your parcel is delivered at home.'}
                       </p>
                     </div>
@@ -871,39 +875,62 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Bill breakdown */}
-                <div className="border-t border-gray-100 pt-4 space-y-2.5">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Product Price (Subtotal)</span>
-                    <span className="font-semibold text-gray-700">{formatPrice(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500 pb-2 border-b border-gray-100">
-                    <span>GST (5%)</span>
-                    <span>{formatPrice(gstAmount)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs pt-2">
-                    <span className="text-gray-500">Shipping</span>
-                    {shippingFee > 0 ? (
-                      <span className="font-bold text-gray-700">{formatPrice(shippingFee)}</span>
-                    ) : (
-                      <span className="font-bold text-emerald-600">FREE</span>
-                    )}
+                <div className="border-t border-gray-100 pt-4 space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-semibold text-gray-800">{formatPrice(subtotal)}</span>
                   </div>
                   {firstOrderDiscount > 0 && (
-                    <div className="flex justify-between text-xs text-emerald-600 font-semibold">
+                    <div className="flex justify-between text-sm text-emerald-600 font-semibold">
                       <span>First Order Discount</span>
                       <span>-{formatPrice(firstOrderDiscount)}</span>
                     </div>
                   )}
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>GST (5%)</span>
+                    <span className="font-semibold text-gray-800">{formatPrice(gstAmountCheckout)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Shipping</span>
+                    {shippingFee > 0 ? (
+                      <span className="font-semibold text-gray-800">{formatPrice(shippingFee)}</span>
+                    ) : (
+                      <span className="font-bold text-emerald-600">FREE</span>
+                    )}
+                  </div>
                   {netBankingDiscount > 0 && (
-                    <div className="flex justify-between text-xs text-emerald-600 font-semibold">
+                    <div className="flex justify-between text-sm text-emerald-600 font-semibold">
                       <span>Net Banking Discount (2%)</span>
                       <span>-{formatPrice(netBankingDiscount)}</span>
                     </div>
                   )}
-                  <div className="pt-2 flex justify-between items-center border-t border-gray-100">
+
+                  {/* Shipping rule helper text */}
+                  <div className="pt-1">
+                    {subtotal > 1999 ? (
+                      <p className="text-[10px] text-emerald-600 font-semibold">🎉 You qualify for Free Shipping!</p>
+                    ) : (
+                      <p className="text-[10px] text-amber-600 font-semibold">
+                        Free Shipping on orders above {formatPrice(1999)} (Add {formatPrice(1999 - subtotal)} more)
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="border-t border-gray-200 my-2" />
+
+                  <div className="pt-1 flex justify-between items-center">
                     <span className="font-bold text-gray-900 text-sm">Grand Total</span>
                     <span className="text-2xl font-black text-blue-700">{formatPrice(payableTotal)}</span>
                   </div>
+
+                  {/* Savings card */}
+                  {totalSavings > 0 && (
+                    <div className="mt-4 p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-center animate-bounce">
+                      <p className="text-xs font-bold text-emerald-800">
+                        You Saved {formatPrice(totalSavings)} Today 🎉
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Place Order CTA */}

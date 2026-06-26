@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
     // Helper to format currency in INR
     const formatPrice = (p: number) =>
-      new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p);
+      'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(p);
 
     // Get email specific body text based on status
     const getEmailMessage = (status: string) => {

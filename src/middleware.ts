@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
     const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
     const adminEmails = adminEmail.split(',').map(e => e.trim().toLowerCase());
     // Add hardcoded admins for safety
-    adminEmails.push('abdershaheen4@gmail.com', 'yousufsuhaily@gmail.com', 'kitchenbaythehomeneeds@gmail.com');
+    adminEmails.push('kitchenbaypvtltd@gmail.com', 'abdershaheen4@gmail.com', 'yousufsuhaily@gmail.com', 'kitchenbaythehomeneeds@gmail.com');
     
     const userEmail = user.email?.toLowerCase();
     if (!userEmail || !adminEmails.includes(userEmail)) {

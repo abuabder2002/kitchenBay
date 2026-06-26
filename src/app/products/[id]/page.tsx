@@ -153,8 +153,9 @@ export default function ProductDetailPage() {
     ? Math.round(displayBasePrice / (1 - product.discount / 100))
     : 0;
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
+  const formatPrice = (price: number) => {
+    return 'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(price);
+  };
 
   const handleAddToCart = () => {
     if (availableSizes.length > 0 && !selectedSize) {
@@ -177,6 +178,32 @@ export default function ProductDetailPage() {
     for (let i = 0; i < quantity; i++) addItem(product, selectedSize);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    if (availableSizes.length > 0 && !selectedSize) {
+      setSizeError(true);
+      return;
+    }
+    setSizeError(false);
+    
+    if (displayStock <= 0) {
+      alert('This item is out of stock.');
+      return;
+    }
+    
+    const currentInCart = items.find(i => i.product.id === product.id && (i.size || "") === (selectedSize || ""))?.quantity || 0;
+    if (currentInCart + quantity > displayStock) {
+      alert(`You can only add up to ${displayStock} units. You already have ${currentInCart} in your cart.`);
+      return;
+    }
+
+    for (let i = 0; i < quantity; i++) addItem(product, selectedSize, true);
+    if (!currentUser) {
+      router.push('/login?next=/checkout&message=checkout');
+    } else {
+      router.push('/checkout');
+    }
   };
 
   return (
@@ -299,7 +326,7 @@ export default function ProductDetailPage() {
                       <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{product.discount}% off</span>
                     )}
                   </div>
-                  <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-1">+ GST & shipping at checkout</p>
+                  <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-1">GST (5%) Added & shipping at checkout</p>
 
 
                 </div>
@@ -425,13 +452,7 @@ export default function ProductDetailPage() {
                     </div>
 
                     <button
-                      onClick={() => {
-                        if (!currentUser) {
-                          router.push('/login?next=/checkout&message=checkout');
-                        } else {
-                          router.push('/checkout');
-                        }
-                      }}
+                      onClick={handleBuyNow}
                       className="block w-full text-center py-4 border-2 border-[--color-brand-text] text-[--color-brand-text] font-bold uppercase tracking-widest text-sm hover:bg-[--color-brand-text] hover:text-[--color-brand-bg] transition-colors rounded-sm"
                     >
                       Buy It Now
@@ -497,8 +518,8 @@ export default function ProductDetailPage() {
                 {/* Features */}
                 <div className="grid grid-cols-3 gap-4 pt-8">
                   {[
-                    { icon: Truck, label: 'Free Shipping Above ₹1,999' },
-                    { icon: ShieldCheck, label: 'Authentic Heritage' },
+                    { icon: Truck, label: 'Free Shipping Above Rs. 2000' },
+                    { icon: Shield, label: 'Quality Handcrafted Products' },
                     { icon: Package, label: 'Secure Packaging' },
                   ].map(({ icon: Icon, label }) => (
                     <div key={label} className="flex flex-col items-center text-center gap-2 p-4 bg-white border border-[--color-brand-border] rounded-sm">

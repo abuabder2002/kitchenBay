@@ -31,7 +31,7 @@ export default function ReturnsRefundsPage() {
           <p className="mb-4 font-semibold">What should I do if I receive a damaged item, wrong product or missing units in my order?</p>
           <p className="mb-4">If an item is damaged, missing, or incorrect, please send a photo of the outer packaging and products received to our customer care within 48 hours of receipt of the product.</p>
           <div className="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
-            <p><strong>Email:</strong> <a href="mailto:kitchenbay.co@gmail.com" className="text-blue-600 hover:underline">kitchenbay.co@gmail.com</a></p>
+            <p><strong>Email:</strong> <a href="mailto:kitchenbaypvtltd@gmail.com" className="text-blue-600 hover:underline">kitchenbaypvtltd@gmail.com</a></p>
           </div>
           <p>We will issue either a full refund or send the same item in exchange, as per your request.</p>
         </>

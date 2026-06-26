@@ -14,7 +14,7 @@ export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const formatPrice = (p: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p);
+    'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(p);
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {

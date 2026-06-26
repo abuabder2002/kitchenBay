@@ -46,7 +46,7 @@ export default function CartDrawer() {
   }, [closeDrawer]);
 
   const formatPrice = (price: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
+    'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(price);
 
   return (
     <>
@@ -222,7 +222,7 @@ export default function CartDrawer() {
                 <span>Estimated Total</span>
                 <span className="text-lg">{formatPrice(subtotal)}</span>
               </div>
-              <p className="text-xs text-[--color-brand-muted] mb-4 text-right">+ GST & shipping at checkout</p>
+              <p className="text-xs text-[--color-brand-muted] mb-4 text-right">+ GST (5%) & shipping added at checkout</p>
 
               {/* CTA Buttons */}
               <div className="flex flex-col gap-2">

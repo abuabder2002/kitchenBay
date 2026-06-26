@@ -157,23 +157,23 @@ export default function Navbar() {
           <div className="flex items-center gap-2 sm:gap-4 lg:gap-6">
 
             {/* Search Icon / Input */}
-            <div className="hidden md:flex items-center relative">
+            <div className="flex items-center relative">
               {isSearchOpen ? (
                 <>
-                  <div className="flex items-center border-b border-[--color-brand-text] pb-1 animate-in fade-in slide-in-from-right-4 relative z-50 bg-white">
+                  <div className="flex items-center border-b border-[--color-brand-text] pb-1 animate-in fade-in slide-in-from-right-4 absolute right-0 sm:relative z-50 bg-white">
                     <input
                       autoFocus
                       type="text"
-                      placeholder="Search products..."
+                      placeholder="Search..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && executeSearch()}
-                      className="bg-transparent outline-none text-sm text-[--color-brand-text] w-48 font-medium placeholder:font-normal placeholder:text-[--color-brand-muted]"
+                      className="bg-transparent outline-none text-sm text-[--color-brand-text] w-28 sm:w-48 font-medium placeholder:font-normal placeholder:text-[--color-brand-muted]"
                     />
                     <X size={16} className="text-[--color-brand-muted] cursor-pointer hover:text-[--color-brand-text]" onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} />
                   </div>
                   {searchSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white shadow-xl border border-gray-100 rounded-lg overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute top-full right-0 sm:left-0 sm:right-0 mt-2 bg-white shadow-xl border border-gray-100 rounded-lg overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 w-[280px] sm:w-auto">
                       <ul className="flex flex-col">
                         {searchSuggestions.map(product => (
                           <li key={product.id}>
@@ -184,7 +184,7 @@ export default function Navbar() {
                               <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded-md border border-gray-200 shrink-0" />
                               <div className="flex flex-col overflow-hidden">
                                 <span className="text-[13px] font-bold text-[--color-brand-text] truncate">{product.name}</span>
-                                <span className="text-[11px] font-bold text-[--color-brand-muted] uppercase">₹{product.price}</span>
+                                <span className="text-[11px] font-bold text-[--color-brand-muted] uppercase">Rs. {product.price}</span>
                               </div>
                             </div>
                           </li>
@@ -328,7 +328,7 @@ export default function Navbar() {
                           <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded-md border border-gray-200 shrink-0" />
                           <div className="flex flex-col overflow-hidden">
                             <span className="text-sm font-bold text-[--color-brand-text] truncate">{product.name}</span>
-                            <span className="text-xs font-bold text-[--color-brand-muted] uppercase">₹{product.price}</span>
+                            <span className="text-xs font-bold text-[--color-brand-muted] uppercase">Rs. {product.price}</span>
                           </div>
                         </div>
                       </li>

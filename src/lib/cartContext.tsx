@@ -54,7 +54,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, size?: string) => void;
+  addItem: (product: Product, size?: string, skipDrawer?: boolean) => void;
   removeItem: (productId: string, size?: string) => void;
   updateQuantity: (productId: string, quantity: number, size?: string) => void;
   clearCart: () => void;
@@ -196,9 +196,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [products, state.items]);
 
-  const addItem = useCallback(async (product: Product, size?: string) => {
+  const addItem = useCallback(async (product: Product, size?: string, skipDrawer?: boolean) => {
     dispatch({ type: 'ADD_ITEM', product, size });
-    setIsDrawerOpen(true); // Open drawer when item added
+    if (!skipDrawer) {
+      setIsDrawerOpen(true); // Open drawer when item added
+    }
     if (currentUser) {
       fetch('/api/cart', {
         method: 'POST',
