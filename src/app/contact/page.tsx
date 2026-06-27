@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Mail, MapPin, Loader2 } from 'lucide-react';
+import { Mail, MapPin, Loader2, Phone } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export default function ContactPage() {
@@ -144,6 +144,17 @@ export default function ContactPage() {
                     <h3 className="font-bold text-brand-text mb-1">Email Us</h3>
                     <p className="text-brand-muted leading-relaxed">
                       kitchenbaypvtltd@gmail.com
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-5">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                    <Phone className="text-brand-accent" size={22} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-brand-text mb-1">Call Us</h3>
+                    <p className="text-brand-muted leading-relaxed">
+                      +91 7502777766
                     </p>
                   </div>
                 </div>
