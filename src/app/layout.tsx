@@ -7,7 +7,8 @@ import { ProductsProvider } from '@/lib/productsContext';
 import { AuthProvider } from '@/lib/authContext';
 import { OrdersProvider } from '@/lib/ordersContext';
 import { NextAuthProvider } from '@/components/Providers';
-import CartDrawer from '@/components/CartDrawer';
+import dynamic from 'next/dynamic';
+const CartDrawer = dynamic(() => import('@/components/CartDrawer'));
 import {
   SITE_URL,
   SITE_NAME,

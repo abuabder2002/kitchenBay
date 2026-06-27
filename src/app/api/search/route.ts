@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    // Broad OR search across name, description, category, subcategory, material, tags
+    // Broad OR search across name, description, category, subcategory, material
     const dbProducts = await prisma.product.findMany({
       where: {
         OR: [
@@ -26,6 +26,24 @@ export async function GET(req: Request) {
         ],
       },
       orderBy: { createdAt: 'desc' },
+      take: 20,
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        discountPrice: true,
+        gstPercent: true,
+        stock: true,
+        category: true,
+        subcategory: true,
+        material: true,
+        image: true,
+        rating: true,
+        reviewCount: true,
+        featured: true,
+        brand: true,
+        isActive: true,
+      }
     });
 
     console.log(`[GET /api/search] query="${q}" → ${dbProducts.length} results`);
@@ -41,7 +59,7 @@ export async function GET(req: Request) {
       return {
         id: p.id,
         name: p.name,
-        description: p.description,
+        description: '',
         price: basePrice,
         originalPrice,
         finalPrice,
@@ -51,25 +69,27 @@ export async function GET(req: Request) {
         category: p.category,
         subcategory: p.subcategory || p.category,
         material: p.material || 'Standard',
-        dimensions: p.dimensions,
-        height: p.height,
-        width: p.width,
-        length: p.length,
-        diameter: p.diameter,
-        weight: p.weight,
-        sizeCategory: p.sizeCategory,
-        tags: p.tags,
+        dimensions: null,
+        height: null,
+        width: null,
+        length: null,
+        diameter: null,
+        weight: null,
+        sizeCategory: null,
+        tags: [],
         image: p.image,
-        subImages: p.subImages,
+        subImages: [],
         rating: p.rating,
         reviewCount: p.reviewCount,
         featured: p.featured,
-        variants: p.variants,
+        variants: null,
         isFromDb: true,
       };
     });
 
-    return NextResponse.json(formatted);
+    const response = NextResponse.json(formatted);
+    response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600');
+    return response;
   } catch (error) {
     console.error('[GET /api/search] Error:', error);
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });

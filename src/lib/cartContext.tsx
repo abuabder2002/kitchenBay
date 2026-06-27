@@ -149,26 +149,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
   }, [currentUser]);
 
-  // ── STEP 4: Map server data when products finish loading ──
+  // ── STEP 4: Map server data directly from API ──
   useEffect(() => {
     if (!serverData) return;
     
-    // Check if we have mapped all products
-    const mapped = serverData.map((d) => {
-      const p = products.find(p => p.id === d.productId);
+    const mapped = serverData.map((d: any) => {
+      const p = d.product || products.find(p => p.id === d.productId);
       return {
         product: p,
         quantity: d.quantity,
-        ...(d.size ? { size: d.size } : {})
+        size: d.size || ""
       };
     }).filter((i): i is CartItem => !!i.product);
 
-    // Only update if we found at least some products. 
-    // This will naturally re-run and find more if 'products' updates asynchronously from DB.
-    if (mapped.length > 0) {
+    if (mapped.length > 0 || (currentUser && serverData.length === 0)) {
       dispatch({ type: 'SET_ITEMS', items: mapped });
     }
-  }, [serverData, products]);
+  }, [serverData, products, currentUser]);
 
   // ── STEP 5: Auto-validate cart against live products stock ──
   useEffect(() => {

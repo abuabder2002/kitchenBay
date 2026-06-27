@@ -37,9 +37,8 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    refreshProducts();
-  }, [refreshProducts]);
+  // Automatic global fetch of all products on mount has been removed to optimize Neon bandwidth.
+  // Pages or dashboards requiring all products should invoke refreshProducts() explicitly.
 
   const toggleFeatured = async (id: string) => {
     const product = products.find(p => p.id === id);

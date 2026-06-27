@@ -2,16 +2,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus, Pencil, Trash2, Search, Star, X, Upload, ShieldCheck, Package } from 'lucide-react';
 import { useProducts } from '@/lib/productsContext';
 import { categories, subcategories, Product } from '@/lib/mockData';
 
 export default function AdminProductsPage() {
-  const { products, toggleFeatured, deleteProduct, updateProduct } = useProducts();
+  const { products, toggleFeatured, deleteProduct, updateProduct, refreshProducts } = useProducts();
   const [searchQuery, setSearchQuery] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    refreshProducts();
+  }, [refreshProducts]);
 
   const formatPrice = (p: number) =>
     'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(p);
@@ -350,7 +354,19 @@ export default function AdminProductsPage() {
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
-                          onClick={() => setEditingProduct(p)}
+                          onClick={async () => {
+                            try {
+                              const res = await fetch(`/api/products/${p.id}`);
+                              if (res.ok) {
+                                const fullProduct = await res.json();
+                                setEditingProduct(fullProduct);
+                              } else {
+                                setEditingProduct(p);
+                              }
+                            } catch {
+                              setEditingProduct(p);
+                            }
+                          }}
                           className="w-8 h-8 bg-blue-50 hover:bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center transition-colors" 
                           title="Edit"
                         >

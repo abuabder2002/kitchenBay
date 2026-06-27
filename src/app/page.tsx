@@ -17,7 +17,9 @@ import { faqPageSchema } from '@/lib/schemas';
 import { useProducts } from '@/lib/productsContext';
 import { useAuth } from '@/lib/authContext';
 import EditButton from '@/components/cms/EditButton';
-import CMSModal from '@/components/cms/CMSModal';
+import dynamic from 'next/dynamic';
+
+const CMSModal = dynamic(() => import('@/components/cms/CMSModal'), { ssr: false });
 
 const defaultCategories = [
   { name: 'Kitchenware', sub: 'Traditional Cookware', img: '/images/marketing/modern_world_kitchen.png' },
@@ -97,7 +99,7 @@ const homeFaqs = [
 ];
 
 export default function HomePage() {
-  const { products } = useProducts();
+  const [homeProducts, setHomeProducts] = useState<any[]>([]);
   const { isAdmin, currentUser } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -142,9 +144,13 @@ export default function HomePage() {
   const [manualRecommended, setManualRecommended] = useState<{ productId: string }[]>([]);
 
   useEffect(() => {
-    // Fetch CMS content
-    const fetchContent = async () => {
+    // Fetch CMS content and products in sequence
+    const fetchContentAndProducts = async () => {
       try {
+        let bestsellersList: any[] = [];
+        let newArrivalsList: any[] = [];
+        let recommendedList: any[] = [];
+
         const res = await fetch('/api/content?page=home');
         if (res.ok) {
           const data = await res.json();
@@ -165,16 +171,43 @@ export default function HomePage() {
             setJournalEntries(getParsed('journalEntries', defaultJournalEntries));
             setTestimonials(getParsed('testimonials', defaultTestimonials));
             setHeritage(getParsed('heritage', defaultHeritage));
-            setManualBestsellers(getParsed('bestsellers', []));
-            setManualNewArrivals(getParsed('newArrivals', []));
-            setManualRecommended(getParsed('recommended', []));
+            
+            bestsellersList = getParsed('bestsellers', []);
+            newArrivalsList = getParsed('newArrivals', []);
+            recommendedList = getParsed('recommended', []);
+
+            setManualBestsellers(bestsellersList);
+            setManualNewArrivals(newArrivalsList);
+            setManualRecommended(recommendedList);
+          }
+        }
+
+        // Collect configured product IDs to perform a single batch query
+        const idsSet = new Set<string>();
+        [...bestsellersList, ...newArrivalsList, ...recommendedList].forEach(item => {
+          if (item && item.productId) {
+            const id = item.productId.split('/').pop();
+            if (id) idsSet.add(id);
+          }
+        });
+
+        let productsUrl = '/api/products?limit=16';
+        if (idsSet.size > 0) {
+          productsUrl = `/api/products?ids=${Array.from(idsSet).join(',')}`;
+        }
+
+        const prodRes = await fetch(productsUrl);
+        if (prodRes.ok) {
+          const prodData = await prodRes.json();
+          if (Array.isArray(prodData)) {
+            setHomeProducts(prodData);
           }
         }
       } catch (error) {
-        console.error("Error fetching CMS content:", error);
+        console.error("Error fetching CMS content & products:", error);
       }
     };
-    fetchContent();
+    fetchContentAndProducts();
   }, []);
 
   useEffect(() => {
@@ -203,27 +236,27 @@ export default function HomePage() {
 
   const bestsellers = useMemo(() => {
     if (manualBestsellers.length > 0) {
-      const validProducts = manualBestsellers.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+      const validProducts = manualBestsellers.map(m => homeProducts.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
       if (validProducts.length > 0) return validProducts;
     }
-    return products.slice(0, 4);
-  }, [products, manualBestsellers]);
+    return homeProducts.slice(0, 4);
+  }, [homeProducts, manualBestsellers]);
 
   const newArrivals = useMemo(() => {
     if (manualNewArrivals.length > 0) {
-      const validProducts = manualNewArrivals.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+      const validProducts = manualNewArrivals.map(m => homeProducts.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
       if (validProducts.length > 0) return validProducts;
     }
-    return products.slice(4, 8);
-  }, [products, manualNewArrivals]);
+    return homeProducts.slice(4, 8);
+  }, [homeProducts, manualNewArrivals]);
 
   const recommendedProducts = useMemo(() => {
     if (manualRecommended.length > 0) {
-      const validProducts = manualRecommended.map(m => products.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
+      const validProducts = manualRecommended.map(m => homeProducts.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
       if (validProducts.length > 0) return validProducts;
     }
-    return [...products].reverse().slice(0, 8);
-  }, [products, manualRecommended]);
+    return [...homeProducts].reverse().slice(0, 8);
+  }, [homeProducts, manualRecommended]);
 
   const activePromoSlides = promoSlides && promoSlides.length > 0 ? promoSlides : defaultPromoSlides;
   const activeSecondaryBanners = secondaryBanners && secondaryBanners.length > 0 ? secondaryBanners : defaultSecondaryBanners;
@@ -378,6 +411,7 @@ export default function HomePage() {
                       src={banner.image || '/images/marketing/everyday_cooking.jpg'}
                       alt={banner.title || 'Banner Image'}
                       fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
                       className="object-cover object-center group-hover/banner:scale-105 transition-transform duration-700"
                     />
                     <div className={`absolute inset-0 bg-gradient-to-r ${isDark ? 'from-black/80 via-black/40' : 'from-white/90 via-white/40'} to-transparent`} />

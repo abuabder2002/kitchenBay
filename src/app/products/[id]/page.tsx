@@ -24,7 +24,8 @@ import {
   Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus, Heart, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
-import BulkInquiryModal from '@/components/BulkInquiryModal';
+import dynamic from 'next/dynamic';
+const BulkInquiryModal = dynamic(() => import('@/components/BulkInquiryModal'), { ssr: false });
 import Image from 'next/image';
 import JsonLd from '@/components/seo/JsonLd';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';

@@ -51,18 +51,50 @@ export default function Navbar() {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  const searchSuggestions = searchQuery.trim()
-    ? products.filter(p => {
-        const q = searchQuery.toLowerCase();
-        return (
-          p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          (p.subcategory || '').toLowerCase().includes(q) ||
-          (p.material || '').toLowerCase().includes(q) ||
-          (p.description || '').toLowerCase().includes(q)
-        );
-      }).slice(0, 6)
-    : [];
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const cacheRef = useRef<Record<string, any[]>>({});
+
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q) {
+      setSuggestions([]);
+      return;
+    }
+
+    if (cacheRef.current[q]) {
+      setSuggestions(cacheRef.current[q]);
+      return;
+    }
+
+    const controller = new AbortController();
+    setSuggestionsLoading(true);
+
+    const timer = setTimeout(() => {
+      fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: controller.signal })
+        .then(res => res.ok ? res.json() : [])
+        .then(data => {
+          if (Array.isArray(data)) {
+            const sliced = data.slice(0, 6);
+            cacheRef.current[q] = sliced;
+            setSuggestions(sliced);
+          }
+        })
+        .catch(err => {
+          if (err.name !== 'AbortError') {
+            console.error("Suggestions fetch error:", err);
+          }
+        })
+        .finally(() => {
+          setSuggestionsLoading(false);
+        });
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [searchQuery]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -207,10 +239,10 @@ export default function Navbar() {
                     />
                     <X size={16} className="text-[--color-brand-muted] cursor-pointer hover:text-[--color-brand-text]" onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} />
                   </div>
-                  {searchSuggestions.length > 0 && (
+                  {suggestions.length > 0 && (
                     <div className="absolute top-full right-0 sm:left-0 sm:right-0 mt-2 bg-white shadow-xl border border-gray-100 rounded-lg overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 w-[280px] sm:w-auto">
                       <ul className="flex flex-col">
-                        {searchSuggestions.map(product => (
+                        {suggestions.map(product => (
                           <li key={product.id}>
                             <div
                               onClick={() => { router.push(`/products/${product.id}`); setIsSearchOpen(false); setSearchQuery(''); }}
@@ -346,10 +378,10 @@ export default function Navbar() {
             </button>
             
             {/* Search Suggestions Dropdown for Mobile */}
-            {searchSuggestions.length > 0 && isMobileSearchOpen && (
+            {suggestions.length > 0 && isMobileSearchOpen && (
               <div className="absolute top-full left-0 right-0 mt-3 bg-white shadow-2xl border border-gray-100 rounded-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
                 <ul className="flex flex-col">
-                  {searchSuggestions.map((product, i) => (
+                  {suggestions.map((product, i) => (
                     <li key={product.id} className="animate-in fade-in slide-in-from-left-4" style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}>
                       <div
                         onClick={() => { router.push(`/products/${product.id}`); setIsMobileSearchOpen(false); setSearchQuery(''); }}

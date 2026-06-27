@@ -9,12 +9,12 @@ import { useRouter } from 'next/navigation';
 
 export default function TrackOrderPage() {
   const router = useRouter();
-  const { orders } = useOrders();
   const [orderId, setOrderId] = useState('');
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -26,29 +26,26 @@ export default function TrackOrderPage() {
       return;
     }
 
-    // Search in orders from ordersContext (DB-backed)
-    const matchedOrder = orders.find(
-      o => o.id.toLowerCase() === cleanOrderId.toLowerCase()
-    );
-
-    if (!matchedOrder) {
-      setError('Could not find an order with this Order ID. Please check the ID and try again.');
-      return;
-    }
-
-    // Validate email or phone contact details
-    const orderEmail = (matchedOrder.email || '').toLowerCase();
-    const orderPhone = (matchedOrder.phone || '').toLowerCase();
-
-    // Check exact matches or simplified phone number matching
-    const matchEmail = orderEmail === cleanContact;
-    const matchPhone = orderPhone === cleanContact || 
-                       orderPhone.replace(/[\s+-]/g, '') === cleanContact.replace(/[\s+-]/g, '');
-
-    if (matchEmail || matchPhone) {
-      router.push(`/orders/${matchedOrder.id}`);
-    } else {
-      setError('The email address or phone number provided does not match our records for this order.');
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/orders/${cleanOrderId}?contact=${encodeURIComponent(cleanContact)}`);
+      if (res.ok) {
+        const orderData = await res.json();
+        router.push(`/orders/${orderData.id}?contact=${encodeURIComponent(cleanContact)}`);
+      } else {
+        if (res.status === 404) {
+          setError('Could not find an order with this Order ID. Please check the ID and try again.');
+        } else if (res.status === 401) {
+          setError('The email address or phone number provided does not match our records for this order.');
+        } else {
+          setError('An unexpected error occurred. Please try again later.');
+        }
+      }
+    } catch (err) {
+      console.error('[TrackPage] Error tracking order:', err);
+      setError('Could not connect to the server. Please check your network connection.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,10 +106,15 @@ export default function TrackOrderPage() {
 
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 bg-brand-accent text-white px-6 py-4 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-md mt-4"
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-2 bg-brand-accent text-white px-6 py-4 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-md mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Search size={20} />
-                Track Order
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Search size={20} />
+                )}
+                {isLoading ? 'Tracking Order...' : 'Track Order'}
               </button>
             </form>
 

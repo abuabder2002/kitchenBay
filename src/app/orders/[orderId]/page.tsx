@@ -4,10 +4,10 @@
 /* eslint-disable @next/next/no-img-element */
 
 
-import React, { use } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { useOrders } from '@/lib/ordersContext';
+import { useSearchParams } from 'next/navigation';
 import { Package, Truck, Check, Clock, X, ChevronRight, MapPin, CreditCard, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -34,13 +34,78 @@ interface OrderTrackingPageProps {
 
 export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
   const { orderId } = use(params);
-  const { getOrderById } = useOrders();
+  const searchParams = useSearchParams();
+  const contact = searchParams.get('contact') || '';
 
-  // Find order in ordersContext (DB-backed)
-  const order = getOrderById(orderId);
+  const [order, setOrder] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    setLoading(true);
+    const url = `/api/orders/${orderId}${contact ? `?contact=${encodeURIComponent(contact)}` : ''}`;
+    fetch(url, { cache: 'no-store' })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          const mappedOrder = {
+            id: data.id,
+            status: data.status,
+            date: data.createdAt,
+            subtotal: data.subtotalAmount / 100,
+            total: data.totalAmount / 100,
+            shipping: data.shippingAmount !== undefined ? data.shippingAmount / 100 : 0,
+            tax: data.gstAmount !== undefined ? data.gstAmount / 100 : 0,
+            customer: data.customerName || 'Customer',
+            address: data.address?.street || '',
+            city: data.address?.city || '',
+            state: data.address?.state || '',
+            pincode: data.address?.zip || '',
+            paymentMethod: data.razorpayId ? 'Online Payment' : 'Cash on Delivery (COD)',
+            items: data.items || []
+          };
+          setOrder(mappedOrder);
+        } else {
+          setOrder(null);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching order track details:', err);
+        setOrder(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [orderId, contact, isMounted]);
 
   const formatPrice = (p: number) =>
     'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(p);
+
+  const formatCurrency = (p: number) =>
+    new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(p);
+
+  if (!isMounted || loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Navbar />
+        <main className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-md mx-auto">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-gray-500 font-medium">Retrieving order details…</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!order) {
     return (
@@ -158,23 +223,17 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
               <div className="space-y-3">
                 {order.items.map((item: any, idx: number) => {
                   // Normalize item representation (mock orders use item.product, dynamic use direct name/image/price)
-                  const normalized = item.product ? {
-                    id: item.product.id,
-                    name: item.product.name,
-                    image: item.product.image,
-                    quantity: item.quantity,
-                    price: item.product.finalPrice || item.product.price
-                  } : {
+                  const normalized = {
                     id: item.productId,
-                    name: item.name,
-                    image: item.image,
+                    name: item.product?.name || item.name || `Product (${item.productId?.substring(0, 8)})`,
+                    image: item.product?.image || item.image || '/images/marketing/everyday_cooking.jpg',
                     quantity: item.quantity,
-                    price: item.price
+                    price: (item.basePrice || item.price || 0) / 100
                   };
 
                   return (
                     <div key={normalized.id || idx} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
-                      <img src={normalized.image} alt={normalized.name} className="w-14 h-14 object-cover rounded-lg" />
+                      <img src={normalized.image || '/images/marketing/everyday_cooking.jpg'} alt={normalized.name} className="w-14 h-14 object-cover rounded-lg" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800 line-clamp-1">{normalized.name}</p>
                         <p className="text-xs text-gray-500 mt-0.5">Qty: {normalized.quantity} × {formatPrice(normalized.price)}</p>
@@ -202,16 +261,25 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Subtotal</span>
-                  <span className="font-medium">{formatPrice(order.subtotal)}</span>
+                  <span className="text-gray-500">Subtotal:</span>
+                  <span className="font-medium text-gray-800">{formatCurrency(order.subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-xs text-gray-400">
-                  <span>Tax</span>
-                  <span>Inclusive of all taxes</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Shipping: Flat rate</span>
+                  <span className="font-medium text-gray-800">{formatCurrency(order.shipping)}</span>
                 </div>
-                <div className="border-t border-gray-100 pt-2 flex justify-between">
-                  <span className="font-bold text-gray-900">Total</span>
-                  <span className="font-bold text-blue-700">{formatPrice(order.total)}</span>
+                <div className="border-t border-gray-100 pt-3 mt-1">
+                  <div className="flex justify-between items-start">
+                    <span className="font-bold text-gray-900 text-sm">Total:</span>
+                    <div className="text-right">
+                      <span className="font-bold text-gray-900 text-base block">{formatCurrency(order.total)}</span>
+                      {order.tax > 0 && (
+                        <span className="text-xs text-gray-500 block mt-1 font-medium">
+                          (includes {formatCurrency(order.tax)} Tax)
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

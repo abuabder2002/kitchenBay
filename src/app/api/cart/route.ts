@@ -4,6 +4,78 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDbUser } from '@/lib/serverAuth';
 import { prisma } from '@/lib/prisma';
 
+async function getCartItemsWithProducts(cartItems: any[]) {
+  if (!cartItems || cartItems.length === 0) return [];
+  
+  const productIds = cartItems.map(item => item.productId);
+  const dbProducts = await prisma.product.findMany({
+    where: { id: { in: productIds } },
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      discountPrice: true,
+      gstPercent: true,
+      stock: true,
+      category: true,
+      subcategory: true,
+      material: true,
+      image: true,
+      rating: true,
+      reviewCount: true,
+      featured: true,
+      brand: true,
+      isActive: true,
+    }
+  });
+
+  const formattedProductsMap = new Map();
+  dbProducts.forEach(p => {
+    const basePrice = p.price / 100;
+    const finalPrice = basePrice;
+    const originalPrice = p.discountPrice ? p.discountPrice / 100 : finalPrice;
+    const discount = originalPrice > finalPrice ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
+    
+    formattedProductsMap.set(p.id, {
+      id: p.id,
+      name: p.name,
+      description: '',
+      price: basePrice,
+      originalPrice,
+      finalPrice,
+      discount,
+      gstPercent: p.gstPercent,
+      stock: p.stock,
+      category: p.category,
+      subcategory: p.subcategory || p.category,
+      material: p.material || 'Standard',
+      dimensions: null,
+      height: null,
+      width: null,
+      length: null,
+      diameter: null,
+      weight: null,
+      sizeCategory: null,
+      tags: [],
+      image: p.image,
+      subImages: [],
+      rating: p.rating,
+      reviewCount: p.reviewCount,
+      featured: p.featured,
+      variants: null,
+      attributes: null,
+      isFromDb: true,
+    });
+  });
+
+  return cartItems.map(item => ({
+    productId: item.productId,
+    quantity: item.quantity,
+    size: item.size || '',
+    product: formattedProductsMap.get(item.productId) || null
+  })).filter(item => item.product !== null);
+}
+
 export async function GET(req: NextRequest) {
   try {
     const user = await getDbUser();
@@ -16,7 +88,8 @@ export async function GET(req: NextRequest) {
       include: { items: true }
     });
 
-    return NextResponse.json(cart?.items || []);
+    const cartWithProducts = await getCartItemsWithProducts(cart?.items || []);
+    return NextResponse.json(cartWithProducts);
   } catch (error) {
     console.error('Error fetching cart:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -83,7 +156,8 @@ export async function POST(req: NextRequest) {
       where: { id: cart.id },
       include: { items: true }
     });
-    return NextResponse.json(updatedCart?.items || []);
+    const cartWithProducts = await getCartItemsWithProducts(updatedCart?.items || []);
+    return NextResponse.json(cartWithProducts);
   } catch (error) {
     console.error('Error syncing cart:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

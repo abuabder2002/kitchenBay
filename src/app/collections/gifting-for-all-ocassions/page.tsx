@@ -1,16 +1,31 @@
-/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import Image from 'next/image';
 
 async function getGiftingProducts() {
   try {
     const dbProducts = await prisma.product.findMany({
       orderBy: { createdAt: 'desc' },
       take: 8,
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        discountPrice: true,
+        gstPercent: true,
+        stock: true,
+        category: true,
+        subcategory: true,
+        material: true,
+        image: true,
+        rating: true,
+        reviewCount: true,
+        featured: true,
+      }
     });
     return dbProducts.map(p => {
       const basePrice = p.price / 100;
@@ -18,10 +33,10 @@ async function getGiftingProducts() {
       const originalPrice = p.discountPrice ? p.discountPrice / 100 : finalPrice;
       const discount = originalPrice > finalPrice ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
       return {
-        id: p.id, name: p.name, description: p.description, price: basePrice,
+        id: p.id, name: p.name, description: '', price: basePrice,
         originalPrice, finalPrice, discount, gstPercent: p.gstPercent,
         stock: p.stock, category: p.category, subcategory: p.subcategory || p.category,
-        material: p.material || 'Standard', image: p.image, subImages: p.subImages,
+        material: p.material || 'Standard', image: p.image, subImages: [],
         rating: p.rating, reviewCount: p.reviewCount, featured: p.featured, isFromDb: true
       };
     });
@@ -39,10 +54,13 @@ export default async function GiftingPage() {
       <main className="flex-1">
         {/* Banner */}
         <section className="relative w-full h-[400px] md:h-[500px]">
-          <img 
+          <Image 
             src="/images/marketing/everyday_cooking.jpg"
             alt="Traditional Gifting" 
-            className="w-full h-full object-cover"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center p-6 text-center text-white">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-[family-name:var(--font-heading)] font-bold mb-6">Traditional Gifting. Meaningful Connections.</h1>
@@ -61,22 +79,22 @@ export default async function GiftingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Link href="#" className="group block">
               <div className="aspect-[4/3] rounded-lg overflow-hidden relative mb-4 shadow-md">
-                <img src="/images/marketing/casserole_banner.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Prarambha Wedding Gift Collection" />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                <Image src="/images/marketing/casserole_banner.jpg" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-700 group-hover:scale-105" alt="Prarambha Wedding Gift Collection" />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors z-10" />
               </div>
               <h3 className="text-xl font-[family-name:var(--font-heading)] font-semibold text-center text-[--color-brand-text] group-hover:text-blue-600 transition-colors">Prarambha Wedding Gift Collection</h3>
             </Link>
             <Link href="#" className="group block">
               <div className="aspect-[4/3] rounded-lg overflow-hidden relative mb-4 shadow-md">
-                <img src="/images/marketing/everyday_cooking_collection.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Festival & Corporate Gifting" />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                <Image src="/images/marketing/everyday_cooking_collection.jpg" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-700 group-hover:scale-105" alt="Festival & Corporate Gifting" />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors z-10" />
               </div>
               <h3 className="text-xl font-[family-name:var(--font-heading)] font-semibold text-center text-[--color-brand-text] group-hover:text-blue-600 transition-colors">Festival & Corporate Gifting</h3>
             </Link>
             <Link href="#" className="group block">
               <div className="aspect-[4/3] rounded-lg overflow-hidden relative mb-4 shadow-md">
-                <img src="/images/marketing/culinary_prep.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Return & Welcome Gifts" />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                <Image src="/images/marketing/culinary_prep.jpg" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-700 group-hover:scale-105" alt="Return & Welcome Gifts" />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors z-10" />
               </div>
               <h3 className="text-xl font-[family-name:var(--font-heading)] font-semibold text-center text-[--color-brand-text] group-hover:text-blue-600 transition-colors">Return & Welcome Gifts</h3>
             </Link>
