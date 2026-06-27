@@ -159,7 +159,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         product: p,
         quantity: d.quantity,
         size: d.size || ""
-      };
+      } as CartItem;
     }).filter((i): i is CartItem => !!i.product);
 
     if (mapped.length > 0 || (currentUser && serverData.length === 0)) {
