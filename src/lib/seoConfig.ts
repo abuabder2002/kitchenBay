@@ -54,7 +54,7 @@ export const SOCIAL = {
 export const SOCIAL_URLS = Object.values(SOCIAL).filter(Boolean);
 
 // ─── DEFAULT OG IMAGE ───────────────────────────────────────
-export const DEFAULT_OG_IMAGE = `${SITE_URL}/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg`;
+export const DEFAULT_OG_IMAGE = `${SITE_URL}/icon.jpeg`;
 
 // ─── PRODUCT CATEGORIES (for sitemaps & schema) ─────────────
 export const PRODUCT_CATEGORIES = [
