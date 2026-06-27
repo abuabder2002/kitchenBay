@@ -483,7 +483,7 @@ export default function AdminOrdersPage() {
 
                 {/* Email Footer Copyright */}
                 <div className="bg-gray-50 border-t border-gray-100 py-4 text-center text-[10px] text-gray-400 select-none">
-                  © 2026 Kitchenbay Inc. 12 MG Road, Bangalore, India.
+                  © 2015 19/A Line Street, Attur, Salem, Tamil Nadu 636102
                 </div>
 
               </div>

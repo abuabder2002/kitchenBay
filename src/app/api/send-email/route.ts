@@ -240,7 +240,7 @@ export async function POST(request: Request) {
                 <!-- Footer -->
                 <tr>
                   <td align="center" style="background-color: #f9fafb; border-top: 1px solid #f1f1f1; padding: 20px 40px; font-size: 11px; color: #9ca3af;">
-                    &copy; 2026 Kitchenbay Inc. 12 MG Road, Bangalore, India.
+                    &copy; 2015 19/A Line Street, Attur, Salem, Tamil Nadu 636102
                   </td>
                 </tr>
               </table>
