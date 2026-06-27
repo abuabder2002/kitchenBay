@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
       id: string;
       shippingAddrId: string | null;
       totalAmount: number;
+      subtotalAmount: number;
+      gstAmount: number;
+      shippingAmount: number;
       paymentStatus: string;
       status: string;
       createdAt: Date;
