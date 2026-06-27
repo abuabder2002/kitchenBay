@@ -32,15 +32,10 @@ export async function GET(
     if (user && order.userId === user.id) {
       authorized = true;
     } else if (contact) {
-      // Otherwise, match email or phone provided in searchParams for anonymous/guest tracking
+      // Otherwise, match email provided in searchParams for anonymous/guest tracking
       const orderEmail = (order.user?.email || '').toLowerCase();
-      const orderPhone = (order.user?.phone || '').toLowerCase();
 
-      const matchEmail = orderEmail === contact;
-      const matchPhone = orderPhone === contact ||
-                         orderPhone.replace(/[\s+-]/g, '') === contact.replace(/[\s+-]/g, '');
-
-      if (matchEmail || matchPhone) {
+      if (orderEmail === contact) {
         authorized = true;
       }
     }
