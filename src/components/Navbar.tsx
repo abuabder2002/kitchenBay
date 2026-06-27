@@ -452,10 +452,10 @@ export default function Navbar() {
                   className="w-full pl-12 pr-4 py-3 outline-none text-sm font-medium text-[--color-brand-text] bg-transparent"
                 />
               </div>
-              {searchSuggestions.length > 0 && (
+              {suggestions.length > 0 && (
                 <div className="absolute top-full left-6 right-6 -mt-3 pt-4 bg-white shadow-xl border border-gray-100 rounded-b-xl overflow-hidden z-40 max-h-64 overflow-y-auto animate-in fade-in">
                   <ul className="flex flex-col">
-                    {searchSuggestions.map(product => (
+                    {suggestions.map(product => (
                       <li key={product.id}>
                         <div
                           onClick={() => { router.push(`/products/${product.id}`); setMobileOpen(false); setSearchQuery(''); }}
