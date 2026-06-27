@@ -22,13 +22,15 @@ import AnalyticsScripts from '@/components/seo/AnalyticsScripts';
 const playfair = Playfair_Display({
   weight: ['400', '500', '600', '700', '800', '900'],
   subsets: ['latin'],
-  variable: '--font-heading'
+  variable: '--font-heading',
+  display: 'swap',
 });
 
 const nunitoSans = Nunito_Sans({
   weight: ['300', '400', '600', '700'],
   subsets: ['latin'],
-  variable: '--font-body'
+  variable: '--font-body',
+  display: 'swap',
 });
 
 // ── Root Metadata ───────────────────────────────────────────

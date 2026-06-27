@@ -14,7 +14,9 @@ export async function GET(request: Request) {
       where: { page }
     });
 
-    return NextResponse.json({ content });
+    const response = NextResponse.json({ content });
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
+    return response;
   } catch (error) {
     console.error('Error fetching site content:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

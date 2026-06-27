@@ -233,9 +233,12 @@ export default function ProductDetailPage() {
                 onMouseLeave={handleMouseLeave}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={normalizeImgSrc(currentImage)}
                   alt={product.name}
+                  fill
+                  priority={true}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className={`absolute inset-0 w-full h-full object-contain transition-transform ease-out duration-150 ${isZoomed ? 'scale-[2.5]' : 'scale-100'}`}
                   style={{ transformOrigin: isZoomed ? backgroundPosition : 'center center' }}
                 />
@@ -270,8 +273,7 @@ export default function ProductDetailPage() {
                           : 'border-transparent opacity-60 hover:opacity-100'
                       }`}
                     >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={normalizeImgSrc(img)} alt={`Thumb ${idx + 1}`} className="absolute inset-0 w-full h-full object-contain" />
+                        <Image src={normalizeImgSrc(img)} alt={`Thumb ${idx + 1}`} fill sizes="100px" className="absolute inset-0 w-full h-full object-contain" />
                     </div>
                   ))}
                 </div>

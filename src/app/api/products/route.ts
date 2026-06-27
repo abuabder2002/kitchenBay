@@ -80,7 +80,9 @@ export async function GET(req: Request) {
       };
     });
 
-    return NextResponse.json(formattedProducts);
+    const response = NextResponse.json(formattedProducts);
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
+    return response;
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json({ error: 'Failed to fetch products', details: (error as Error)?.message || String(error) }, { status: 500 });

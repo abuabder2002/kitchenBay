@@ -107,6 +107,11 @@ model Product {
   brand            String?           // Brand assignment
   shippingFee      Int?              // Optional shipping fee in paise
   shippingMethod   String?           // Optional shipping method assignment
+
+  @@index([category])
+  @@index([subcategory])
+  @@index([material])
+  @@index([featured])
 }
 
 model Order {

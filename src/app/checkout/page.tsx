@@ -80,7 +80,7 @@ export default function CheckoutPage() {
     pincode: '',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('RAZORPAY');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -127,9 +127,7 @@ export default function CheckoutPage() {
   const payableTotal = Math.max(0, discountedSubtotal + gstAmountCheckout + shippingFee - netBankingDiscount);
 
   useEffect(() => {
-    if (payableTotal > 5999 && paymentMethod === 'COD') {
-      setPaymentMethod('RAZORPAY');
-    }
+    // Temporarily removed the > 5999 force-switch to Razorpay since Razorpay is down
   }, [payableTotal, paymentMethod]);
 
   useEffect(() => {
@@ -739,49 +737,40 @@ export default function CheckoutPage() {
                   {/* Razorpay */}
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('RAZORPAY')}
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'RAZORPAY'
-                      ? 'border-blue-600 bg-blue-50/50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
+                    disabled={true}
+                    className="flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left opacity-50 cursor-not-allowed bg-gray-50 border-gray-200"
                   >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'RAZORPAY' ? 'border-blue-600' : 'border-gray-300'}`}>
-                      {paymentMethod === 'RAZORPAY' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
+                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 border-gray-300">
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-950 flex items-center gap-1.5">
                         Razorpay Secure <ShieldCheck size={14} className="text-blue-600" />
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">UPI (QR / App Links), Cards, Netbanking, Wallets</p>
+                      <p className="text-xs text-red-500 mt-1 font-semibold">Online payment will be available soon (Under Review)</p>
                     </div>
                   </button>
 
                   {/* Net Banking */}
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('NETBANKING')}
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'NETBANKING'
-                      ? 'border-blue-600 bg-blue-50/50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
+                    disabled={true}
+                    className="flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left opacity-50 cursor-not-allowed bg-gray-50 border-gray-200"
                   >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'NETBANKING' ? 'border-blue-600' : 'border-gray-300'}`}>
-                      {paymentMethod === 'NETBANKING' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
+                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 border-gray-300">
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-950 flex items-center gap-1.5">
                         Net Banking <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest bg-green-100 text-green-700 rounded-full leading-none whitespace-nowrap">2% OFF</span>
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">Pay direct via bank account and get an extra 2% discount.</p>
+                      <p className="text-xs text-red-500 mt-1 font-semibold">Online payment will be available soon (Under Review)</p>
                     </div>
                   </button>
 
                   {/* COD */}
                   <button
                     type="button"
-                    disabled={payableTotal > 5999}
                     onClick={() => setPaymentMethod('COD')}
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${payableTotal > 5999 ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-200' : ''} ${paymentMethod === 'COD'
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'COD'
                       ? 'border-blue-600 bg-blue-50/50'
                       : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
@@ -792,9 +781,7 @@ export default function CheckoutPage() {
                     <div>
                       <p className="text-sm font-bold text-gray-950">Cash on Delivery</p>
                       <p className="text-xs text-gray-400 mt-1">
-                        {payableTotal > 5999 
-                          ? 'There is no COD above Rs:5999' 
-                          : 'Pay with cash when your parcel is delivered at home.'}
+                        Pay with cash when your parcel is delivered at home.
                       </p>
                     </div>
                   </button>

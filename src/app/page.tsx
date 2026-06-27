@@ -257,6 +257,8 @@ export default function HomePage() {
                       src={banner.image || "/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"}
                       alt={banner.title || "Collection for Everyday Cooking"}
                       fill
+                      priority={true}
+                      sizes="(max-width: 1024px) 100vw, 66vw"
                       className="object-contain object-center group-hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
@@ -289,6 +291,8 @@ export default function HomePage() {
                       src={slide.image || '/images/marketing/everyday_cooking.jpg'}
                       alt={slide.title || 'Slide Image'}
                       fill
+                      priority={idx === 0}
+                      sizes="(max-width: 1024px) 100vw, 33vw"
                       className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentSlide ? 'scale-105' : 'scale-100'
                         }`}
                     />
@@ -448,6 +452,7 @@ export default function HomePage() {
                   src={activeHeritage[0]?.image || '/artisan_kitchenware.png'}
                   alt="Traditional Indian handcrafted kitchenware"
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover rounded-t-full shadow-2xl"
                 />
               </div>
@@ -499,7 +504,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {activeMaterials.map((mat, idx) => (
                 <Link href={`/products?material=${mat.name}`} key={idx} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer">
-                  <Image src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <Image src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute bottom-6 left-6 pr-6">
                     <h3 className="text-white text-2xl font-bold font-[family-name:var(--font-heading)] mb-2">{mat.name}</h3>
@@ -546,7 +551,7 @@ export default function HomePage() {
             {activeJournalEntries.map((entry, idx) => (
               <article key={idx} className="group cursor-pointer">
                 <div className="relative w-full aspect-[4/3] overflow-hidden rounded-sm mb-6">
-                  <Image src={entry.img || '/images/marketing/everyday_cooking.jpg'} alt={entry.title || 'Journal Image'} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <Image src={entry.img || '/images/marketing/everyday_cooking.jpg'} alt={entry.title || 'Journal Image'} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 </div>
                 <span className="text-[--color-brand-accent] text-xs font-bold uppercase tracking-widest mb-3 block">{entry.category}</span>
                 <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] leading-snug group-hover:text-[--color-brand-accent] transition-colors">{entry.title}</h3>
@@ -708,7 +713,7 @@ export default function HomePage() {
               <X size={24} />
             </button>
             <div className="relative h-48 w-full bg-[#E8F5E9]">
-              <Image src="/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg" alt="Welcome Offer" fill className="object-cover opacity-80 mix-blend-multiply" />
+              <Image src="/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg" alt="Welcome Offer" fill sizes="(max-width: 480px) 100vw, 448px" className="object-cover opacity-80 mix-blend-multiply" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
                 <h3 className="text-3xl font-bold text-white font-[family-name:var(--font-heading)]">Welcome to KitchenBay!</h3>
               </div>

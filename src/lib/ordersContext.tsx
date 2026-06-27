@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './authContext';
 import { products } from './mockData';
 
@@ -182,8 +182,15 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
     return orders.find(o => o.id === orderId);
   }, [orders]);
 
+  const contextValue = useMemo(() => ({
+    orders,
+    addOrder,
+    updateOrderStatus,
+    getOrderById
+  }), [orders, addOrder, updateOrderStatus, getOrderById]);
+
   return (
-    <OrdersContext.Provider value={{ orders, addOrder, updateOrderStatus, getOrderById }}>
+    <OrdersContext.Provider value={contextValue}>
       {children}
     </OrdersContext.Provider>
   );

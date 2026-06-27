@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
   // Ensure clean URLs — no trailing slashes for canonical consistency
   trailingSlash: false,
   images: {
-    // Disable optimization globally to prevent 400 errors with unknown external hosts
-    unoptimized: true,
+    // Enable optimization globally to compress and convert images to WebP/AVIF
+    unoptimized: false,
     // Allow Next.js <Image> to optimise images from these external hosts
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },

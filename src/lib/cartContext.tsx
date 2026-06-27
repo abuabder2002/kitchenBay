@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Product, CartItem } from './mockData';
 import { useAuth } from './authContext';
 import { useProducts } from './productsContext';
@@ -244,12 +244,42 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const openDrawer = useCallback(() => setIsDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
 
+  const contextValue = useMemo(() => ({
+    items: state.items,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    itemCount,
+    subtotal,
+    gstAmount,
+    cgstAmount,
+    sgstAmount,
+    shippingFee,
+    total,
+    isDrawerOpen,
+    openDrawer,
+    closeDrawer
+  }), [
+    state.items,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    itemCount,
+    subtotal,
+    gstAmount,
+    cgstAmount,
+    sgstAmount,
+    shippingFee,
+    total,
+    isDrawerOpen,
+    openDrawer,
+    closeDrawer
+  ]);
+
   return (
-    <CartContext.Provider value={{ 
-      items: state.items, addItem, removeItem, updateQuantity, clearCart, 
-      itemCount, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total,
-      isDrawerOpen, openDrawer, closeDrawer
-    }}>
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   );

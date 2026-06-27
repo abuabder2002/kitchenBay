@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
 export interface Address {
@@ -110,21 +110,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
   const updateUser = () => {};
 
+  const contextValue = useMemo(() => ({
+    currentUser,
+    users: [],
+    login,
+    signup,
+    logout,
+    updateUser,
+    error: null,
+    clearError: () => {},
+    loading,
+    isAdmin
+  }), [currentUser, loading, isAdmin]);
+
   return (
-    <AuthContext.Provider 
-      value={{ 
-        currentUser, 
-        users: [], 
-        login, 
-        signup, 
-        logout, 
-        updateUser, 
-        error: null, 
-        clearError: () => {}, 
-        loading,
-        isAdmin
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

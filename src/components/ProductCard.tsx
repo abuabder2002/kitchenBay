@@ -59,10 +59,11 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
       {/* Image Area */}
       <div className={`relative ${isHero ? 'aspect-auto h-[300px] md:h-full' : 'aspect-square'} overflow-hidden`}>
         <Link href={`/products/${product.id}`} className="block w-full h-full relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={normalizeImageSrc(product.image)}
             alt={`${product.name} - Premium ${product.material} ${product.category}`}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="absolute inset-0 w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500 bg-white"
             loading="lazy"
           />

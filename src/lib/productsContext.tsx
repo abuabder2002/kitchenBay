@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from './mockData';
 
 interface ProductsContextType {
@@ -134,8 +134,18 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const contextValue = useMemo(() => ({
+    products,
+    isLoading,
+    toggleFeatured,
+    addProduct,
+    deleteProduct,
+    updateProduct,
+    refreshProducts
+  }), [products, isLoading, toggleFeatured, addProduct, deleteProduct, updateProduct, refreshProducts]);
+
   return (
-    <ProductsContext.Provider value={{ products, isLoading, toggleFeatured, addProduct, deleteProduct, updateProduct, refreshProducts }}>
+    <ProductsContext.Provider value={contextValue}>
       {children}
     </ProductsContext.Provider>
   );
