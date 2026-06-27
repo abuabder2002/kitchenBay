@@ -78,6 +78,8 @@ export async function POST(request: Request) {
     let customerName = order.customer || 'Customer';
     let customerEmail = order.email;
     let subtotalRupees = order.subtotal;
+    let shippingRupees = order.shipping || order.shippingAmount || 99;
+    let gstRupees = order.tax || order.gstAmount || 0;
     let totalRupees = order.total;
     let emailItems = order.items || [];
 
@@ -91,6 +93,8 @@ export async function POST(request: Request) {
         customerName = order.customer || dbOrder.user?.name || 'Customer';
         customerEmail = order.email || dbOrder.user?.email || customerEmail;
         subtotalRupees = dbOrder.subtotalAmount / 100;
+        gstRupees = dbOrder.gstAmount / 100;
+        shippingRupees = dbOrder.shippingAmount / 100;
         totalRupees = dbOrder.totalAmount / 100;
 
         const productIds = dbOrder.items.map(item => item.productId);
@@ -111,6 +115,8 @@ export async function POST(request: Request) {
       } else {
         // Fallback: if values from request are raw paise, divide by 100
         if (subtotalRupees > 10000) subtotalRupees = subtotalRupees / 100;
+        if (shippingRupees > 10000) shippingRupees = shippingRupees / 100;
+        if (gstRupees > 10000) gstRupees = gstRupees / 100;
         if (totalRupees > 10000) totalRupees = totalRupees / 100;
         emailItems = emailItems.map((item: any) => {
           let price = item.price || (item.product && (item.product.finalPrice || item.product.price));
@@ -126,6 +132,8 @@ export async function POST(request: Request) {
     } catch (dbErr) {
       console.error('Database fetch error in send-email:', dbErr);
       if (subtotalRupees > 10000) subtotalRupees = subtotalRupees / 100;
+      if (shippingRupees > 10000) shippingRupees = shippingRupees / 100;
+      if (gstRupees > 10000) gstRupees = gstRupees / 100;
       if (totalRupees > 10000) totalRupees = totalRupees / 100;
       emailItems = emailItems.map((item: any) => {
         let price = item.price || (item.product && (item.product.finalPrice || item.product.price));
@@ -207,17 +215,22 @@ export async function POST(request: Request) {
                     <!-- Total Breakdown -->
                     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-top: 1px solid #f1f1f1; padding-top: 15px; margin-bottom: 30px; font-size: 13px;">
                       <tr>
-                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Subtotal</td>
+                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Subtotal:</td>
                         <td style="padding: 4px 0; text-align: right; color: #1f2937;">${formatPrice(subtotalRupees)}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Tax</td>
-                        <td style="padding: 4px 0; text-align: right; color: #6b7280; font-size: 11px;">Inclusive of all taxes</td>
+                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Shipping: Flat rate</td>
+                        <td style="padding: 4px 0; text-align: right; color: #1f2937;">${formatPrice(shippingRupees)}</td>
                       </tr>
                       <tr style="font-size: 15px; font-weight: bold;">
-                        <td style="padding: 15px 0 0 0; color: #1f2937; border-top: 1px solid #f1f1f1; margin-top: 10px; text-align: left;">Total Paid</td>
+                        <td style="padding: 15px 0 0 0; color: #1f2937; border-top: 1px solid #f1f1f1; margin-top: 10px; text-align: left;">Total:</td>
                         <td style="padding: 15px 0 0 0; text-align: right; color: #1D4ED8; border-top: 1px solid #f1f1f1; margin-top: 10px;">
                           ${formatPrice(totalRupees)}
+                          ${gstRupees > 0 ? `
+                          <div style="font-size: 11px; color: #6b7280; font-weight: normal; margin-top: 4px;">
+                            (includes ${formatPrice(gstRupees)} Tax)
+                          </div>
+                          ` : ''}
                         </td>
                       </tr>
                     </table>
@@ -240,7 +253,7 @@ export async function POST(request: Request) {
                 <!-- Footer -->
                 <tr>
                   <td align="center" style="background-color: #f9fafb; border-top: 1px solid #f1f1f1; padding: 20px 40px; font-size: 11px; color: #9ca3af;">
-                    &copy; 2015 19/A Line Street, Attur, Salem, Tamil Nadu 636102
+                    &copy; 2015 KitchenBay Inc. 19/A Line Street, Attur, Salem, Tamil Nadu 636102.
                   </td>
                 </tr>
               </table>

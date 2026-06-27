@@ -57,7 +57,9 @@ export async function POST(req: NextRequest) {
       shippingAddrId, 
       paymentStatus, 
       razorpayId, 
-      address 
+      address,
+      couponCode,
+      discountAmount = 0
     } = body;
 
     if (!items || !items.length) {
@@ -164,13 +166,14 @@ export async function POST(req: NextRequest) {
     const firstOrderDiscount = isFirstOrder ? Math.min(100, calculatedSubtotalRupees) : 0;
     const discountedSubtotal = calculatedSubtotalRupees - firstOrderDiscount;
     const calculatedGstRupeesCheckout = Math.round(discountedSubtotal * 0.05);
+    const couponDiscountRupees = discountAmount / 100;
     
     // Check if COD is used
     const isCod = paymentStatus === 'COD_PENDING';
     const netBankingDiscount = (!isCod && razorpayId) ? Math.round((discountedSubtotal + calculatedGstRupeesCheckout) * 0.02) : 0;
     
-    const totalSavings = firstOrderDiscount + netBankingDiscount;
-    const finalPayableRupees = Math.max(0, discountedSubtotal + calculatedGstRupeesCheckout + calculatedShippingRupees - netBankingDiscount);
+    const totalSavings = firstOrderDiscount + netBankingDiscount + couponDiscountRupees;
+    const finalPayableRupees = Math.max(0, discountedSubtotal + calculatedGstRupeesCheckout + calculatedShippingRupees - netBankingDiscount - couponDiscountRupees);
 
     // ── Enforce COD Limit of Rs:5999 ──
     if (isCod && finalPayableRupees > 5999) {
@@ -188,6 +191,8 @@ export async function POST(req: NextRequest) {
         subtotalAmount: Math.round(calculatedSubtotalRupees * 100),
         gstAmount: Math.round(calculatedGstRupeesCheckout * 100),
         shippingAmount: Math.round(calculatedShippingRupees * 100),
+        discountAmount: discountAmount,
+        couponCode: couponCode || null,
         status: 'PENDING',
         paymentStatus: paymentStatus || 'PENDING',
         razorpayId: razorpayId || null,

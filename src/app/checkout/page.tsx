@@ -12,6 +12,7 @@ import FormInput from '@/components/FormInput';
 import { useCart } from '@/lib/cartContext';
 import { useAuth } from '@/lib/authContext';
 import { getItemStock } from '@/lib/pricing';
+import PromoCodeInput from '@/components/PromoCodeInput';
 
 import {
   Check,
@@ -65,7 +66,7 @@ const fmtTime = (s: number) =>
 // CHECKOUT PAGE
 // ════════════════════════════════════════════════════════════
 export default function CheckoutPage() {
-  const { items, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total, clearCart } = useCart();
+  const { items, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, discountAmount, total, clearCart, appliedCoupon } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
 
@@ -123,8 +124,8 @@ export default function CheckoutPage() {
   const cgstAmountCheckout = Math.floor(gstAmountCheckout / 2);
   const sgstAmountCheckout = gstAmountCheckout - cgstAmountCheckout;
   const netBankingDiscount = paymentMethod === 'NETBANKING' ? Math.round((discountedSubtotal + gstAmountCheckout) * 0.02) : 0;
-  const totalSavings = firstOrderDiscount + netBankingDiscount;
-  const payableTotal = Math.max(0, discountedSubtotal + gstAmountCheckout + shippingFee - netBankingDiscount);
+  const totalSavings = firstOrderDiscount + netBankingDiscount + discountAmount;
+  const payableTotal = Math.max(0, discountedSubtotal + gstAmountCheckout + shippingFee - netBankingDiscount - discountAmount);
 
   useEffect(() => {
     // Temporarily removed the > 5999 force-switch to Razorpay since Razorpay is down
@@ -211,6 +212,8 @@ export default function CheckoutPage() {
             state: form.state,
             zip: form.pincode,
           },
+          couponCode: appliedCoupon?.code,
+          discountAmount: discountAmount * 100, // sending in paise
         }),
       });
 
@@ -273,23 +276,27 @@ export default function CheckoutPage() {
             });
 
             // Send Email Notification
-            fetch('/api/send-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                order: {
-                  id: verifyData.orderId,
-                  customer: form.fullName,
-                  email: form.email,
-                  items: items,
-                  subtotal,
-                  cgstAmount: cgstAmountCheckout,
-                  sgstAmount: sgstAmountCheckout,
-                  total: payableTotal
-                },
-                status: 'processing'
-              })
-            }).catch(console.error);
+            try {
+              await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  order: {
+                    id: verifyData.orderId,
+                    customer: form.fullName,
+                    email: form.email,
+                    items: items,
+                    subtotal,
+                    cgstAmount: cgstAmount,
+                    sgstAmount: sgstAmount,
+                    total: total
+                  },
+                  status: 'processing'
+                })
+              });
+            } catch (emailErr) {
+              console.error('Failed to send order email:', emailErr);
+            }
           } catch (err: any) {
             stopTimer();
             setPaymentFailed(true);
@@ -350,6 +357,8 @@ export default function CheckoutPage() {
             state: form.state,
             zip: form.pincode,
           },
+          couponCode: appliedCoupon?.code,
+          discountAmount: discountAmount * 100, // sending in paise
         }),
       });
 
@@ -373,23 +382,27 @@ export default function CheckoutPage() {
       });
 
       // Send Email Notification
-      fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          order: {
-            id: data.id,
-            customer: form.fullName,
-            email: form.email,
-            items: items,
-            subtotal,
-            cgstAmount: cgstAmountCheckout,
-            sgstAmount: sgstAmountCheckout,
-            total: payableTotal
-          },
-          status: 'processing'
-        })
-      }).catch(console.error);
+      try {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order: {
+              id: data.id,
+              customer: form.fullName,
+              email: form.email,
+              items: items,
+              subtotal,
+              cgstAmount: cgstAmount,
+              sgstAmount: sgstAmount,
+              total: total
+            },
+            status: 'processing'
+          })
+        });
+      } catch (emailErr) {
+        console.error('Failed to send order email:', emailErr);
+      }
     } catch (err: any) {
       setErrorMsg(err.message || 'Error placing COD order.');
     } finally {
@@ -863,6 +876,9 @@ export default function CheckoutPage() {
 
                 {/* Bill breakdown */}
                 <div className="border-t border-gray-100 pt-4 space-y-3">
+                  <div className="pb-3 border-b border-gray-100">
+                    <PromoCodeInput />
+                  </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-semibold text-gray-800">{formatPrice(subtotal)}</span>
@@ -871,6 +887,12 @@ export default function CheckoutPage() {
                     <div className="flex justify-between text-sm text-emerald-600 font-semibold">
                       <span>First Order Discount</span>
                       <span>-{formatPrice(firstOrderDiscount)}</span>
+                    </div>
+                  )}
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-emerald-600 font-semibold">
+                      <span>Coupon Discount</span>
+                      <span>-{formatPrice(discountAmount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm text-gray-600">

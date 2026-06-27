@@ -1257,7 +1257,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                     <Star key={s} size={20} className="fill-[#C19A6B]" />
                   ))}
                 </div>
-                <p className="text-sm font-semibold text-[--color-brand-text]">99.2% Satisfaction Rate</p>
+                <p className="text-sm font-semibold text-[--color-brand-text]">92.7% Satisfaction Rate</p>
                 <p className="text-xs text-[--color-brand-muted] mt-1">Based on 1,500+ verified orders</p>
                 
                 <div className="border-t border-[--color-brand-border]/60 mt-6 pt-6 grid grid-cols-2 gap-4 text-left">

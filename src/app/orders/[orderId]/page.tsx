@@ -223,9 +223,10 @@ export default function OrderTrackingPage({ params }: OrderTrackingPageProps) {
               <div className="space-y-3">
                 {order.items.map((item: any, idx: number) => {
                   // Normalize item representation (mock orders use item.product, dynamic use direct name/image/price)
+                  const cleanProductId = item.productId?.replace('/products/', '') || '';
                   const normalized = {
-                    id: item.productId,
-                    name: item.product?.name || item.name || `Product (${item.productId?.substring(0, 8)})`,
+                    id: cleanProductId,
+                    name: item.product?.name || item.name || `Product (${cleanProductId.substring(0, 8)})`,
                     image: item.product?.image || item.image || '/images/marketing/everyday_cooking.jpg',
                     quantity: item.quantity,
                     price: (item.basePrice || item.price || 0) / 100

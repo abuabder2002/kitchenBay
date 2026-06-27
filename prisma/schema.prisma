@@ -19,6 +19,7 @@ model User {
   cart          Cart?
   wishlist      Wishlist?
   bulkInquiries BulkInquiry[]
+  couponUsages  CouponUsage[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }
@@ -122,11 +123,14 @@ model Order {
   subtotalAmount  Int         @default(0)  // Base prices sum (no GST, no shipping)
   gstAmount       Int         @default(0)  // Total GST collected
   shippingAmount  Int         @default(9900) // Shipping in paise (default ₹99)
+  discountAmount  Int         @default(0)  // Coupon discount in paise
+  couponCode      String?     // Applied coupon code
   status          OrderStatus @default(PENDING)
   razorpayId      String?     @unique
   paymentStatus   String      @default("PENDING")
   shippingAddrId  String?
   items           OrderItem[]
+  usages          CouponUsage[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
@@ -261,4 +265,73 @@ model SiteContent {
   updatedAt DateTime @updatedAt
 
   @@unique([page, section, key])
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+  FREE_SHIPPING
+  BOGO
+}
+
+enum CouponEligibility {
+  EVERYONE
+  NEW_USER
+}
+
+model Coupon {
+  id                    String            @id @default(cuid())
+  code                  String            @unique
+  description           String?
+  type                  CouponType
+  value                 Int               // Discount amount in paise OR percentage (e.g. 20 for 20%)
+  
+  // Validation Rules
+  minOrderAmount        Int?              // Minimum subtotal required in paise
+  maxDiscount           Int?              // Maximum discount allowed in paise (useful for PERCENTAGE)
+  
+  // Date Limits
+  startDate             DateTime          @default(now())
+  endDate               DateTime?         // Null means never expires
+  
+  // Usage Limits
+  usageLimit            Int?              // Total number of times this coupon can be used globally
+  usageCount            Int               @default(0) // How many times it has been used
+  perUserLimit          Int               @default(1) // Max times a single user can use it
+  
+  // Inclusions/Exclusions
+  applicableCategoryIds String[]          @default([]) // Empty means all categories
+  applicableProductIds  String[]          @default([]) // Empty means all products
+  excludedCategoryIds   String[]          @default([])
+  excludedProductIds    String[]          @default([])
+  
+  // Status and Metadata
+  eligibility           CouponEligibility @default(EVERYONE)
+  isActive              Boolean           @default(true)
+  autoApply             Boolean           @default(false)
+  campaignName          String?           // For grouping in admin analytics
+  
+  usages                CouponUsage[]
+  
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+}
+
+model CouponUsage {
+  id              String   @id @default(cuid())
+  couponId        String
+  coupon          Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId         String   @unique
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  discountAmount  Int      // Amount discounted in paise
+  createdAt       DateTime @default(now())
+  
+  @@unique([userId, orderId])
+  @@index([couponId])
+  @@index([userId])
 }

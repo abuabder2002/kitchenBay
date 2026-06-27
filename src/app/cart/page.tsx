@@ -5,6 +5,7 @@
 
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import PromoCodeInput from '@/components/PromoCodeInput';
 import { useCart } from '@/lib/cartContext';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
@@ -13,7 +14,7 @@ import { getItemStock, getItemBasePrice } from '@/lib/pricing';
 import { useAuth } from '@/lib/authContext';
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total, itemCount } = useCart();
+  const { items, removeItem, updateQuantity, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total, itemCount, appliedCoupon, discountAmount } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
 
@@ -147,12 +148,27 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 pt-4 mb-6">
-                <div className="flex justify-between">
-                  <span className="font-bold text-gray-900">Total</span>
-                  <span className="text-xl font-bold text-blue-700">{formatPrice(subtotal)}</span>
+              {/* Promo Code */}
+              <div className="border-t border-gray-100 pt-4 mb-4">
+                <PromoCodeInput />
+              </div>
+
+              <div className="border-t border-gray-100 pt-4 mb-6 space-y-2">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Subtotal</span>
+                  <span>{formatPrice(subtotal)}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">+ GST (5%) & shipping added at checkout</p>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600 font-medium">
+                    <span>Discount ({appliedCoupon?.code})</span>
+                    <span>-{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-gray-900 text-base pt-1 border-t border-gray-100">
+                  <span>Total</span>
+                  <span className="text-xl text-blue-700">{formatPrice(subtotal - discountAmount)}</span>
+                </div>
+                <p className="text-xs text-gray-400">+ GST (5%) &amp; shipping added at checkout</p>
               </div>
 
               <button

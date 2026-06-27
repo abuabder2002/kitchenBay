@@ -8,6 +8,7 @@ import { useCart } from '@/lib/cartContext';
 import { useAuth } from '@/lib/authContext';
 import { getItemStock, getItemBasePrice } from '@/lib/pricing';
 import { useRouter } from 'next/navigation';
+import PromoCodeInput from './PromoCodeInput';
 
 export default function CartDrawer() {
   const {
@@ -20,6 +21,7 @@ export default function CartDrawer() {
     subtotal,
     gstAmount,
     shippingFee,
+    discountAmount,
     total
   } = useCart();
   const { currentUser } = useAuth();
@@ -218,9 +220,18 @@ export default function CartDrawer() {
             </div>
 
             <div className="border-t border-dashed border-gray-200 pt-3">
-              <div className="flex justify-between font-bold text-[--color-brand-text] mb-1">
+              <PromoCodeInput />
+              
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-sm text-green-600 font-medium mt-3 mb-1">
+                  <span>Discount</span>
+                  <span>-{formatPrice(discountAmount)}</span>
+                </div>
+              )}
+              
+              <div className="flex justify-between font-bold text-[--color-brand-text] mb-1 mt-3">
                 <span>Estimated Total</span>
-                <span className="text-lg">{formatPrice(subtotal)}</span>
+                <span className="text-lg">{formatPrice(subtotal - discountAmount)}</span>
               </div>
               <p className="text-xs text-[--color-brand-muted] mb-4 text-right">+ GST (5%) & shipping added at checkout</p>
 

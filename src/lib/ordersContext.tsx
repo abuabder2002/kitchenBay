@@ -80,10 +80,11 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
             // map DB orders to app Order format
             const mappedOrders = data.map(o => {
               const mappedItems = o.items.map((i: { productId: string; quantity: number; price: number }) => {
-                const prod = products.find(p => p.id === i.productId);
+                const cleanProductId = i.productId.replace('/products/', '');
+                const prod = products.find(p => p.id === cleanProductId);
                 return {
-                  productId: i.productId,
-                  name: prod ? prod.name : i.productId,
+                  productId: cleanProductId,
+                  name: prod ? prod.name : cleanProductId,
                   image: prod ? prod.image : '',
                   quantity: i.quantity,
                   price: i.price,

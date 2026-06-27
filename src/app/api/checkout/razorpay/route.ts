@@ -75,7 +75,9 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Calculate discounts and payable total ───────────────
-    const { paymentMethod = 'RAZORPAY' } = body;
+    const { paymentMethod = 'RAZORPAY', couponCode, discountAmount = 0 } = body;
+    const couponDiscountRupees = discountAmount / 100;
+
     const completedOrdersCount = await prisma.order.count({
       where: {
         userId: user.id,
@@ -92,8 +94,8 @@ export async function POST(req: NextRequest) {
     const discountedSubtotal = subtotalRupees - firstOrderDiscount;
     const gstAmountCheckout = Math.round(discountedSubtotal * 0.05);
     const netBankingDiscount = paymentMethod === 'NETBANKING' ? Math.round((discountedSubtotal + gstAmountCheckout) * 0.02) : 0;
-    const totalSavings = firstOrderDiscount + netBankingDiscount;
-    const payableTotal = Math.max(0, discountedSubtotal + gstAmountCheckout + shippingAmount - netBankingDiscount);
+    const totalSavings = firstOrderDiscount + netBankingDiscount + couponDiscountRupees;
+    const payableTotal = Math.max(0, discountedSubtotal + gstAmountCheckout + shippingAmount - netBankingDiscount - couponDiscountRupees);
 
     // ── Save shipping address ───────────────────────────────
     let shippingAddrId: string | null = null;
@@ -152,6 +154,8 @@ export async function POST(req: NextRequest) {
         subtotalAmount: Math.round(subtotalRupees * 100),
         gstAmount: Math.round(gstAmountCheckout * 100),
         shippingAmount: Math.round(shippingAmount * 100),
+        discountAmount: discountAmount,
+        couponCode: couponCode || null,
         status: 'PENDING',
         paymentStatus: 'PENDING',
         razorpayId: razorpayOrder.id,

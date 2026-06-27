@@ -61,10 +61,11 @@ export interface CartTotals {
   cgstAmount: number;     // CGST (half of gstAmount)
   sgstAmount: number;     // SGST (half of gstAmount)
   shippingFee: number;    // Calculated based on items and subtotal
-  total: number;          // subtotal + gstAmount + shippingFee
+  discountAmount: number; // Coupon discount in RUPEES
+  total: number;          // subtotal + gstAmount + shippingFee - discountAmount
 }
 
-export function calcCartTotals(items: CartItem[]): CartTotals {
+export function calcCartTotals(items: CartItem[], appliedCoupon?: { discountAmount: number, type: string } | null): CartTotals {
   let subtotal = 0;
   let gstAmount = 0;
 
@@ -92,9 +93,22 @@ export function calcCartTotals(items: CartItem[]): CartTotals {
     }
   }
 
-  const total = subtotal + gstAmount + shippingFee;
+  let discountAmountRupees = 0;
+  if (appliedCoupon) {
+    discountAmountRupees = appliedCoupon.discountAmount / 100;
+    if (appliedCoupon.type === 'FREE_SHIPPING') {
+      shippingFee = 0;
+      discountAmountRupees = 0; // Benefit is zeroing the shipping fee
+    }
+  }
 
-  return { subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total };
+  if (discountAmountRupees > subtotal) {
+    discountAmountRupees = subtotal;
+  }
+
+  const total = subtotal + gstAmount + shippingFee - discountAmountRupees;
+
+  return { subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, discountAmount: discountAmountRupees, total };
 }
 
 // ── Format price in INR ────────────────────────────────────────

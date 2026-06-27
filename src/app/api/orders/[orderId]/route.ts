@@ -45,7 +45,7 @@ export async function GET(
     }
 
     // Fetch products referenced by order items to populate name & image
-    const productIds = order.items.map(i => i.productId);
+    const productIds = order.items.map(i => i.productId.replace('/products/', ''));
     const dbProducts = await prisma.product.findMany({
       where: { id: { in: productIds } },
       select: {
@@ -56,10 +56,11 @@ export async function GET(
         discountPrice: true
       }
     });
-    const productMap = new Map(dbProducts.map(p => [p.id, p]));
+    const productMap = new Map(dbProducts.map(p => [p.id.replace('/products/', ''), p]));
 
     const populatedItems = order.items.map(item => {
-      const dbProd = productMap.get(item.productId);
+      const cleanProductId = item.productId.replace('/products/', '');
+      const dbProd = productMap.get(cleanProductId);
       return {
         id: item.id,
         orderId: item.orderId,

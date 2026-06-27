@@ -210,7 +210,7 @@ export default function Footer() {
       <div className="bg-blue-700 py-4 border-t border-white/10">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-white/70 text-sm font-medium">
-            © 2015 KitchenBay. All Rights Reserved.
+            {'©'} 2015 KitchenBay. All Rights Reserved.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             {['Razorpay', 'UPI', 'Visa', 'Mastercard', 'NetBanking'].map((method) => (
