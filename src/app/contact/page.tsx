@@ -154,7 +154,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-bold text-brand-text mb-1">Our Location</h3>
                     <p className="text-brand-muted leading-relaxed">
-                      Kitchenbay Private Limited<br />
+                      Kitchenbay The Home Needs (salem)<br />
                       19/A, Line Street<br />
                       Attur, Salem (DT)<br />
                       Tamil Nadu - 636102

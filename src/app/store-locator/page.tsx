@@ -10,7 +10,7 @@ export default function StoreLocatorPage() {
   const stores = [
     {
       id: 1,
-      name: "Kitchenbay Private Limited",
+      name: "Kitchenbay The Home Needs (salem)",
       address: "19/A Line Street, Attur, Salem, Tamil Nadu 636102",
       phone: "+91 7502777766",
       hours: "Mon-Sat: 9:00 AM - 7:00 PM",

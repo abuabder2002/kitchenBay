@@ -227,7 +227,7 @@ export default function CheckoutPage() {
         amount,
         currency,
         name: 'Kitchenbay',
-        description: 'Authentic Indian Handicrafts',
+        description: 'The Home Needs',
         order_id: razorpayOrderId,
         prefill: {
           name: form.fullName,

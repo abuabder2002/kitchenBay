@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         case 'shipped':
           return 'Great news! Your order has been handed over to our courier partner and is now in transit. A tracking number has been generated and your shipment is moving.';
         case 'delivered':
-          return 'Your order has been successfully delivered to your doorstep. We hope these authentic Indian handicrafts bring joy, style, and beauty to your home.';
+          return 'Your order has been successfully delivered to your doorstep. We hope these items bring joy, style, and beauty to your home.';
         case 'cancelled':
           return 'We are writing to confirm that your order has been cancelled. If a refund is applicable, it will be automatically processed to your original payment method in 5-7 business days.';
         default:
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
                 <tr>
                   <td align="center" style="background: linear-gradient(to right, #1D4ED8, #4f46e5); padding: 30px 40px; color: #ffffff;">
                     <h1 style="margin: 0; font-size: 26px; font-weight: bold; letter-spacing: 1px;">Kitchenbay</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 13px; color: #ddd6fe;">Authentic Indian Handicrafts</p>
+                    <p style="margin: 5px 0 0 0; font-size: 13px; color: #ddd6fe;">The Home Needs</p>
                   </td>
                 </tr>
                 <!-- Content Body -->

@@ -159,7 +159,7 @@ export default function AdminOrdersPage() {
       case 'delivered':
         return {
           headline: 'Delivered! Enjoy your handcrafted treasure.',
-          message: 'Your order has been successfully delivered to your doorstep. We hope these authentic Indian handicrafts bring joy, style, and beauty to your home.',
+          message: 'Your order has been successfully delivered to your doorstep. We hope these items bring joy, style, and beauty to your home.',
           bg: 'bg-emerald-50/50',
         };
       case 'cancelled':
@@ -400,7 +400,7 @@ export default function AdminOrdersPage() {
                 {/* Email Logo Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6 text-center text-white select-none">
                   <h1 className="text-2xl font-bold tracking-wide">Kitchenbay</h1>
-                  <p className="text-xs text-blue-200 mt-1">Authentic Indian Handicrafts</p>
+                  <p className="text-xs text-blue-200 mt-1">The Home Needs</p>
                 </div>
 
                 {/* Email Body Content */}
@@ -598,7 +598,7 @@ export default function AdminOrdersPage() {
                       <span className="font-bold">{formatPrice(selectedOrder.subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-emerald-400">
-                      <span>GST (18%)</span>
+                      <span>GST (5%)</span>
                       <span>+ {formatPrice(selectedOrder.gstAmount)}</span>
                     </div>
                     <div className="flex justify-between text-blue-300">

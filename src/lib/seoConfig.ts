@@ -9,7 +9,7 @@ export const SITE_URL =
 
 export const SITE_NAME = 'KitchenBay';
 export const SITE_TAGLINE = 'The Home Needs';
-export const SITE_LEGAL_NAME = 'Kitchenbay Private Limited';
+export const SITE_LEGAL_NAME = 'Kitchenbay The Home Needs (salem)';
 
 export const SITE_DESCRIPTION =
   "India's premium destination for authentic handcrafted kitchenware, cookware, dining essentials, and traditional home décor. Shop stainless steel utensils, cast iron cookware, brass & copper vessels, and kitchen accessories online at KitchenBay.";

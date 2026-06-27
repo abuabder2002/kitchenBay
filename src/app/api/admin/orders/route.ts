@@ -66,16 +66,17 @@ export async function GET(req: NextRequest) {
         };
       });
 
-      // Calculate taxes dynamically matching context logic
-      const subtotal = mappedItems.reduce((sum: number, item: any) => {
+      // Calculate taxes dynamically matching context logic with database fallbacks
+      const subtotal = o.subtotalAmount || mappedItems.reduce((sum: number, item: any) => {
         const prod = item.product;
         const basePrice = prod ? prod.price : Math.round(item.price / 1.18);
         return sum + basePrice * item.quantity;
       }, 0);
 
-      const gstAmount = o.totalAmount - subtotal;
+      const gstAmount = o.gstAmount || Math.max(0, o.totalAmount - subtotal - 9900);
       const cgstAmount = Math.floor(gstAmount / 2);
       const sgstAmount = gstAmount - cgstAmount;
+      const shippingAmount = o.shippingAmount !== null ? o.shippingAmount : Math.max(0, o.totalAmount - subtotal - gstAmount);
 
       return {
         id: o.id,
@@ -88,6 +89,7 @@ export async function GET(req: NextRequest) {
         cgstAmount,
         sgstAmount,
         gstAmount,
+        shippingAmount,
         total: o.totalAmount,
         paymentMethod: o.paymentStatus,
         status: o.status.toLowerCase(), // Frontend matches lowercase enum string
