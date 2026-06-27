@@ -22,7 +22,7 @@ export const BUSINESS = {
   name: SITE_LEGAL_NAME,
   alternateName: SITE_NAME,
   email: 'kitchenbaypvtltd@gmail.com',
-  phone: '+91-9876543210', // placeholder — replace with actual
+  phone: '+91 7502777766', // placeholder — replace with actual
   address: {
     streetAddress: '19/A, Line Street',
     addressLocality: 'Attur',

@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 
 const PROTECTED_ROUTES = ['/checkout', '/payment', '/orders/create'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { supabaseResponse, supabase } = await updateSession(request);
   const pathname = request.nextUrl.pathname;
 

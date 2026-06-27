@@ -2,6 +2,8 @@
 
 import { ANALYTICS } from '@/lib/seoConfig';
 import Script from 'next/script';
+import { useEffect } from 'react';
+import Clarity from '@microsoft/clarity';
 
 /**
  * Analytics & tracking scripts — only loaded when the corresponding
@@ -9,6 +11,12 @@ import Script from 'next/script';
  * layout <body> so scripts load on every page.
  */
 export default function AnalyticsScripts() {
+  useEffect(() => {
+    if (ANALYTICS.clarityId) {
+      Clarity.init(ANALYTICS.clarityId);
+    }
+  }, []);
+
   return (
     <>
       {/* ── Google Analytics 4 ─────────────────────────────── */}
@@ -33,29 +41,28 @@ export default function AnalyticsScripts() {
 
       {/* ── Google Tag Manager ─────────────────────────────── */}
       {ANALYTICS.gtmId && (
-        <Script id="gtm-init" strategy="afterInteractive">
-          {`
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','${ANALYTICS.gtmId}');
-          `}
-        </Script>
+        <>
+          <Script id="gtm-init" strategy="afterInteractive">
+            {`
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','${ANALYTICS.gtmId}');
+            `}
+          </Script>
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${ANALYTICS.gtmId}`}
+              height="0"
+              width="0"
+              style={{ display: 'none', visibility: 'hidden' }}
+            />
+          </noscript>
+        </>
       )}
 
-      {/* ── Microsoft Clarity ──────────────────────────────── */}
-      {ANALYTICS.clarityId && (
-        <Script id="clarity-init" strategy="afterInteractive">
-          {`
-            (function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window,document,"clarity","script","${ANALYTICS.clarityId}");
-          `}
-        </Script>
-      )}
+      {/* ── Microsoft Clarity (Initialized via NPM Package in useEffect) ── */}
 
       {/* ── Meta Pixel (Facebook) ──────────────────────────── */}
       {ANALYTICS.metaPixelId && (

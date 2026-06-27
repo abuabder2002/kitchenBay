@@ -108,11 +108,6 @@ export const metadata: Metadata = {
     },
   },
 
-  // ── Icons ───────────────────────────────────────────────
-  icons: {
-    icon: '/favicon.ico',
-  },
-
   // ── Category / Classification ───────────────────────────
   category: 'E-Commerce',
 };
@@ -125,7 +120,7 @@ const organizationJsonLd = {
   name: BUSINESS.name,
   alternateName: BUSINESS.alternateName,
   url: SITE_URL,
-  logo: `${SITE_URL}/favicon.ico`,
+  logo: `${SITE_URL}/icon.jpeg`,
   email: BUSINESS.email,
   telephone: BUSINESS.phone,
   sameAs: SOCIAL_URLS,
