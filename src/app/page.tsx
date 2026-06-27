@@ -666,7 +666,7 @@ export default function HomePage() {
               </p>
               <button 
                 onClick={() => setShowWelcomeOffer(false)}
-                className="w-full bg-[--color-brand-accent] hover:bg-green-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 uppercase tracking-widest text-sm"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 uppercase tracking-widest text-sm"
               >
                 Start Shopping Now
               </button>
