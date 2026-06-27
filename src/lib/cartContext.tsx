@@ -72,12 +72,13 @@ interface CartContextType {
   removeCoupon: () => void;
   itemCount: number;
   subtotal: number;       // Sum of base prices (NO GST)
-  gstAmount: number;      // Total GST
+  taxableAmount: number;  // subtotal - coupon discount
+  gstAmount: number;      // 5% GST on taxableAmount
   cgstAmount: number;
   sgstAmount: number;
-  shippingFee: number;    // Always ₹99 when cart has items
+  shippingFee: number;    // ₹99 or 0
   discountAmount: number; // Coupon discount in RUPEES
-  total: number;          // subtotal + gst + shipping - discount
+  total: number;          // taxableAmount + gst + shipping
   isDrawerOpen: boolean;
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -250,7 +251,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [currentUser]);
 
   // ── Pricing calculations using centralized utility ──
-  const { subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, discountAmount, total } = calcCartTotals(state.items, state.appliedCoupon);
+  const { subtotal, taxableAmount, gstAmount, cgstAmount, sgstAmount, shippingFee, discountAmount, total } = calcCartTotals(state.items, state.appliedCoupon);
 
   const applyCoupon = useCallback(async (code: string) => {
     try {
@@ -307,6 +308,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     removeCoupon,
     itemCount,
     subtotal,
+    taxableAmount,
     gstAmount,
     cgstAmount,
     sgstAmount,
@@ -327,6 +329,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     removeCoupon,
     itemCount,
     subtotal,
+    taxableAmount,
     gstAmount,
     cgstAmount,
     sgstAmount,

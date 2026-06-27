@@ -12,6 +12,7 @@ import FormInput from '@/components/FormInput';
 import { useCart } from '@/lib/cartContext';
 import { useAuth } from '@/lib/authContext';
 import { getItemStock } from '@/lib/pricing';
+import { calcCheckoutPricingFromCoupon } from '@/lib/checkoutPricing';
 import PromoCodeInput from '@/components/PromoCodeInput';
 
 import {
@@ -56,7 +57,8 @@ const formatPrice = (p: number) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(p);
 
 const fmtTime = (s: number) =>
@@ -66,7 +68,7 @@ const fmtTime = (s: number) =>
 // CHECKOUT PAGE
 // ════════════════════════════════════════════════════════════
 export default function CheckoutPage() {
-  const { items, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, discountAmount, total, clearCart, appliedCoupon } = useCart();
+  const { items, subtotal, taxableAmount, gstAmount, cgstAmount, sgstAmount, shippingFee, discountAmount, total, clearCart, appliedCoupon } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
 
@@ -118,14 +120,23 @@ export default function CheckoutPage() {
     }
   }, [currentUser]);
 
-  const firstOrderDiscount = isFirstOrder ? Math.min(100, subtotal) : 0;
-  const discountedSubtotal = subtotal - firstOrderDiscount;
-  const gstAmountCheckout = Math.round(discountedSubtotal * 0.05);
-  const cgstAmountCheckout = Math.floor(gstAmountCheckout / 2);
-  const sgstAmountCheckout = gstAmountCheckout - cgstAmountCheckout;
-  const netBankingDiscount = paymentMethod === 'NETBANKING' ? Math.round((discountedSubtotal + gstAmountCheckout) * 0.02) : 0;
-  const totalSavings = firstOrderDiscount + netBankingDiscount + discountAmount;
-  const payableTotal = Math.max(0, discountedSubtotal + gstAmountCheckout + shippingFee - netBankingDiscount - discountAmount);
+  // ── Correct GST calculation via standalone pricing engine ──────────────────
+  // Uses calcCheckoutPricingFromCoupon from checkoutPricing.ts (zero external imports)
+  // so Turbopack can always bundle it for the client without mockData dependency.
+  const checkoutTotals = calcCheckoutPricingFromCoupon(
+    subtotal,
+    shippingFee,
+    appliedCoupon,
+    isFirstOrder,
+    paymentMethod,
+  );
+  const firstOrderDiscount  = checkoutTotals.firstOrderDiscount;
+  const gstAmountCheckout   = checkoutTotals.gstAmount;
+  const cgstAmountCheckout  = checkoutTotals.cgstAmount;
+  const sgstAmountCheckout  = checkoutTotals.sgstAmount;
+  const netBankingDiscount  = checkoutTotals.netBankingDiscount;
+  const totalSavings        = checkoutTotals.totalSavings;
+  const payableTotal        = checkoutTotals.payableTotal;
 
   useEffect(() => {
     // Temporarily removed the > 5999 force-switch to Razorpay since Razorpay is down
@@ -286,10 +297,10 @@ export default function CheckoutPage() {
                     customer: form.fullName,
                     email: form.email,
                     items: items,
-                    subtotal,
-                    cgstAmount: cgstAmount,
-                    sgstAmount: sgstAmount,
-                    total: total
+                    subtotal: subtotal.toFixed(2),
+                    cgstAmount: cgstAmountCheckout.toFixed(2),
+                    sgstAmount: sgstAmountCheckout.toFixed(2),
+                    total: payableTotal.toFixed(2)
                   },
                   status: 'processing'
                 })
@@ -393,9 +404,9 @@ export default function CheckoutPage() {
               email: form.email,
               items: items,
               subtotal,
-              cgstAmount: cgstAmount,
-              sgstAmount: sgstAmount,
-              total: total
+              cgstAmount: cgstAmountCheckout,
+              sgstAmount: sgstAmountCheckout,
+              total: payableTotal
             },
             status: 'processing'
           })
@@ -891,12 +902,18 @@ export default function CheckoutPage() {
                   )}
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-sm text-emerald-600 font-semibold">
-                      <span>Coupon Discount</span>
+                      <span>Coupon ({appliedCoupon?.code})</span>
                       <span>-{formatPrice(discountAmount)}</span>
                     </div>
                   )}
+                  {(discountAmount > 0 || firstOrderDiscount > 0) && (
+                    <div className="flex justify-between text-sm border-t border-dashed border-gray-200 pt-2">
+                      <span className="text-gray-500">Taxable Amount</span>
+                      <span className="font-semibold text-gray-800">{formatPrice(checkoutTotals.taxableAmount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>GST (5%)</span>
+                    <span>GST 5%{(discountAmount > 0 || firstOrderDiscount > 0) ? ' (on taxable amount)' : ''}</span>
                     <span className="font-semibold text-gray-800">{formatPrice(gstAmountCheckout)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { prisma } from '@/lib/prisma';
 import { getDbUser } from '@/lib/serverAuth';
+import { calcCheckoutPricing, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE_RUPEES } from '@/lib/checkoutPricing';
 
 /**
  * POST /api/checkout/razorpay
@@ -10,8 +11,12 @@ import { getDbUser } from '@/lib/serverAuth';
  * Creates a Razorpay order and a matching pending DB order.
  *
  * Body: {
- *   items: [{ productId: string, quantity: number }],
- *   address: { street: string, city: string, state: string, zip: string }
+ *   items: [{ productId: string, quantity: number, size?: string }],
+ *   address: { street, city, state, zip },
+ *   couponCode?: string,
+ *   discountAmount?: number,  // in PAISE
+ *   paymentMethod?: string,
+ *   shippingAmount?: number,  // in RUPEES (from client, used as hint)
  * }
  */
 export async function POST(req: NextRequest) {
@@ -23,60 +28,51 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { items, address, shippingAmount = 99 } = body;
+    const { items, address } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
     }
 
-    // ── Calculate totals from database product prices only ───
+    // ── Calculate subtotal from DB product prices (authoritative) ─
     let subtotalRupees = 0;
-    let totalGstRupees = 0;
     const orderItems: { productId: string; quantity: number; price: number; basePrice: number; size?: string }[] = [];
 
     for (const item of items) {
       const dbProduct = await prisma.product.findUnique({ where: { id: item.productId } });
       if (!dbProduct) {
-        return NextResponse.json(
-          { error: `Product "${item.productId}" not found` },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: `Product "${item.productId}" not found` }, { status: 400 });
       }
-      
-      let basePrice = dbProduct.price / 100;
+
+      let basePrice = dbProduct.price / 100; // paise → rupees
       let availableStock = dbProduct.stock;
-      
+
       if (item.size && dbProduct.variants && (dbProduct.variants as Record<string, any>)[item.size]) {
         const variant = (dbProduct.variants as Record<string, any>)[item.size];
         basePrice = variant.price || (dbProduct.price / 100);
         availableStock = variant.stock || 0;
       }
-      
+
       if (availableStock < item.quantity) {
         return NextResponse.json(
-          { error: `Not enough stock for ${dbProduct.name} ${item.size ? `(${item.size})` : ''}` },
+          { error: `Not enough stock for ${dbProduct.name}${item.size ? ` (${item.size})` : ''}` },
           { status: 400 }
         );
       }
 
-      const gstAmount = Math.round(basePrice * dbProduct.gstPercent) / 100;
-      const unitPrice = basePrice + gstAmount;
-
       subtotalRupees += basePrice * item.quantity;
-      totalGstRupees += gstAmount * item.quantity;
 
       orderItems.push({
         productId: item.productId,
         quantity: item.quantity,
-        price: Math.round(unitPrice * 100), // stored in paise
+        price: Math.round(basePrice * 100),     // stored in paise (no GST in line item)
         basePrice: Math.round(basePrice * 100), // stored in paise
-        ...(item.size ? { size: item.size } : {})
+        ...(item.size ? { size: item.size } : {}),
       });
     }
 
-    // ── Calculate discounts and payable total ───────────────
+    // ── Determine first-order status ────────────────────────
     const { paymentMethod = 'RAZORPAY', couponCode, discountAmount = 0 } = body;
-    const couponDiscountRupees = discountAmount / 100;
 
     const completedOrdersCount = await prisma.order.count({
       where: {
@@ -85,17 +81,22 @@ export async function POST(req: NextRequest) {
           { paymentStatus: 'PAID' },
           { paymentStatus: 'COD_PENDING' },
           { status: 'PROCESSING' },
-          { status: 'DELIVERED' }
-        ]
-      }
+          { status: 'DELIVERED' },
+        ],
+      },
     });
     const isFirstOrder = completedOrdersCount === 0;
-    const firstOrderDiscount = isFirstOrder ? Math.min(100, subtotalRupees) : 0;
-    const discountedSubtotal = subtotalRupees - firstOrderDiscount;
-    const gstAmountCheckout = Math.round(discountedSubtotal * 0.05);
-    const netBankingDiscount = paymentMethod === 'NETBANKING' ? Math.round((discountedSubtotal + gstAmountCheckout) * 0.02) : 0;
-    const totalSavings = firstOrderDiscount + netBankingDiscount + couponDiscountRupees;
-    const payableTotal = Math.max(0, discountedSubtotal + gstAmountCheckout + shippingAmount - netBankingDiscount - couponDiscountRupees);
+
+    // Shipping fee (use cart threshold, not client-supplied value)
+    const shippingFeeRupees = subtotalRupees >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE_RUPEES;
+
+    // ── Canonical pricing via shared utility ────────────────
+    const pricing = calcCheckoutPricing(subtotalRupees, {
+      isFirstOrder,
+      couponDiscountRupees: discountAmount / 100,   // paise → rupees
+      paymentMethod,
+      shippingFeeRupees,
+    });
 
     // ── Save shipping address ───────────────────────────────
     let shippingAddrId: string | null = null;
@@ -113,7 +114,7 @@ export async function POST(req: NextRequest) {
       shippingAddrId = addr.id;
     }
 
-    // ── Razorpay credentials check ──────────────────────────
+    // ── Razorpay credentials ────────────────────────────────
     let keyId = (process.env.RAZORPAY_KEY_ID ?? '').replace(/"/g, '').trim();
     let keySecret = (process.env.RAZORPAY_KEY_SECRET ?? '').replace(/"/g, '').trim();
 
@@ -133,9 +134,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── Create Razorpay order (amount must be in PAISE) ─────
+    // ── Create Razorpay order (amount in PAISE, must be integer) ─
     const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
-    const amountPaise = Math.round(payableTotal * 100);
+    const amountPaise = Math.round(pricing.payableTotal * 100);
 
     const razorpayOrder = await (razorpay.orders as any).create({
       amount: amountPaise,
@@ -150,11 +151,11 @@ export async function POST(req: NextRequest) {
       data: {
         id: numericId,
         userId: user.id,
-        totalAmount: Math.round(payableTotal * 100), // stored in paise
-        subtotalAmount: Math.round(subtotalRupees * 100),
-        gstAmount: Math.round(gstAmountCheckout * 100),
-        shippingAmount: Math.round(shippingAmount * 100),
-        discountAmount: discountAmount,
+        totalAmount: Math.round(pricing.payableTotal * 100),
+        subtotalAmount: Math.round(pricing.subtotal * 100),
+        gstAmount: Math.round(pricing.gstAmount * 100),
+        shippingAmount: Math.round(pricing.shippingFeeRupees * 100),
+        discountAmount: discountAmount, // stored in paise as received
         couponCode: couponCode || null,
         status: 'PENDING',
         paymentStatus: 'PENDING',
@@ -174,8 +175,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('Razorpay order creation error:', err);
-    const msg =
-      err?.error?.description || err?.message || 'Failed to create payment order';
+    const msg = err?.error?.description || err?.message || 'Failed to create payment order';
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

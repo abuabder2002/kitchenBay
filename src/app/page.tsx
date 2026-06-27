@@ -411,7 +411,7 @@ export default function HomePage() {
                       src={banner.image || '/images/marketing/everyday_cooking.jpg'}
                       alt={banner.title || 'Banner Image'}
                       fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
+                      sizes="100vw"
                       className="object-cover object-center group-hover/banner:scale-105 transition-transform duration-700"
                     />
                     <div className={`absolute inset-0 bg-gradient-to-r ${isDark ? 'from-black/80 via-black/40' : 'from-white/90 via-white/40'} to-transparent`} />

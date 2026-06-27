@@ -12,8 +12,8 @@ export default function PromoCodeInput() {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleApply = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleApply = async (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e) e.preventDefault();
     const trimmedCode = code.trim();
     if (!trimmedCode) return;
 
@@ -92,7 +92,7 @@ export default function PromoCodeInput() {
       {/* Expandable input */}
       {isOpen && (
         <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-2">
-          <form onSubmit={handleApply} className="flex gap-2">
+          <div className="flex gap-2">
             <input
               type="text"
               value={code}
@@ -100,19 +100,21 @@ export default function PromoCodeInput() {
                 setCode(e.target.value.toUpperCase());
                 setError('');
               }}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApply(); } }}
               placeholder="Enter promo code"
               autoFocus
               className="flex-1 min-w-0 bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 px-3 py-2.5 font-mono tracking-widest placeholder:normal-case placeholder:tracking-normal placeholder:font-sans placeholder:text-gray-400 transition-all"
               disabled={isLoading}
             />
             <button
-              type="submit"
+              type="button"
+              onClick={() => handleApply()}
               disabled={!code.trim() || isLoading || subtotal <= 0}
               className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center min-w-[80px] shadow-sm"
             >
               {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Apply'}
             </button>
-          </form>
+          </div>
 
           {/* Error message with the attempted code highlighted */}
           {error && (

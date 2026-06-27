@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbUser } from '@/lib/serverAuth';
 import { prisma } from '@/lib/prisma';
+import { calcCheckoutPricing, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE_RUPEES } from '@/lib/checkoutPricing';
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,6 +17,16 @@ export async function GET(req: NextRequest) {
       include: { items: true },
       orderBy: { createdAt: 'desc' }
     });
+
+    // ── Enrich items with product name & image in one batch query ──
+    const allProductIds = Array.from(
+      new Set(orders.flatMap(o => o.items.map(i => i.productId)))
+    );
+    const dbProducts = await prisma.product.findMany({
+      where: { id: { in: allProductIds } },
+      select: { id: true, name: true, image: true }
+    });
+    const productMap = new Map(dbProducts.map(p => [p.id, p]));
 
     const addressIds = orders.map(o => o.shippingAddrId).filter(Boolean) as string[];
     const addresses = await prisma.address.findMany({
@@ -33,7 +44,15 @@ export async function GET(req: NextRequest) {
           state: address.state,
           zip: address.zip,
           country: address.country
-        } : null
+        } : null,
+        items: o.items.map(item => {
+          const prod = productMap.get(item.productId);
+          return {
+            ...item,
+            name: prod?.name ?? item.productId,
+            image: prod?.image ?? null,
+          };
+        }),
       };
     });
 
@@ -52,21 +71,21 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { 
-      items, 
-      shippingAddrId, 
-      paymentStatus, 
-      razorpayId, 
+    const {
+      items,
+      shippingAddrId,
+      paymentStatus,
+      razorpayId,
       address,
       couponCode,
-      discountAmount = 0
+      discountAmount = 0   // in PAISE
     } = body;
 
     if (!items || !items.length) {
-       return NextResponse.json({ error: 'Order must contain items' }, { status: 400 });
+      return NextResponse.json({ error: 'Order must contain items' }, { status: 400 });
     }
 
-    // ── Handle address: accept either shippingAddrId or an address object ──
+    // ── Handle address ──────────────────────────────────────
     let finalAddrId: string | null = shippingAddrId || null;
 
     if (!finalAddrId && address && address.street) {
@@ -83,74 +102,47 @@ export async function POST(req: NextRequest) {
       finalAddrId = addr.id;
     }
 
-    // ── Recalculate totals from database product prices securely ──
+    // ── Recalculate subtotal from DB (authoritative) ────────
     const productIds = items.map((i: any) => i.productId);
     const dbProducts = await prisma.product.findMany({
       where: { id: { in: productIds } }
     });
     const productMap = new Map(dbProducts.map(p => [p.id, p]));
 
-    let calculatedSubtotalRupees = 0;
-    let calculatedGstRupees = 0;
+    let subtotalRupees = 0;
     const dbOrderItems = [];
-    const shippingFees: number[] = [];
 
     for (const item of items) {
       const dbProduct = productMap.get(item.productId);
       if (!dbProduct) {
         return NextResponse.json({ error: `Product "${item.productId}" not found` }, { status: 400 });
       }
-      
-      let basePrice = dbProduct.price / 100;
+
+      let basePrice = dbProduct.price / 100; // paise → rupees
       let availableStock = dbProduct.stock;
-      
+
       if (item.size && dbProduct.variants && (dbProduct.variants as Record<string, any>)[item.size]) {
         const variant = (dbProduct.variants as Record<string, any>)[item.size];
         basePrice = variant.price || (dbProduct.price / 100);
         availableStock = variant.stock || 0;
       }
-      
+
       if (availableStock < item.quantity) {
         return NextResponse.json({ error: `Not enough stock for ${dbProduct.name}` }, { status: 400 });
       }
 
-      const gstAmount = Math.round(basePrice * dbProduct.gstPercent) / 100;
-      const unitPrice = basePrice + gstAmount;
-
-      calculatedSubtotalRupees += basePrice * item.quantity;
-      calculatedGstRupees += gstAmount * item.quantity;
-
-      // Shipping fee lookup for this product
-      let fee = 99;
-      if (dbProduct.shippingFee !== undefined && dbProduct.shippingFee !== null) {
-        if (dbProduct.shippingFee > 1000) {
-          fee = Math.round(dbProduct.shippingFee / 100);
-        } else {
-          fee = dbProduct.shippingFee;
-        }
-      }
-      shippingFees.push(fee);
+      subtotalRupees += basePrice * item.quantity;
 
       dbOrderItems.push({
         productId: item.productId,
         quantity: item.quantity,
-        price: Math.round(unitPrice * 100), // stored in paise
-        basePrice: Math.round(basePrice * 100), // stored in paise
-        size: item.size || ""
+        price: Math.round(basePrice * 100),     // paise (no GST in line item)
+        basePrice: Math.round(basePrice * 100), // paise
+        size: item.size || ''
       });
     }
 
-    calculatedGstRupees = Math.round(calculatedGstRupees);
-    let calculatedShippingRupees = 99;
-    if (items.length > 0) {
-      if (calculatedSubtotalRupees >= 2000) {
-        calculatedShippingRupees = 0;
-      } else {
-        calculatedShippingRupees = 99;
-      }
-    }
-
-    // ── Calculate discounts and final total ──
+    // ── First-order status ──────────────────────────────────
     const completedOrdersCount = await prisma.order.count({
       where: {
         userId: user.id,
@@ -163,35 +155,39 @@ export async function POST(req: NextRequest) {
       }
     });
     const isFirstOrder = completedOrdersCount === 0;
-    const firstOrderDiscount = isFirstOrder ? Math.min(100, calculatedSubtotalRupees) : 0;
-    const discountedSubtotal = calculatedSubtotalRupees - firstOrderDiscount;
-    const calculatedGstRupeesCheckout = Math.round(discountedSubtotal * 0.05);
-    const couponDiscountRupees = discountAmount / 100;
-    
-    // Check if COD is used
     const isCod = paymentStatus === 'COD_PENDING';
-    const netBankingDiscount = (!isCod && razorpayId) ? Math.round((discountedSubtotal + calculatedGstRupeesCheckout) * 0.02) : 0;
-    
-    const totalSavings = firstOrderDiscount + netBankingDiscount + couponDiscountRupees;
-    const finalPayableRupees = Math.max(0, discountedSubtotal + calculatedGstRupeesCheckout + calculatedShippingRupees - netBankingDiscount - couponDiscountRupees);
 
-    // ── Enforce COD Limit of Rs:5999 ──
-    if (isCod && finalPayableRupees > 5999) {
-      return NextResponse.json({ error: 'There is no COD above Rs:5999. Please choose Net Banking or card payment.' }, { status: 400 });
+    // Shipping fee based on authoritative subtotal
+    const shippingFeeRupees = subtotalRupees >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE_RUPEES;
+
+    // ── Canonical pricing via shared utility ────────────────
+    const pricing = calcCheckoutPricing(subtotalRupees, {
+      isFirstOrder,
+      couponDiscountRupees: discountAmount / 100,   // paise → rupees
+      paymentMethod: isCod ? 'COD' : 'RAZORPAY',
+      shippingFeeRupees,
+    });
+
+    // ── Enforce COD limit ───────────────────────────────────
+    if (isCod && pricing.payableTotal > 5999) {
+      return NextResponse.json(
+        { error: 'COD is not available above ₹5,999. Please choose online payment.' },
+        { status: 400 }
+      );
     }
 
-    // Generate a random 6-digit numerical string
+    // ── Generate numeric order ID ───────────────────────────
     const numericId = Math.floor(100000 + Math.random() * 900000).toString();
 
     const order = await prisma.order.create({
       data: {
         id: numericId,
         userId: user.id,
-        totalAmount: Math.round(finalPayableRupees * 100), // convert to paise
-        subtotalAmount: Math.round(calculatedSubtotalRupees * 100),
-        gstAmount: Math.round(calculatedGstRupeesCheckout * 100),
-        shippingAmount: Math.round(calculatedShippingRupees * 100),
-        discountAmount: discountAmount,
+        totalAmount: Math.round(pricing.payableTotal * 100),
+        subtotalAmount: Math.round(pricing.subtotal * 100),
+        gstAmount: Math.round(pricing.gstAmount * 100),
+        shippingAmount: Math.round(pricing.shippingFeeRupees * 100),
+        discountAmount: discountAmount,   // stored in paise
         couponCode: couponCode || null,
         status: 'PENDING',
         paymentStatus: paymentStatus || 'PENDING',
@@ -204,10 +200,10 @@ export async function POST(req: NextRequest) {
       include: { items: true }
     });
 
-    // Automatically clear user's cart if an order is created successfully
+    // ── Clear server-side cart ──────────────────────────────
     const cart = await prisma.cart.findUnique({ where: { userId: user.id } });
     if (cart) {
-       await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+      await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
     }
 
     return NextResponse.json(order, { status: 201 });
