@@ -165,6 +165,7 @@ export default function Navbar() {
                       autoFocus
                       type="text"
                       placeholder="Search..."
+                      aria-label="Search for products"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && executeSearch()}
@@ -305,6 +306,7 @@ export default function Navbar() {
                 <input
                   type="text"
                   placeholder="Search products..."
+                  aria-label="Search products"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {

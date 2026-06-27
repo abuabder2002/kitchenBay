@@ -11,6 +11,7 @@ import { useProducts } from '@/lib/productsContext';
 import { categories, subcategories, materials } from '@/lib/mockData';
 import type { Product } from '@/lib/mockData';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
 
 const priceRanges = [
   { label: 'Under ₹500', min: 0, max: 500 },
@@ -293,11 +294,23 @@ function ProductsContent() {
     <div className="min-h-screen flex flex-col bg-[--color-brand-bg] font-sans">
       <Navbar />
 
+      <Breadcrumbs items={[
+        { name: 'Home', href: '/' },
+        { name: 'Products', href: '/products' },
+      ]} />
+
       {/* Page Header */}
       <div className="bg-[--color-brand-card] py-20 border-b border-[--color-brand-border] text-center">
         <span className="text-[--color-brand-accent] text-sm font-semibold tracking-[0.2em] uppercase mb-4 block">The Collection</span>
         <h1 className="font-[family-name:var(--font-heading)] text-5xl font-bold text-[--color-brand-text] mb-4">Kitchenbay Crafted</h1>
-        <p className="text-[--color-brand-muted] max-w-2xl mx-auto text-lg">Authentic materials shaped by generations of master Kitchenbays.</p>
+        <p className="text-[--color-brand-muted] max-w-2xl mx-auto text-lg mb-6">Authentic materials shaped by generations of master Kitchenbays.</p>
+        
+        {/* SEO Intro Text */}
+        <div className="max-w-3xl mx-auto px-4">
+          <p className="text-sm text-[--color-brand-muted] leading-relaxed hidden md:block">
+            Shop our premium selection of traditional Indian kitchenware, including pre-seasoned cast iron, pure brass vessels, copper drinkware, and authentic soapstone pots. Each piece is handcrafted by skilled artisans to bring health, durability, and heritage to your modern kitchen.
+          </p>
+        </div>
       </div>
 
       <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-[1600px]">

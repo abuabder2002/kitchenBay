@@ -3,6 +3,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import JsonLd from '@/components/seo/JsonLd';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
+import { faqPageSchema } from '@/lib/schemas';
 
 const faqs = [
   {
@@ -53,14 +56,25 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function FAQPage() {
+  // Flatten all FAQ items for JSON-LD
+  const allFaqItems = faqs.flatMap(cat => cat.items.map(item => ({
+    question: item.q,
+    answer: item.a,
+  })));
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
+      <JsonLd data={faqPageSchema(allFaqItems)} />
+      <Breadcrumbs items={[
+        { name: 'Home', href: '/' },
+        { name: 'FAQ', href: '/faq' },
+      ]} />
       <main className="flex-1">
         <div className="bg-blue-950 text-white py-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl font-bold font-[family-name:var(--font-heading)] mb-4">Frequently Asked Questions</h1>
-            <p className="text-blue-200 text-lg">Everything you need to know about shopping with Kitchenbay.</p>
+            <p className="text-blue-200 text-lg">Everything you need to know about shopping with KitchenBay — orders, shipping, returns, payments, and product quality.</p>
           </div>
         </div>
 

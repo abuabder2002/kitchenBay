@@ -62,7 +62,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={normalizeImageSrc(product.image)}
-            alt={product.name}
+            alt={`${product.name} - Premium ${product.material} ${product.category}`}
             className="absolute inset-0 w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500 bg-white"
             loading="lazy"
           />

@@ -189,6 +189,7 @@ export default function Footer() {
                     type="email"
                     required
                     placeholder="Your email"
+                    aria-label="Email address for newsletter"
                     className="flex-1 rounded-lg bg-blue-700/50 border border-white/20 text-white placeholder:text-white/40 text-xs px-3 py-2.5 outline-none focus:border-white transition-colors min-w-0 shadow-sm"
                   />
                   <button

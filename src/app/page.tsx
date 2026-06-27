@@ -10,8 +10,10 @@ import Navbar from '@/components/Navbar';
 import TraditionVideoSection from '@/components/TraditionVideoSection';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { Truck, RotateCcw, ShieldCheck, HeartHandshake, Leaf, Users, Star, Quote, MapPin, X } from 'lucide-react';
+import { Truck, RotateCcw, ShieldCheck, HeartHandshake, Leaf, Users, Star, Quote, MapPin, X, ChevronDown } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
+import JsonLd from '@/components/seo/JsonLd';
+import { faqPageSchema } from '@/lib/schemas';
 import { useProducts } from '@/lib/productsContext';
 import { useAuth } from '@/lib/authContext';
 import EditButton from '@/components/cms/EditButton';
@@ -85,6 +87,13 @@ const defaultHeritage = [
     paragraph2: 'Every utensil is forged with purpose—designed not just to cook food, but to nourish the body according to timeless Ayurvedic principles.',
     image: '/artisan_kitchenware.png'
   }
+];
+
+const homeFaqs = [
+  { question: "What makes KitchenBay's cast iron cookware special?", answer: "Our cast iron cookware is pre-seasoned naturally without any chemical coatings. It is handcrafted by traditional artisans from Tamil Nadu, ensuring excellent heat retention, durability, and iron-fortified food." },
+  { question: "Do you deliver all over India?", answer: "Yes, KitchenBay delivers to over 20,000+ pincodes across India with standard delivery taking 5-7 business days." },
+  { question: "Are your brass and copper utensils safe for daily use?", answer: "Absolutely. Our brass and copper utensils are made from pure, food-grade materials and are safe for traditional cooking and water storage when cared for properly." },
+  { question: "What is your return policy?", answer: "We offer a hassle-free 48-hour return policy in case of any transit damage or manufacturing defects. Just contact our support team." }
 ];
 
 export default function HomePage() {
@@ -227,6 +236,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-[--color-brand-bg]">
       <Navbar />
+      <JsonLd data={faqPageSchema(homeFaqs)} />
       <main className="flex-1">
 
         {/* ── NEW HERO SECTION (Banner Grid) ────────────────────────────── */}
@@ -616,6 +626,51 @@ export default function HomePage() {
                 <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">48-Hour Easy Return Policy</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Return Policy</p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── POPULAR SEARCHES (Internal Linking for SEO) ───────────────── */}
+        <section className="border-t border-[--color-brand-border] bg-white py-12">
+          <div className="max-w-[1600px] mx-auto px-4">
+            <h2 className="text-lg font-bold text-gray-900 mb-6 font-[family-name:var(--font-heading)] uppercase tracking-widest">Popular Searches</h2>
+            <div className="flex flex-wrap gap-3">
+              {[
+                { name: 'Cast Iron Skillet', link: '/products?category=kitchenware' },
+                { name: 'Pure Brass Kadai', link: '/products?category=kitchenware' },
+                { name: 'Copper Water Bottle', link: '/products?category=dining' },
+                { name: 'Soapstone Kalchatti', link: '/products?category=kitchenware' },
+                { name: 'Triply Stainless Steel', link: '/products?category=kitchenware' },
+                { name: 'Brass Pooja Items', link: '/products?category=decor' },
+                { name: 'Traditional South Indian Coffee Maker', link: '/products?category=dining' },
+                { name: 'Hand-hammered Copper Jug', link: '/products?category=dining' },
+              ].map((item, i) => (
+                <Link key={i} href={item.link} className="text-sm text-gray-600 bg-gray-100 hover:bg-[--color-brand-accent] hover:text-white px-4 py-2 rounded-full transition-colors border border-gray-200 shadow-sm">
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── FREQUENTLY ASKED QUESTIONS ────────────────────────────────── */}
+        <section className="bg-gray-50 py-16 border-t border-[--color-brand-border]">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Frequently Asked Questions</h2>
+            </div>
+            <div className="space-y-4">
+              {homeFaqs.map((faq, idx) => (
+                <details key={idx} className="group bg-white border border-gray-200 rounded-sm shadow-sm [&_summary::-webkit-details-marker]:hidden">
+                  <summary className="flex items-center justify-between p-5 font-bold text-gray-900 cursor-pointer">
+                    {faq.question}
+                    <ChevronDown size={18} className="text-gray-500 group-open:rotate-180 transition-transform" />
+                  </summary>
+                  <div className="px-5 pb-5 text-gray-600 leading-relaxed text-sm">
+                    {faq.answer}
+                  </div>
+                </details>
+              ))}
             </div>
           </div>
         </section>

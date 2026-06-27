@@ -26,6 +26,9 @@ import {
 import Link from 'next/link';
 import BulkInquiryModal from '@/components/BulkInquiryModal';
 import Image from 'next/image';
+import JsonLd from '@/components/seo/JsonLd';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
+import { productSchema } from '@/lib/schemas';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -211,16 +214,13 @@ export default function ProductDetailPage() {
       <Navbar />
       <main className="flex-1 w-full pb-24">
         
-        {/* Breadcrumb */}
-        <div className="border-b border-[--color-brand-border] bg-white">
-          <nav className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-2 text-xs uppercase tracking-widest text-[--color-brand-muted]">
-            <Link href="/" className="hover:text-[--color-brand-text] transition-colors">Home</Link>
-            <span>/</span>
-            <Link href="/products" className="hover:text-[--color-brand-text] transition-colors">Products</Link>
-            <span>/</span>
-            <span className="text-[--color-brand-text] font-bold line-clamp-1">{product.name}</span>
-          </nav>
-        </div>
+        <JsonLd data={productSchema(product)} />
+        <Breadcrumbs items={[
+          { name: 'Home', href: '/' },
+          { name: 'Products', href: '/products' },
+          ...(product.category ? [{ name: product.category, href: `/products?category=${product.category}` }] : []),
+          { name: product.name, href: `/products/${product.id}` },
+        ]} />
 
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-16">
@@ -527,6 +527,23 @@ export default function ProductDetailPage() {
                       <span className="text-xs font-bold text-[--color-brand-text] uppercase tracking-wide leading-tight">{label}</span>
                     </div>
                   ))}
+                </div>
+
+                {/* Shipping, Returns & Care FAQs */}
+                <div className="pt-8 mt-8 border-t border-[--color-brand-border] space-y-4">
+                  <div>
+                    <h2 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-2">Shipping Information</h2>
+                    <p className="text-sm text-[--color-brand-text] leading-relaxed">Standard delivery takes 5-7 business days. We offer free shipping on all orders above Rs. 2000. Pan-India delivery available.</p>
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-2">Return Policy</h2>
+                    <p className="text-sm text-[--color-brand-text] leading-relaxed">We offer a hassle-free 48-hour return policy for damaged or defective items. Please contact our support team to initiate a return.</p>
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-2">Product Care FAQ</h2>
+                    <p className="text-sm text-[--color-brand-text] mb-2 leading-relaxed"><strong>Q: How do I clean this product?</strong><br/>A: Wash with mild soap and warm water. Avoid harsh chemicals and abrasive scrubbers to protect the finish.</p>
+                    <p className="text-sm text-[--color-brand-text] leading-relaxed"><strong>Q: Is it dishwasher safe?</strong><br/>A: We highly recommend hand washing to preserve the natural materials and craftsmanship.</p>
+                  </div>
                 </div>
 
                 {/* Bulk Wholesale */}

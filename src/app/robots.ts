@@ -1,0 +1,85 @@
+import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/seoConfig';
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: '*',
+        allow: [
+          '/',
+          '/products',
+          '/products/',
+          '/about-us',
+          '/contact',
+          '/faq',
+          '/story',
+          '/blog',
+          '/collections',
+          '/artisans',
+          '/store-locator',
+          '/press',
+          '/careers',
+          '/gift-concierge',
+          '/privacy-policy',
+          '/terms-of-use',
+          '/shipping-policy',
+          '/returns-refunds',
+          '/cookie-policy',
+          '/sitemap',
+        ],
+        disallow: [
+          '/admin',
+          '/admin/',
+          '/api/',
+          '/login',
+          '/signup',
+          '/checkout',
+          '/cart',
+          '/wishlist',
+          '/profile',
+          '/orders',
+          '/wallet',
+          '/gst-invoice',
+          '/track',
+        ],
+      },
+      // Explicitly allow major AI crawlers
+      {
+        userAgent: [
+          'Googlebot',
+          'Bingbot',
+          'Applebot',
+          'ChatGPT-User',
+          'GPTBot',
+          'ClaudeBot',
+          'anthropic-ai',
+          'PerplexityBot',
+          'Bytespider',
+          'cohere-ai',
+        ],
+        allow: ['/'],
+        disallow: [
+          '/admin',
+          '/admin/',
+          '/api/',
+          '/login',
+          '/signup',
+          '/checkout',
+          '/cart',
+          '/wishlist',
+          '/profile',
+          '/orders',
+          '/wallet',
+          '/gst-invoice',
+          '/track',
+        ],
+      },
+    ],
+    sitemap: [
+      `${SITE_URL}/sitemap.xml`,
+      `${SITE_URL}/products/sitemap.xml`,
+    ],
+    host: SITE_URL,
+  };
+}
