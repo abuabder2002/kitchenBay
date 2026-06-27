@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from '@/lib/seoConfig';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 /**
  * Dynamic metadata for individual product pages.
