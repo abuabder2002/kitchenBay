@@ -87,7 +87,7 @@ export default function AdminCouponsPage() {
           </Link>
           <Link
             href="/admin/marketing/coupons/create"
-            className="flex items-center gap-2 px-4 py-2 bg-[--color-brand-text] text-white rounded-lg text-sm font-semibold hover:bg-[--color-brand-accent] transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors shadow-sm"
           >
             <Plus size={16} /> Create Coupon
           </Link>

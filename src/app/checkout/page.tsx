@@ -932,12 +932,12 @@ export default function CheckoutPage() {
                   )}
 
                   {/* Shipping rule helper text */}
-                  <div className="pt-1">
-                    {subtotal > 1999 ? (
+                   <div className="pt-1">
+                    {shippingFee === 0 ? (
                       <p className="text-[10px] text-emerald-600 font-semibold">🎉 You qualify for Free Shipping!</p>
                     ) : (
                       <p className="text-[10px] text-amber-600 font-semibold">
-                        Free Shipping on orders above {formatPrice(1999)} (Add {formatPrice(1999 - subtotal)} more)
+                        Free Shipping on orders above {formatPrice(2000)} (Add {formatPrice(2000 - subtotal)} more)
                       </p>
                     )}
                   </div>

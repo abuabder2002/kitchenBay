@@ -81,8 +81,25 @@ export function calcCartTotals(
     subtotal += getItemBasePrice(item.product, item.size) * item.quantity;
   }
 
-  // 2. Shipping (free above threshold)
-  let shippingFee = items.length > 0 ? (subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE_RUPEES) : 0;
+  // 2. Effective shipping fee:
+  //    - If any product in the cart has a custom shippingFee set by admin, use the
+  //      highest one as the cart-level fee (one consolidated shipping charge).
+  //    - Otherwise fall back to the global default (SHIPPING_FEE_RUPEES = ₹99).
+  //    - If the order subtotal crosses FREE_SHIPPING_THRESHOLD (₹2,000), shipping is always free.
+  let baseShippingFee = SHIPPING_FEE_RUPEES; // default
+  if (items.length > 0) {
+    // Collect product-specific fees (converting from paise if stored as > 1000)
+    const productFees = items.map(item => getProductShippingFee(item.product));
+    const maxProductFee = Math.max(...productFees);
+    // Use the highest product-specific fee if it differs from the global default
+    if (maxProductFee !== SHIPPING_FEE_RUPEES) {
+      baseShippingFee = maxProductFee;
+    }
+  }
+
+  let shippingFee = items.length > 0
+    ? (subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : baseShippingFee)
+    : 0;
 
   // 3. Coupon discount
   let discountAmountRupees = 0;

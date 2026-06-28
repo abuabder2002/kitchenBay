@@ -1,9 +1,10 @@
-'use client';
+'use client'; // Force hot-reload
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Save, Plus, Trash, Loader2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useProducts } from '@/lib/productsContext';
+import LinkSelector from './LinkSelector';
 
 interface CMSModalProps {
   isOpen: boolean;
@@ -17,12 +18,16 @@ interface CMSModalProps {
 }
 
 export default function CMSModal({ isOpen, onClose, onSaveSuccess, sectionId, sectionTitle, initialData, schema, pageName = 'home' }: CMSModalProps) {
-  const { products } = useProducts();
+  const { products, refreshProducts } = useProducts();
   const [data, setData] = useState<any[]>([...initialData]);
   const [saving, setSaving] = useState(false);
   const [uploadingField, setUploadingField] = useState<{index: number, key: string} | null>(null);
-  const [productSearch, setProductSearch] = useState<{[key: string]: string}>({});
-  const [activeSearch, setActiveSearch] = useState<{index: number, key: string} | null>(null);
+
+  useEffect(() => {
+    if (isOpen && products.length === 0) {
+      refreshProducts();
+    }
+  }, [isOpen, products.length, refreshProducts]);
 
   if (!isOpen) return null;
 
@@ -69,12 +74,6 @@ export default function CMSModal({ isOpen, onClose, onSaveSuccess, sectionId, se
     } finally {
       setUploadingField(null);
     }
-  };
-
-  const handleProductSelect = (index: number, field: string, productId: string) => {
-    handleChange(index, field, `/products/${productId}`);
-    setActiveSearch(null);
-    setProductSearch(prev => ({...prev, [`${index}-${field}`]: `/products/${productId}`}));
   };
 
   const handleSave = async () => {
@@ -169,37 +168,11 @@ export default function CMSModal({ isOpen, onClose, onSaveSuccess, sectionId, se
                           </div>
                         </div>
                       ) : field.type === 'product-link' ? (
-                        <div className="relative">
-                          <input 
-                            type="text" 
-                            value={productSearch[`${idx}-${field.key}`] !== undefined ? productSearch[`${idx}-${field.key}`] : (item[field.key] || '')} 
-                            onChange={(e) => {
-                              handleChange(idx, field.key, e.target.value);
-                              setProductSearch(prev => ({...prev, [`${idx}-${field.key}`]: e.target.value}));
-                            }} 
-                            onFocus={() => setActiveSearch({index: idx, key: field.key})}
-                            onBlur={() => setTimeout(() => setActiveSearch(null), 200)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"
-                            placeholder={`Search product or enter URL...`}
-                          />
-                          {activeSearch?.index === idx && activeSearch?.key === field.key && (
-                            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                              {products.filter(p => p.name.toLowerCase().includes((productSearch[`${idx}-${field.key}`] || item[field.key] || '').toLowerCase())).map(p => (
-                                <div 
-                                  key={p.id} 
-                                  className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer flex items-center gap-2"
-                                  onMouseDown={(e) => { e.preventDefault(); handleProductSelect(idx, field.key, p.id); }}
-                                >
-                                  {p.image && <img src={p.image} alt={p.name} className="w-6 h-6 object-cover rounded" />}
-                                  <span className="truncate">{p.name}</span>
-                                </div>
-                              ))}
-                              {products.filter(p => p.name.toLowerCase().includes((productSearch[`${idx}-${field.key}`] || item[field.key] || '').toLowerCase())).length === 0 && (
-                                <div className="px-3 py-2 text-sm text-gray-500">No products found</div>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                        <LinkSelector 
+                          value={item[field.key] || ''}
+                          onChange={(val) => handleChange(idx, field.key, val)}
+                          products={products}
+                        />
                       ) : (
                         <input 
                           type={field.type === 'number' ? 'number' : 'text'}

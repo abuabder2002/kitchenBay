@@ -26,6 +26,7 @@ import {
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 const BulkInquiryModal = dynamic(() => import('@/components/BulkInquiryModal'), { ssr: false });
+const MobileImageViewer = dynamic(() => import('@/components/MobileImageViewer'), { ssr: false });
 import Image from 'next/image';
 import JsonLd from '@/components/seo/JsonLd';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
@@ -103,6 +104,9 @@ export default function ProductDetailPage() {
   const [isZoomed, setIsZoomed] = useState(false);
   const [backgroundPosition, setBackgroundPosition] = useState('center center');
 
+  const [isMobileViewerOpen, setIsMobileViewerOpen] = useState(false);
+  const [mobileViewerIndex, setMobileViewerIndex] = useState(0);
+
   const [activeTab, setActiveTab] = useState<'story' | 'Kitchenbay' | 'care'>('story');
 
   const allImages = [product?.image, ...(product?.subImages || [])].filter(Boolean) as string[];
@@ -110,6 +114,7 @@ export default function ProductDetailPage() {
   const currentIndex = allImages.indexOf(currentImage);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return; // Disable hover zoom on mobile
     if ((e.target as HTMLElement).closest('button')) {
       setIsZoomed(false);
       return;
@@ -229,9 +234,15 @@ export default function ProductDetailPage() {
             {/* Left: Image Gallery */}
             <div className="space-y-6">
               <div 
-                className="group relative w-full aspect-square bg-white rounded-sm overflow-hidden shadow-md cursor-crosshair"
+                className="group relative w-full aspect-square bg-white rounded-sm overflow-hidden shadow-md cursor-pointer md:cursor-crosshair"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
+                onClick={() => {
+                  if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                    setMobileViewerIndex(currentIndex);
+                    setIsMobileViewerOpen(true);
+                  }
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <Image
@@ -267,7 +278,13 @@ export default function ProductDetailPage() {
                   {allImages.map((img, idx) => (
                     <div 
                       key={idx} 
-                      onClick={() => setSelectedImage(img)}
+                      onClick={() => {
+                        setSelectedImage(img);
+                        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                          setMobileViewerIndex(idx);
+                          setIsMobileViewerOpen(true);
+                        }
+                      }}
                       className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${
                         currentImage === img 
                           ? 'border-[--color-brand-text] opacity-100' 
@@ -626,6 +643,13 @@ export default function ProductDetailPage() {
         )}
       </main>
       <Footer />
+
+      <MobileImageViewer 
+        isOpen={isMobileViewerOpen}
+        onClose={() => setIsMobileViewerOpen(false)}
+        images={allImages.map(img => normalizeImgSrc(img))}
+        initialIndex={mobileViewerIndex}
+      />
 
       {/* Bulk Order Inquiry Modal */}
       <BulkInquiryModal 

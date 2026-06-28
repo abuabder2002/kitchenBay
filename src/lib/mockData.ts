@@ -21,6 +21,7 @@ export interface Product {
   reviewCount: number;
   featured: boolean;
   isActive?: boolean;
+  sku?: string;
   height?: number;
   width?: number;
   length?: number;

@@ -528,7 +528,8 @@ export default function HomePage() {
           {isEditMode && <EditButton onClick={() => handleEditClick('materials', 'Materials', [
             { key: 'name', label: 'Name' },
             { key: 'desc', label: 'Description' },
-            { key: 'img', label: 'Image', type: 'image' }
+            { key: 'img', label: 'Image', type: 'image' },
+            { key: 'link', label: 'Link URL', type: 'product-link' }
           ], activeMaterials)} label="Edit Materials" />}
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -537,7 +538,7 @@ export default function HomePage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {activeMaterials.map((mat, idx) => (
-                <Link href={`/products?material=${mat.name}`} key={idx} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer">
+                <Link href={mat.link || `/products?material=${mat.name}`} key={idx} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer">
                   <Image src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute bottom-6 left-6 pr-6">
