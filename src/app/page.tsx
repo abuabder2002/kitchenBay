@@ -28,10 +28,10 @@ const defaultCategories = [
 ];
 
 const defaultMaterials = [
-  { name: 'Cast Iron', desc: 'Naturally non-stick & iron fortifying', img: '/images/home/material_cast_iron.png' },
-  { name: 'Pure Brass', desc: 'Timeless elegance & health benefits', img: '/images/home/material_pure_brass.png' },
-  { name: 'Copper', desc: 'Ayurvedic wellness for water storage', img: '/images/home/material_copper.png' },
-  { name: 'Soapstone', desc: 'Slow cooking for perfect flavor', img: '/images/home/material_soapstone.png' }
+  { name: 'Cast Iron', desc: 'Naturally non-stick & iron fortifying', img: '/images/home/material_cast_iron.png', link: '' },
+  { name: 'Pure Brass', desc: 'Timeless elegance & health benefits', img: '/images/home/material_pure_brass.png', link: '' },
+  { name: 'Copper', desc: 'Ayurvedic wellness for water storage', img: '/images/home/material_copper.png', link: '' },
+  { name: 'Soapstone', desc: 'Slow cooking for perfect flavor', img: '/images/home/material_soapstone.png', link: '' }
 ];
 
 const defaultJournalEntries = [
