@@ -423,8 +423,8 @@ export default function ProductDetailPage() {
                         onClick={handleAddToCart}
                         className={`flex-1 flex items-center justify-center gap-3 py-4 font-bold uppercase tracking-widest text-sm transition-all rounded-sm ${
                           added
-                            ? 'bg-[--color-brand-success] text-white'
-                            : 'bg-[--color-brand-text] hover:bg-[--color-brand-accent] text-[--color-brand-bg]'
+                            ? 'bg-brand-success text-white'
+                            : 'bg-brand-text hover:bg-brand-accent text-brand-bg'
                         }`}
                       >
                         {added ? <><Check size={18} /> Added</> : 'Add to Cart'}
@@ -456,7 +456,7 @@ export default function ProductDetailPage() {
 
                     <button
                       onClick={handleBuyNow}
-                      className="block w-full text-center py-4 border-2 border-[--color-brand-text] text-[--color-brand-text] font-bold uppercase tracking-widest text-sm hover:bg-[--color-brand-text] hover:text-[--color-brand-bg] transition-colors rounded-sm"
+                      className="block w-full text-center py-4 border-2 border-brand-text text-brand-text font-bold uppercase tracking-widest text-sm hover:bg-brand-text hover:text-brand-bg transition-colors rounded-sm"
                     >
                       Buy It Now
                     </button>
@@ -560,7 +560,7 @@ export default function ProductDetailPage() {
                   </p>
                   <button
                     onClick={() => setIsBulkModalOpen(true)}
-                    className="w-full bg-[--color-brand-text] hover:bg-[--color-brand-accent] text-white font-bold py-3 uppercase tracking-widest text-xs transition-colors rounded-sm"
+                    className="w-full bg-brand-text hover:bg-brand-accent text-white font-bold py-3 uppercase tracking-widest text-xs transition-colors rounded-sm"
                   >
                     Request Trade Quote
                   </button>

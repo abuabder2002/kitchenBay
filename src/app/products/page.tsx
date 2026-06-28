@@ -440,32 +440,57 @@ function ProductsContent() {
                     <button
                       disabled={page === 1}
                       onClick={() => setPage(p => Math.max(p - 1, 1))}
-                      className="px-4 py-2 border border-[--color-brand-text] text-sm font-semibold uppercase tracking-wider hover:bg-[--color-brand-text] hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[--color-brand-text] cursor-pointer disabled:cursor-not-allowed"
+                      className="px-4 py-2 border border-black text-sm font-semibold uppercase tracking-wider hover:bg-black hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-black cursor-pointer disabled:cursor-not-allowed bg-white text-black"
                     >
                       Prev
                     </button>
                     
-                    {Array.from({ length: Math.ceil(totalProducts / 12) }).map((_, idx) => {
-                      const pNum = idx + 1;
-                      return (
-                        <button
-                          key={pNum}
-                          onClick={() => setPage(pNum)}
-                          className={`w-10 h-10 border text-sm font-semibold transition-colors rounded-full flex items-center justify-center cursor-pointer ${
-                            page === pNum
-                              ? 'bg-[--color-brand-accent] border-[--color-brand-accent] text-white font-bold'
-                              : 'border-[--color-brand-border] text-[--color-brand-text] hover:border-[--color-brand-text]'
-                          }`}
-                        >
-                          {pNum}
-                        </button>
-                      );
-                    })}
+                    {(() => {
+                      const totalPages = Math.ceil(totalProducts / 12);
+                      const getPageNumbers = () => {
+                        if (totalPages <= 7) {
+                          return Array.from({ length: totalPages }, (_, i) => i + 1);
+                        }
+                        const pages: (number | string)[] = [];
+                        if (page <= 3) {
+                          pages.push(1, 2, 3, 4, '...', totalPages);
+                        } else if (page >= totalPages - 2) {
+                          pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+                        } else {
+                          pages.push(1, '...', page - 1, page, page + 1, '...', totalPages);
+                        }
+                        return pages;
+                      };
+
+                      return getPageNumbers().map((pNum, idx) => {
+                        if (pNum === '...') {
+                          return (
+                            <span key={`ellipsis-${idx}`} className="w-10 h-10 flex items-center justify-center text-[--color-brand-muted]">
+                              ...
+                            </span>
+                          );
+                        }
+                        
+                        return (
+                          <button
+                            key={pNum}
+                            onClick={() => setPage(pNum as number)}
+                            className={`w-10 h-10 border text-sm font-semibold transition-colors rounded-full flex items-center justify-center cursor-pointer ${
+                              page === pNum
+                                ? 'bg-brand-accent border-brand-accent text-white font-bold'
+                                : 'bg-white border-black text-black hover:bg-gray-100'
+                            }`}
+                          >
+                            {pNum}
+                          </button>
+                        );
+                      });
+                    })()}
                     
                     <button
                       disabled={page >= Math.ceil(totalProducts / 12)}
                       onClick={() => setPage(p => p + 1)}
-                      className="px-4 py-2 border border-[--color-brand-text] text-sm font-semibold uppercase tracking-wider hover:bg-[--color-brand-text] hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[--color-brand-text] cursor-pointer disabled:cursor-not-allowed"
+                      className="px-4 py-2 border border-black text-sm font-semibold uppercase tracking-wider hover:bg-black hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-black cursor-pointer disabled:cursor-not-allowed bg-white text-black"
                     >
                       Next
                     </button>
