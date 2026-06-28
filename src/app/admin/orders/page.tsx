@@ -159,7 +159,7 @@ export default function AdminOrdersPage() {
       case 'delivered':
         return {
           headline: 'Delivered! Enjoy your handcrafted treasure.',
-          message: 'Your order has been successfully delivered to your doorstep. We hope these authentic Indian handicrafts bring joy, style, and beauty to your home.',
+          message: 'Your order has been successfully delivered to your doorstep. We hope these items bring joy, style, and beauty to your home.',
           bg: 'bg-emerald-50/50',
         };
       case 'cancelled':
@@ -400,7 +400,7 @@ export default function AdminOrdersPage() {
                 {/* Email Logo Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6 text-center text-white select-none">
                   <h1 className="text-2xl font-bold tracking-wide">Kitchenbay</h1>
-                  <p className="text-xs text-blue-200 mt-1">Authentic Indian Handicrafts</p>
+                  <p className="text-xs text-blue-200 mt-1">The Home Needs</p>
                 </div>
 
                 {/* Email Body Content */}
@@ -453,20 +453,23 @@ export default function AdminOrdersPage() {
                   {/* Total breakdown section */}
                   <div className="border-t border-gray-100 pt-4 space-y-2 text-xs">
                     <div className="flex justify-between text-gray-500">
-                      <span>Subtotal</span>
+                      <span>Subtotal:</span>
                       <span>{formatPrice(activeNotification.order.subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-gray-500">
-                      <span>CGST</span>
-                      <span>{formatPrice(activeNotification.order.cgstAmount)}</span>
-                    </div>
-                    <div className="flex justify-between text-gray-500">
-                      <span>SGST</span>
-                      <span>{formatPrice(activeNotification.order.sgstAmount)}</span>
+                      <span>Shipping: Flat rate</span>
+                      <span>{formatPrice(activeNotification.order.shippingAmount)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-sm text-gray-900 border-t border-gray-100 pt-2">
-                      <span>Total Paid</span>
-                      <span className="text-blue-600">{formatPrice(activeNotification.order.total)}</span>
+                      <span>Total:</span>
+                      <div className="text-right">
+                        <span className="text-blue-600 block">{formatPrice(activeNotification.order.total)}</span>
+                        {activeNotification.order.gstAmount > 0 && (
+                          <span className="text-[10px] text-gray-500 block font-normal mt-0.5">
+                            (includes {formatPrice(activeNotification.order.gstAmount)} Tax)
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -483,7 +486,7 @@ export default function AdminOrdersPage() {
 
                 {/* Email Footer Copyright */}
                 <div className="bg-gray-50 border-t border-gray-100 py-4 text-center text-[10px] text-gray-400 select-none">
-                  © 2026 Kitchenbay Inc. 12 MG Road, Bangalore, India.
+                  &copy; 2015 KitchenBay Inc. 19/A Line Street, Attur, Salem, Tamil Nadu 636102.
                 </div>
 
               </div>
@@ -598,7 +601,7 @@ export default function AdminOrdersPage() {
                       <span className="font-bold">{formatPrice(selectedOrder.subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-emerald-400">
-                      <span>GST (18%)</span>
+                      <span>GST ({selectedOrder.subtotal > 0 ? Math.round((selectedOrder.gstAmount / selectedOrder.subtotal) * 100) : 5}%)</span>
                       <span>+ {formatPrice(selectedOrder.gstAmount)}</span>
                     </div>
                     <div className="flex justify-between text-blue-300">

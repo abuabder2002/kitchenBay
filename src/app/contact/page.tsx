@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Mail, MapPin, Loader2 } from 'lucide-react';
+import { Mail, MapPin, Loader2, Phone } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export default function ContactPage() {
@@ -64,15 +64,15 @@ export default function ContactPage() {
     <div className="min-h-screen flex flex-col bg-brand-bg font-sans">
       <Navbar />
       <main className="flex-1">
-        <div className="bg-brand-card py-20 text-center px-4 border-b border-gray-100">
+        <div className="bg-brand-card py-12 md:py-20 text-center px-4 border-b border-gray-100">
           <span className="text-brand-accent text-sm font-semibold tracking-[0.15em] uppercase mb-4 block">Get In Touch</span>
-          <h1 className="font-serif text-5xl font-bold text-brand-text mb-6">Contact Us</h1>
-          <p className="text-brand-muted max-w-2xl mx-auto text-lg">
+          <h1 className="font-serif text-4xl md:text-5xl font-bold text-brand-text mb-6">Contact Us</h1>
+          <p className="text-brand-muted max-w-2xl mx-auto text-base md:text-lg">
             We&apos;d love to hear from you. Reach out with any questions, support requests, or just to say hello.
           </p>
         </div>
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid md:grid-cols-2 gap-16">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-16">
             <div>
               <h2 className="font-serif text-3xl font-bold text-brand-text mb-8">Send a Message</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -133,8 +133,8 @@ export default function ContactPage() {
               </form>
             </div>
 
-            <div className="bg-brand-card p-10 rounded-2xl border border-gray-100 h-fit shadow-sm">
-              <h2 className="font-serif text-3xl font-bold text-brand-text mb-8">Contact Information</h2>
+            <div className="bg-brand-card p-6 md:p-10 rounded-2xl border border-gray-100 h-fit shadow-sm">
+              <h2 className="font-serif text-2xl md:text-3xl font-bold text-brand-text mb-8">Contact Information</h2>
               <div className="space-y-8">
                 <div className="flex items-start gap-5">
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
@@ -143,7 +143,18 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-bold text-brand-text mb-1">Email Us</h3>
                     <p className="text-brand-muted leading-relaxed">
-                      kitchenbay.co.in@gmail.com
+                      kitchenbaypvtltd@gmail.com
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-5">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                    <Phone className="text-brand-accent" size={22} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-brand-text mb-1">Call Us</h3>
+                    <p className="text-brand-muted leading-relaxed">
+                      +91 7502777766
                     </p>
                   </div>
                 </div>
@@ -154,7 +165,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-bold text-brand-text mb-1">Our Location</h3>
                     <p className="text-brand-muted leading-relaxed">
-                      Kitchenbay Private Limited<br />
+                      Kitchenbay The Home Needs (salem)<br />
                       19/A, Line Street<br />
                       Attur, Salem (DT)<br />
                       Tamil Nadu - 636102

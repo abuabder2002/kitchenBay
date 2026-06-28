@@ -7,10 +7,10 @@ import { Newspaper, Download } from 'lucide-react';
 
 export default function PressPage() {
   const pressReleases = [
-    { date: 'May 15, 2026', title: 'Kitchenbay Crosses 50,000 Customers Milestone', desc: 'Kitchenbay, India\'s leading handcrafted homeware platform, announced today that it has surpassed 50,000 happy customers, reflecting growing consumer demand for authentic Kitchenbay products.' },
-    { date: 'March 2, 2026', title: 'Kitchenbay Partners with 200+ New Kitchenbays from Northeast India', desc: 'In a landmark expansion, Kitchenbay onboarded over 200 Kitchenbays from the states of Assam, Manipur, and Meghalaya, bringing rare bamboo and cane craft to a nationwide audience.' },
-    { date: 'January 10, 2026', title: 'Kitchenbay Wins "Best D2C Brand" at India Retail Excellence Awards 2026', desc: 'Kitchenbay was honoured with the prestigious "Best D2C Brand" award at the India Retail Excellence Awards ceremony held in Mumbai.' },
-    { date: 'October 20, 2025', title: 'Kitchenbay Launches Express Delivery in 15 Tier-1 Cities', desc: 'Following strong demand, Kitchenbay launched same-day and next-day delivery services across Delhi, Mumbai, Bangalore, Chennai, Hyderabad, Pune, and 9 other major cities.' },
+    { date: 'May 15, 2026', title: 'Kitchenbay Crosses 500 Customers Milestone', desc: 'Kitchenbay, India\'s leading handcrafted homeware platform, announced today that it has surpassed 500 happy customers, reflecting growing consumer demand for authentic Kitchenbay products.' },
+    { date: 'March 2, 2026', title: 'Kitchenbay Partners with 20+ New Kitchenbays from Northeast India', desc: 'In a landmark expansion, Kitchenbay onboarded over 20 Kitchenbays from the states of Assam, Manipur, and Meghalaya, bringing rare bamboo and cane craft to a nationwide audience.' },
+    { date: 'January 10, 2026', title: 'Kitchenbay Wins "Most Promising D2C Brand" at India Retail Excellence Awards 2026', desc: 'Kitchenbay was honoured with the prestigious "Most Promising D2C Brand" award at the India Retail Excellence Awards ceremony held in Mumbai.' },
+    { date: 'October 20, 2025', title: 'Kitchenbay Launches Express Delivery in 5 Major Cities', desc: 'Following strong demand, Kitchenbay launched same-day and next-day delivery services across Delhi, Mumbai, Bangalore, Chennai, and Hyderabad.' },
   ];
 
   const mediaMentions = [

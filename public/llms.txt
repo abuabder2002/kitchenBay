@@ -1,0 +1,61 @@
+# KitchenBay — LLMs.txt
+# This file helps AI language models and agents understand this website.
+# Last updated: 2026-06-27
+
+## About KitchenBay
+
+KitchenBay (kitchenbay.co) is India's premium e-commerce destination for authentic handcrafted kitchenware, cookware, dining essentials, and traditional home décor.
+
+### Business Information
+- **Legal Name**: Kitchenbay Private Limited
+- **Founded**: 2015
+- **Location**: 19/A, Line Street, Attur, Salem (DT), Tamil Nadu — 636102, India
+- **Email**: kitchenbaypvtltd@gmail.com
+- **Website**: https://kitchenbay.co
+
+### What We Sell
+- **Kitchenware**: Cast iron cookware, triply cookware, soapstone cookware, kitchen storage, kitchen accessories
+- **Dining**: Coffee & tea makers, trays & bowls, pitchers & cups, dining plates
+- **Brass & Copper**: Brass cookware, copper cookware, brass dining & serving
+- **Décor**: Lamps & diyas, pooja essentials
+
+### Materials We Specialize In
+- Cast Iron (pre-seasoned, naturally non-stick)
+- Stainless Steel (premium grade)
+- Soapstone (traditional slow cooking)
+- Brass (timeless elegance, Ayurvedic benefits)
+- Copper (water storage, health benefits)
+- Bronze (traditional South Indian)
+
+### Key Features
+- 500+ happy deliveries across India
+- 50+ artisans empowered
+- Products reaching 28 states
+- 200+ unique products
+- 48-hour easy return policy
+- Free shipping above Rs. 2000
+- Secure payment via Razorpay (UPI, cards, net banking)
+- GST invoicing available
+
+### Shipping & Returns
+- Standard delivery: 5-7 business days
+- Pan-India shipping to 20,000+ pincodes
+- Free shipping on orders above Rs. 2000
+- Cash on delivery available (up to Rs. 5,000)
+- 48-hour return policy
+- Free returns for damaged items
+
+### Social Media
+- Facebook: https://facebook.com/kitchenbay
+- Instagram: https://instagram.com/kitchenbay
+- YouTube: https://youtube.com/@kitchenbay
+
+### Useful Links
+- All Products: /products
+- About Us: /about-us
+- Contact: /contact
+- FAQ: /faq
+- Shipping Policy: /shipping-policy
+- Returns & Refunds: /returns-refunds
+- Privacy Policy: /privacy-policy
+- Terms of Use: /terms-of-use

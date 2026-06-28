@@ -21,7 +21,24 @@ export async function GET(req: NextRequest) {
 
     const productIds = wishlist.items.map(item => item.productId);
     const dbProducts = await prisma.product.findMany({
-      where: { id: { in: productIds } }
+      where: { id: { in: productIds } },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        discountPrice: true,
+        gstPercent: true,
+        stock: true,
+        category: true,
+        subcategory: true,
+        material: true,
+        image: true,
+        rating: true,
+        reviewCount: true,
+        featured: true,
+        brand: true,
+        isActive: true,
+      }
     });
 
     const formattedProducts = dbProducts.map(p => {
@@ -33,7 +50,7 @@ export async function GET(req: NextRequest) {
       return {
         id: p.id,
         name: p.name,
-        description: p.description,
+        description: '',
         price: basePrice,
         originalPrice: originalPrice,
         finalPrice: finalPrice,
@@ -43,8 +60,8 @@ export async function GET(req: NextRequest) {
         category: p.category,
         subcategory: p.subcategory || p.category,
         material: p.material || 'Standard',
-        dimensions: p.dimensions,
-        tags: p.tags,
+        dimensions: null,
+        tags: [],
         image: p.image,
         rating: p.rating,
         reviewCount: p.reviewCount,

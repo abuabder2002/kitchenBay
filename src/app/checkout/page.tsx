@@ -12,6 +12,8 @@ import FormInput from '@/components/FormInput';
 import { useCart } from '@/lib/cartContext';
 import { useAuth } from '@/lib/authContext';
 import { getItemStock } from '@/lib/pricing';
+import { calcCheckoutPricingFromCoupon } from '@/lib/checkoutPricing';
+import PromoCodeInput from '@/components/PromoCodeInput';
 
 import {
   Check,
@@ -33,7 +35,7 @@ import {
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 
-type PaymentMethod = 'RAZORPAY' | 'COD';
+type PaymentMethod = 'RAZORPAY' | 'COD' | 'NETBANKING';
 
 // ── Load Razorpay checkout script dynamically ───────────────
 const loadRazorpayScript = () =>
@@ -55,7 +57,8 @@ const formatPrice = (p: number) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(p);
 
 const fmtTime = (s: number) =>
@@ -65,7 +68,7 @@ const fmtTime = (s: number) =>
 // CHECKOUT PAGE
 // ════════════════════════════════════════════════════════════
 export default function CheckoutPage() {
-  const { items, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total, clearCart } = useCart();
+  const { items, subtotal, taxableAmount, gstAmount, cgstAmount, sgstAmount, shippingFee, discountAmount, total, clearCart, appliedCoupon } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
 
@@ -80,7 +83,7 @@ export default function CheckoutPage() {
     pincode: '',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('RAZORPAY');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -100,6 +103,44 @@ export default function CheckoutPage() {
   const [countdown, setCountdown] = useState(TIMER_SECONDS);
   const [timerActive, setTimerActive] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [isFirstOrder, setIsFirstOrder] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetch('/api/orders')
+        .then(res => res.ok ? res.json() : [])
+        .then(orders => {
+          const completedOrders = orders.filter((o: any) => o.paymentStatus === 'PAID' || o.paymentStatus === 'COD_PENDING' || o.status === 'PROCESSING' || o.status === 'DELIVERED');
+          setIsFirstOrder(completedOrders.length === 0);
+        })
+        .catch(() => setIsFirstOrder(false));
+    } else {
+      setIsFirstOrder(false);
+    }
+  }, [currentUser]);
+
+  // ── Correct GST calculation via standalone pricing engine ──────────────────
+  // Uses calcCheckoutPricingFromCoupon from checkoutPricing.ts (zero external imports)
+  // so Turbopack can always bundle it for the client without mockData dependency.
+  const checkoutTotals = calcCheckoutPricingFromCoupon(
+    subtotal,
+    shippingFee,
+    appliedCoupon,
+    isFirstOrder,
+    paymentMethod,
+  );
+  const firstOrderDiscount  = checkoutTotals.firstOrderDiscount;
+  const gstAmountCheckout   = checkoutTotals.gstAmount;
+  const cgstAmountCheckout  = checkoutTotals.cgstAmount;
+  const sgstAmountCheckout  = checkoutTotals.sgstAmount;
+  const netBankingDiscount  = checkoutTotals.netBankingDiscount;
+  const totalSavings        = checkoutTotals.totalSavings;
+  const payableTotal        = checkoutTotals.payableTotal;
+
+  useEffect(() => {
+    // Temporarily removed the > 5999 force-switch to Razorpay since Razorpay is down
+  }, [payableTotal, paymentMethod]);
 
   useEffect(() => {
     if (!timerActive) return;
@@ -175,12 +216,15 @@ export default function CheckoutPage() {
             ...(item.size ? { size: item.size } : {})
           })),
           shippingAmount: shippingFee,
+          paymentMethod: paymentMethod,
           address: {
             street: form.address,
             city: form.city,
             state: form.state,
             zip: form.pincode,
           },
+          couponCode: appliedCoupon?.code,
+          discountAmount: discountAmount * 100, // sending in paise
         }),
       });
 
@@ -197,7 +241,7 @@ export default function CheckoutPage() {
         amount,
         currency,
         name: 'Kitchenbay',
-        description: 'Authentic Indian Handicrafts',
+        description: 'The Home Needs',
         order_id: razorpayOrderId,
         prefill: {
           name: form.fullName,
@@ -228,8 +272,8 @@ export default function CheckoutPage() {
             setTransactionId(response.razorpay_payment_id);
             setOrderedItems([...items]);
             setOrderedAddress({ ...form });
-            setOrderedMethod('Razorpay (UPI / Card / Netbanking)');
-            setOrderedTotal(total);
+            setOrderedMethod(paymentMethod === 'NETBANKING' ? 'Net Banking' : 'Razorpay (UPI / Card / Netbanking)');
+            setOrderedTotal(payableTotal);
             setPlacedOrderId(verifyData.orderId);
             clearCart();
             setOrdered(true);
@@ -243,23 +287,27 @@ export default function CheckoutPage() {
             });
 
             // Send Email Notification
-            fetch('/api/send-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                order: {
-                  id: verifyData.orderId,
-                  customer: form.fullName,
-                  email: form.email,
-                  items: items,
-                  subtotal,
-                  cgstAmount,
-                  sgstAmount,
-                  total
-                },
-                status: 'processing'
-              })
-            }).catch(console.error);
+            try {
+              await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  order: {
+                    id: verifyData.orderId,
+                    customer: form.fullName,
+                    email: form.email,
+                    items: items,
+                    subtotal: subtotal.toFixed(2),
+                    cgstAmount: cgstAmountCheckout.toFixed(2),
+                    sgstAmount: sgstAmountCheckout.toFixed(2),
+                    total: payableTotal.toFixed(2)
+                  },
+                  status: 'processing'
+                })
+              });
+            } catch (emailErr) {
+              console.error('Failed to send order email:', emailErr);
+            }
           } catch (err: any) {
             stopTimer();
             setPaymentFailed(true);
@@ -303,9 +351,9 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          totalAmount: total,
+          totalAmount: payableTotal,
           subtotalAmount: subtotal,
-          gstAmount: gstAmount,
+          gstAmount: gstAmountCheckout,
           shippingAmount: shippingFee,
           paymentStatus: 'COD_PENDING',
           items: items.map((item) => ({
@@ -320,6 +368,8 @@ export default function CheckoutPage() {
             state: form.state,
             zip: form.pincode,
           },
+          couponCode: appliedCoupon?.code,
+          discountAmount: discountAmount * 100, // sending in paise
         }),
       });
 
@@ -329,7 +379,7 @@ export default function CheckoutPage() {
       setOrderedItems([...items]);
       setOrderedAddress({ ...form });
       setOrderedMethod('Cash on Delivery');
-      setOrderedTotal(total);
+      setOrderedTotal(payableTotal);
       setPlacedOrderId(data.id);
       clearCart();
       setOrdered(true);
@@ -343,23 +393,27 @@ export default function CheckoutPage() {
       });
 
       // Send Email Notification
-      fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          order: {
-            id: data.id,
-            customer: form.fullName,
-            email: form.email,
-            items: items,
-            subtotal,
-            cgstAmount,
-            sgstAmount,
-            total
-          },
-          status: 'processing'
-        })
-      }).catch(console.error);
+      try {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order: {
+              id: data.id,
+              customer: form.fullName,
+              email: form.email,
+              items: items,
+              subtotal,
+              cgstAmount: cgstAmountCheckout,
+              sgstAmount: sgstAmountCheckout,
+              total: payableTotal
+            },
+            status: 'processing'
+          })
+        });
+      } catch (emailErr) {
+        console.error('Failed to send order email:', emailErr);
+      }
     } catch (err: any) {
       setErrorMsg(err.message || 'Error placing COD order.');
     } finally {
@@ -380,7 +434,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (paymentMethod === 'RAZORPAY') {
+    if (paymentMethod === 'RAZORPAY' || paymentMethod === 'NETBANKING') {
       await handleRazorpayPayment();
     } else {
       await handleCodPayment();
@@ -707,20 +761,32 @@ export default function CheckoutPage() {
                   {/* Razorpay */}
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('RAZORPAY')}
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'RAZORPAY'
-                      ? 'border-blue-600 bg-blue-50/50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
+                    disabled={true}
+                    className="flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left opacity-50 cursor-not-allowed bg-gray-50 border-gray-200"
                   >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'RAZORPAY' ? 'border-blue-600' : 'border-gray-300'}`}>
-                      {paymentMethod === 'RAZORPAY' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
+                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 border-gray-300">
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-950 flex items-center gap-1.5">
                         Razorpay Secure <ShieldCheck size={14} className="text-blue-600" />
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">UPI (QR / App Links), Cards, Netbanking, Wallets</p>
+                      <p className="text-xs text-red-500 mt-1 font-semibold">Online payment will be available soon (Under Review)</p>
+                    </div>
+                  </button>
+
+                  {/* Net Banking */}
+                  <button
+                    type="button"
+                    disabled={true}
+                    className="flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left opacity-50 cursor-not-allowed bg-gray-50 border-gray-200"
+                  >
+                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 border-gray-300">
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-950 flex items-center gap-1.5">
+                        Net Banking <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest bg-green-100 text-green-700 rounded-full leading-none whitespace-nowrap">2% OFF</span>
+                      </p>
+                      <p className="text-xs text-red-500 mt-1 font-semibold">Online payment will be available soon (Under Review)</p>
                     </div>
                   </button>
 
@@ -738,7 +804,9 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-950">Cash on Delivery</p>
-                      <p className="text-xs text-gray-400 mt-1">Pay with cash when your parcel is delivered at home.</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Pay with cash when your parcel is delivered at home.
+                      </p>
                     </div>
                   </button>
                 </div>
@@ -750,6 +818,18 @@ export default function CheckoutPage() {
                       <p className="text-xs font-bold text-blue-900">Seamless UPI checkout</p>
                       <p className="text-[11px] text-blue-800/80 leading-normal mt-0.5">
                         Includes automatic QR code generation, mobile app deep links (GPay, PhonePe, Paytm), and major cards/wallets natively inside the payment frame.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {paymentMethod === 'NETBANKING' && (
+                  <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-4 flex items-start gap-3">
+                    <Smartphone size={20} className="text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-bold text-emerald-900">Direct Net Banking Discount</p>
+                      <p className="text-[11px] text-emerald-800/80 leading-normal mt-0.5">
+                        Receive an additional 2% discount automatically applied. Select your bank inside the Razorpay modal.
                       </p>
                     </div>
                   </div>
@@ -806,27 +886,77 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Bill breakdown */}
-                <div className="border-t border-gray-100 pt-4 space-y-2.5">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Subtotal</span>
-                    <span className="font-semibold text-gray-700">{formatPrice(subtotal)}</span>
+                <div className="border-t border-gray-100 pt-4 space-y-3">
+                  <div className="pb-3 border-b border-gray-100">
+                    <PromoCodeInput />
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500 pb-2 border-b border-gray-100">
-                    <span>GST (18%)</span>
-                    <span>{formatPrice(gstAmount)}</span>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-semibold text-gray-800">{formatPrice(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-xs pt-2">
-                    <span className="text-gray-500">Shipping</span>
+                  {firstOrderDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-emerald-600 font-semibold">
+                      <span>First Order Discount</span>
+                      <span>-{formatPrice(firstOrderDiscount)}</span>
+                    </div>
+                  )}
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-emerald-600 font-semibold">
+                      <span>Coupon ({appliedCoupon?.code})</span>
+                      <span>-{formatPrice(discountAmount)}</span>
+                    </div>
+                  )}
+                  {(discountAmount > 0 || firstOrderDiscount > 0) && (
+                    <div className="flex justify-between text-sm border-t border-dashed border-gray-200 pt-2">
+                      <span className="text-gray-500">Taxable Amount</span>
+                      <span className="font-semibold text-gray-800">{formatPrice(checkoutTotals.taxableAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>GST 5%{(discountAmount > 0 || firstOrderDiscount > 0) ? ' (on taxable amount)' : ''}</span>
+                    <span className="font-semibold text-gray-800">{formatPrice(gstAmountCheckout)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Shipping</span>
                     {shippingFee > 0 ? (
-                      <span className="font-bold text-gray-700">{formatPrice(shippingFee)}</span>
+                      <span className="font-semibold text-gray-800">{formatPrice(shippingFee)}</span>
                     ) : (
                       <span className="font-bold text-emerald-600">FREE</span>
                     )}
                   </div>
-                  <div className="pt-2 flex justify-between items-center">
-                    <span className="font-bold text-gray-900 text-sm">Grand Total</span>
-                    <span className="text-2xl font-black text-blue-700">{formatPrice(total)}</span>
+                  {netBankingDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-emerald-600 font-semibold">
+                      <span>Net Banking Discount (2%)</span>
+                      <span>-{formatPrice(netBankingDiscount)}</span>
+                    </div>
+                  )}
+
+                  {/* Shipping rule helper text */}
+                  <div className="pt-1">
+                    {subtotal > 1999 ? (
+                      <p className="text-[10px] text-emerald-600 font-semibold">🎉 You qualify for Free Shipping!</p>
+                    ) : (
+                      <p className="text-[10px] text-amber-600 font-semibold">
+                        Free Shipping on orders above {formatPrice(1999)} (Add {formatPrice(1999 - subtotal)} more)
+                      </p>
+                    )}
                   </div>
+
+                  <div className="border-t border-gray-200 my-2" />
+
+                  <div className="pt-1 flex justify-between items-center">
+                    <span className="font-bold text-gray-900 text-sm">Grand Total</span>
+                    <span className="text-2xl font-black text-blue-700">{formatPrice(payableTotal)}</span>
+                  </div>
+
+                  {/* Savings card */}
+                  {totalSavings > 0 && (
+                    <div className="mt-4 p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-center animate-bounce">
+                      <p className="text-xs font-bold text-emerald-800">
+                        You Saved {formatPrice(totalSavings)} Today 🎉
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Place Order CTA */}
@@ -843,7 +973,7 @@ export default function CheckoutPage() {
                   ) : (
                     <>
                       <Lock size={16} />
-                      Pay Securely &mdash; {formatPrice(total)}
+                      Pay Securely &mdash; {formatPrice(payableTotal)}
                     </>
                   )}
                 </button>

@@ -4,16 +4,16 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Cancellation & Refund Policy | Kitchenbay',
-  description: 'Understand our 7-day return policy, cancellation procedures, and refund guidelines.',
+  description: 'Understand our 48-hour return policy, cancellation procedures, and refund guidelines.',
 };
 
 export default function ReturnsRefundsPage() {
   const sections = [
     {
-      title: '7 Day Return Policy',
+      title: '48-Hour Return Policy',
       content: (
         <>
-          <p className="mb-4">We offer you complete peace of mind while ordering at Kitchenbay – you can return all eligible items within 7 days of receipt of goods.</p>
+          <p className="mb-4">We offer you complete peace of mind while ordering at Kitchenbay – you can return all eligible items within 48 hours of receipt of goods.</p>
           <p className="mb-4">We care about your safety and hygiene, and we&apos;re happy to accept returns on unused cookware products. Please ensure that the product is unused and that the tags, boxes, and other packaging are intact.</p>
           <ul className="list-disc pl-6 space-y-2 mb-4">
             <li>For stainless steel cookware, refunds or replacements are only available for issues like size mismatches, dents, or broken/missing parts.</li>
@@ -29,9 +29,9 @@ export default function ReturnsRefundsPage() {
       content: (
         <>
           <p className="mb-4 font-semibold">What should I do if I receive a damaged item, wrong product or missing units in my order?</p>
-          <p className="mb-4">If an item is damaged, missing, or incorrect, please send a photo of the outer packaging and products received to our customer care within 7 days of receipt of the product.</p>
+          <p className="mb-4">If an item is damaged, missing, or incorrect, please send a photo of the outer packaging and products received to our customer care within 48 hours of receipt of the product.</p>
           <div className="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
-            <p><strong>Email:</strong> <a href="mailto:help@kitchenbay.in" className="text-blue-600 hover:underline">help@kitchenbay.in</a></p>
+            <p><strong>Email:</strong> <a href="mailto:kitchenbaypvtltd@gmail.com" className="text-blue-600 hover:underline">kitchenbaypvtltd@gmail.com</a></p>
           </div>
           <p>We will issue either a full refund or send the same item in exchange, as per your request.</p>
         </>

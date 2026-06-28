@@ -189,6 +189,7 @@ export default function Footer() {
                     type="email"
                     required
                     placeholder="Your email"
+                    aria-label="Email address for newsletter"
                     className="flex-1 rounded-lg bg-blue-700/50 border border-white/20 text-white placeholder:text-white/40 text-xs px-3 py-2.5 outline-none focus:border-white transition-colors min-w-0 shadow-sm"
                   />
                   <button
@@ -209,7 +210,7 @@ export default function Footer() {
       <div className="bg-blue-700 py-4 border-t border-white/10">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-white/70 text-sm font-medium">
-            © {new Date().getFullYear()} KitchenBay. All Rights Reserved.
+            &copy; 2015 KitchenBay. All Rights Reserved.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             {['Razorpay', 'UPI', 'Visa', 'Mastercard', 'NetBanking'].map((method) => (

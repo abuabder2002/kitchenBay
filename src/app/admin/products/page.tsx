@@ -2,19 +2,23 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, Search, Star, X, Upload, ShieldCheck } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Star, X, Upload, ShieldCheck, Package } from 'lucide-react';
 import { useProducts } from '@/lib/productsContext';
 import { categories, subcategories, Product } from '@/lib/mockData';
 
 export default function AdminProductsPage() {
-  const { products, toggleFeatured, deleteProduct, updateProduct } = useProducts();
+  const { products, toggleFeatured, deleteProduct, updateProduct, refreshProducts } = useProducts();
   const [searchQuery, setSearchQuery] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  useEffect(() => {
+    refreshProducts();
+  }, [refreshProducts]);
+
   const formatPrice = (p: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p);
+    'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(p);
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
@@ -52,6 +56,8 @@ export default function AdminProductsPage() {
         updated.rating = parseFloat(value) || 0;
       } else if (id === 'reviewCount') {
         updated.reviewCount = parseInt(value) || 0;
+      } else if (id === 'shippingFee') {
+        updated.shippingFee = value ? parseFloat(value) : undefined;
       }
       
       return updated;
@@ -176,6 +182,30 @@ export default function AdminProductsPage() {
     });
   };
 
+  const addEditAttribute = () => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      return { ...prev, attributes: [...(prev.attributes || []), { name: '', value: '' }] };
+    });
+  };
+
+  const removeEditAttribute = (idx: number) => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      return { ...prev, attributes: (prev.attributes || []).filter((_, i) => i !== idx) };
+    });
+  };
+
+  const updateEditAttribute = (idx: number, field: 'name' | 'value', val: string) => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      return { 
+        ...prev, 
+        attributes: (prev.attributes || []).map((attr, i) => i === idx ? { ...attr, [field]: val } : attr)
+      };
+    });
+  };
+
   const availableSubcategories = editingProduct 
     ? subcategories.filter(s => s.category === editingProduct.category) 
     : [];
@@ -212,7 +242,8 @@ export default function AdminProductsPage() {
 
       const payload = {
         ...editingProduct,
-        variants: processedVariants
+        variants: processedVariants,
+        attributes: editingProduct.attributes?.filter(a => a.name.trim() !== '' && a.value.trim() !== '') || undefined
       };
 
       const result = await updateProduct(editingProduct.id, payload);
@@ -323,7 +354,19 @@ export default function AdminProductsPage() {
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
-                          onClick={() => setEditingProduct(p)}
+                          onClick={async () => {
+                            try {
+                              const res = await fetch(`/api/products/${p.id}`);
+                              if (res.ok) {
+                                const fullProduct = await res.json();
+                                setEditingProduct(fullProduct);
+                              } else {
+                                setEditingProduct(p);
+                              }
+                            } catch {
+                              setEditingProduct(p);
+                            }
+                          }}
                           className="w-8 h-8 bg-blue-50 hover:bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center transition-colors" 
                           title="Edit"
                         >
@@ -453,9 +496,20 @@ export default function AdminProductsPage() {
                       id="material"
                       type="text"
                       placeholder="e.g. Cast Iron, Copper"
-                      value={editingProduct.material}
+                      value={editingProduct.material || ''}
                       onChange={handleEditChange}
                       required
+                      className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="brand" className="text-sm font-medium text-gray-700">Brand</label>
+                    <input
+                      id="brand"
+                      type="text"
+                      placeholder="e.g. KitchenBay"
+                      value={editingProduct.brand || ''}
+                      onChange={handleEditChange}
                       className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
                     />
                   </div>
@@ -528,6 +582,29 @@ export default function AdminProductsPage() {
                       <option value="18">18% — Standard</option>
                       <option value="28">28% — Luxury</option>
                     </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="shippingFee" className="text-sm font-medium text-gray-700">Shipping Fee (₹)</label>
+                    <input
+                      id="shippingFee"
+                      type="number"
+                      value={editingProduct.shippingFee ?? ''}
+                      onChange={handleEditChange}
+                      className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="shippingMethod" className="text-sm font-medium text-gray-700">Shipping Method</label>
+                    <input
+                      id="shippingMethod"
+                      type="text"
+                      value={editingProduct.shippingMethod || ''}
+                      onChange={handleEditChange}
+                      className="w-full px-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
+                    />
                   </div>
                 </div>
 
@@ -610,6 +687,45 @@ export default function AdminProductsPage() {
                       </div>
                     </>
                   )}
+                </div>
+
+                {/* Dynamic Attributes */}
+                <div className="pt-2 mt-4 border-t border-gray-100">
+                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2"><Package size={16} className="text-blue-600"/> Custom Attributes</h3>
+                  <div className="space-y-3 mb-4">
+                    {(editingProduct.attributes || []).map((attr, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Capacity (Liters)" 
+                          value={attr.name} 
+                          onChange={(e) => updateEditAttribute(idx, 'name', e.target.value)}
+                          className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="e.g. 2L" 
+                          value={attr.value} 
+                          onChange={(e) => updateEditAttribute(idx, 'value', e.target.value)}
+                          className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200"
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => removeEditAttribute(idx)}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={addEditAttribute}
+                    className="text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    + Add Attribute
+                  </button>
                 </div>
 
                 {/* Image Upload Option */}

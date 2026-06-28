@@ -9,6 +9,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     
     const priceInPaise = data.price !== undefined ? Math.round(data.price * 100) : undefined;
     const originalPriceInPaise = data.originalPrice !== undefined ? Math.round(data.originalPrice * 100) : undefined;
+    const shippingFeeInPaise = data.shippingFee !== undefined ? Math.round(data.shippingFee * 100) : undefined;
 
     const updateData: any = { ...data };
     delete updateData.id;
@@ -25,6 +26,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     
     if (priceInPaise !== undefined) updateData.price = priceInPaise;
     if (originalPriceInPaise !== undefined) updateData.discountPrice = originalPriceInPaise;
+    if (shippingFeeInPaise !== undefined) updateData.shippingFee = shippingFeeInPaise;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
@@ -59,5 +61,34 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   } catch (error) {
     console.error('Error deleting product:', error);
     return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
+  }
+}
+
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const existing = await prisma.product.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Product not found in database' }, { status: 404 });
+    }
+
+    const basePrice = existing.price / 100;
+    const originalPrice = existing.discountPrice ? existing.discountPrice / 100 : basePrice;
+    const shippingFee = existing.shippingFee !== null ? existing.shippingFee / 100 : null;
+    const discount = originalPrice > basePrice ? Math.round(((originalPrice - basePrice) / originalPrice) * 100) : 0;
+
+    const formattedProduct = {
+      ...existing,
+      price: basePrice,
+      originalPrice,
+      finalPrice: basePrice,
+      shippingFee,
+      discount
+    };
+
+    return NextResponse.json(formattedProduct);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return NextResponse.json({ error: 'Failed to fetch product', details: (error as Error)?.message || String(error) }, { status: 500 });
   }
 }

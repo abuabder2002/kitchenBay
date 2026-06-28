@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Product } from './mockData';
 import { useAuth } from './authContext';
 import { useProducts } from './productsContext';
@@ -221,8 +221,17 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [state.loadingItems]
   );
 
+  const contextValue = useMemo(() => ({
+    items: state.items,
+    addItem,
+    removeItem,
+    clearWishlist,
+    isInWishlist,
+    isItemLoading
+  }), [state.items, addItem, removeItem, clearWishlist, isInWishlist, isItemLoading]);
+
   return (
-    <WishlistContext.Provider value={{ items: state.items, addItem, removeItem, clearWishlist, isInWishlist, isItemLoading }}>
+    <WishlistContext.Provider value={contextValue}>
       {children}
     </WishlistContext.Provider>
   );

@@ -109,8 +109,8 @@ export default function PrivacyPolicyPage() {
         <>
           <p className="mb-4">If you have questions, concerns, or feedback related to this Privacy Policy, feel free to contact:</p>
           <div className="space-y-2">
-            <p>📧 <strong>Email:</strong> <a href="mailto:kitchenbay.co.in@gmail.com" className="text-blue-600 hover:underline">kitchenbay.co.in@gmail.com</a></p>
-            <p>🏢 <strong>Address:</strong> Kitchenbay Private Limited, 19/A, Line Street, Attur, Salem (DT) - 636102</p>
+            <p>📧 <strong>Email:</strong> <a href="mailto:kitchenbaypvtltd@gmail.com" className="text-blue-600 hover:underline">kitchenbaypvtltd@gmail.com</a></p>
+            <p>🏢 <strong>Address:</strong> Kitchenbay The Home Needs (salem), 19/A, Line Street, Attur, Salem (DT) - 636102</p>
           </div>
         </>
       )

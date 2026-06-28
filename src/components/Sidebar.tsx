@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import logoImg from '../images/logo.jpeg';
-import { Home, Package, ShoppingBag, BarChart2, Settings, LogOut, ChevronRight, Menu, Video, Upload, Tag, Layers } from 'lucide-react';
+import { Home, Package, ShoppingBag, BarChart2, Settings, LogOut, ChevronRight, Menu, Video, Upload, Tag, Layers, Gift } from 'lucide-react';
 import { useState } from 'react';
 
 interface NavItem {
@@ -22,6 +22,7 @@ const navItems: NavItem[] = [
   { href: '/admin/bulk-upload', label: 'Bulk Upload', icon: <Upload size={18} /> },
   { href: '/admin/orders', label: 'Orders', icon: <Home size={18} /> },
   { href: '/admin/bulk-inquiries', label: 'Bulk Inquiries', icon: <ShoppingBag size={18} /> },
+  { href: '/admin/marketing/coupons', label: 'Coupons', icon: <Gift size={18} /> },
   { href: '/admin/videos', label: 'Videos', icon: <Video size={18} /> },
 ];
 

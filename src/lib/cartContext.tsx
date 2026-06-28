@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Product, CartItem } from './mockData';
 import { useAuth } from './authContext';
 import { useProducts } from './productsContext';
@@ -8,6 +8,7 @@ import { calcCartTotals, getItemBasePrice, getItemStock } from './pricing';
 
 interface CartState {
   items: CartItem[];
+  appliedCoupon: { code: string; discountAmount: number; type: string } | null;
 }
 
 type CartAction =
@@ -15,16 +16,19 @@ type CartAction =
   | { type: 'ADD_ITEM'; product: Product; size?: string }
   | { type: 'REMOVE_ITEM'; productId: string; size?: string }
   | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number; size?: string }
-  | { type: 'CLEAR_CART' };
+  | { type: 'CLEAR_CART' }
+  | { type: 'APPLY_COUPON'; coupon: { code: string; discountAmount: number; type: string } }
+  | { type: 'REMOVE_COUPON' };
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'SET_ITEMS':
-      return { items: action.items };
+      return { ...state, items: action.items };
     case 'ADD_ITEM': {
       const existing = state.items.find(i => i.product.id === action.product.id && (i.size || "") === (action.size || ""));
       if (existing) {
         return {
+          ...state,
           items: state.items.map(i =>
             i.product.id === action.product.id && (i.size || "") === (action.size || "")
               ? { ...i, quantity: i.quantity + 1 }
@@ -32,21 +36,26 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           ),
         };
       }
-      return { items: [...state.items, { product: action.product, quantity: 1, size: action.size }] };
+      return { ...state, items: [...state.items, { product: action.product, quantity: 1, size: action.size }] };
     }
     case 'REMOVE_ITEM':
-      return { items: state.items.filter(i => !(i.product.id === action.productId && (i.size || "") === (action.size || ""))) };
+      return { ...state, items: state.items.filter(i => !(i.product.id === action.productId && (i.size || "") === (action.size || ""))) };
     case 'UPDATE_QUANTITY':
       if (action.quantity <= 0) {
-        return { items: state.items.filter(i => !(i.product.id === action.productId && (i.size || "") === (action.size || ""))) };
+        return { ...state, items: state.items.filter(i => !(i.product.id === action.productId && (i.size || "") === (action.size || ""))) };
       }
       return {
+        ...state,
         items: state.items.map(i =>
           i.product.id === action.productId && (i.size || "") === (action.size || "") ? { ...i, quantity: action.quantity } : i
         ),
       };
     case 'CLEAR_CART':
-      return { items: [] };
+      return { items: [], appliedCoupon: null };
+    case 'APPLY_COUPON':
+      return { ...state, appliedCoupon: action.coupon };
+    case 'REMOVE_COUPON':
+      return { ...state, appliedCoupon: null };
     default:
       return state;
   }
@@ -54,17 +63,22 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, size?: string) => void;
+  addItem: (product: Product, size?: string, skipDrawer?: boolean) => void;
   removeItem: (productId: string, size?: string) => void;
   updateQuantity: (productId: string, quantity: number, size?: string) => void;
   clearCart: () => void;
+  appliedCoupon: { code: string; discountAmount: number; type: string } | null;
+  applyCoupon: (code: string) => Promise<{ success: boolean; error?: string }>;
+  removeCoupon: () => void;
   itemCount: number;
   subtotal: number;       // Sum of base prices (NO GST)
-  gstAmount: number;      // Total GST
+  taxableAmount: number;  // subtotal - coupon discount
+  gstAmount: number;      // 5% GST on taxableAmount
   cgstAmount: number;
   sgstAmount: number;
-  shippingFee: number;    // Always ₹99 when cart has items
-  total: number;          // subtotal + gst + shipping
+  shippingFee: number;    // ₹99 or 0
+  discountAmount: number; // Coupon discount in RUPEES
+  total: number;          // taxableAmount + gst + shipping
   isDrawerOpen: boolean;
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -77,13 +91,15 @@ const STORAGE_KEY = 'Kitchenbay_cart_guest';
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
   const { products } = useProducts();
-  const [state, dispatch] = useReducer(cartReducer, { items: [] });
+  const [state, dispatch] = useReducer(cartReducer, { items: [], appliedCoupon: null });
   const [serverData, setServerData] = useState<{productId: string, quantity: number, size?: string}[] | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Track whether we have loaded from localStorage yet
   const hasHydrated = useRef(false);
   const didServerSync = useRef(false);
+  const checkedUrlCoupon = useRef(false);
+
 
   // ── STEP 1: On client mount, load from localStorage ──
   useEffect(() => {
@@ -149,26 +165,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
   }, [currentUser]);
 
-  // ── STEP 4: Map server data when products finish loading ──
+  // ── STEP 4: Map server data directly from API ──
   useEffect(() => {
     if (!serverData) return;
     
-    // Check if we have mapped all products
-    const mapped = serverData.map((d) => {
-      const p = products.find(p => p.id === d.productId);
+    const mapped = serverData.map((d: any) => {
+      const p = d.product || products.find(p => p.id === d.productId);
       return {
         product: p,
         quantity: d.quantity,
-        ...(d.size ? { size: d.size } : {})
-      };
+        size: d.size || ""
+      } as CartItem;
     }).filter((i): i is CartItem => !!i.product);
 
-    // Only update if we found at least some products. 
-    // This will naturally re-run and find more if 'products' updates asynchronously from DB.
-    if (mapped.length > 0) {
+    if (mapped.length > 0 || (currentUser && serverData.length === 0)) {
       dispatch({ type: 'SET_ITEMS', items: mapped });
     }
-  }, [serverData, products]);
+  }, [serverData, products, currentUser]);
 
   // ── STEP 5: Auto-validate cart against live products stock ──
   useEffect(() => {
@@ -196,9 +209,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [products, state.items]);
 
-  const addItem = useCallback(async (product: Product, size?: string) => {
+  const addItem = useCallback(async (product: Product, size?: string, skipDrawer?: boolean) => {
     dispatch({ type: 'ADD_ITEM', product, size });
-    setIsDrawerOpen(true); // Open drawer when item added
+    if (!skipDrawer) {
+      setIsDrawerOpen(true); // Open drawer when item added
+    }
     if (currentUser) {
       fetch('/api/cart', {
         method: 'POST',
@@ -236,18 +251,98 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [currentUser]);
 
   // ── Pricing calculations using centralized utility ──
-  const { subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total } = calcCartTotals(state.items);
+  const { subtotal, taxableAmount, gstAmount, cgstAmount, sgstAmount, shippingFee, discountAmount, total } = calcCartTotals(state.items, state.appliedCoupon);
+
+  const applyCoupon = useCallback(async (code: string) => {
+    try {
+      // Use subtotal from base items
+      const res = await fetch('/api/coupons/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, subtotal }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to apply coupon' };
+      }
+      dispatch({ type: 'APPLY_COUPON', coupon: data.coupon });
+      return { success: true };
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: 'Network error while applying coupon' };
+    }
+  }, [subtotal]);
+
+  // ── Auto-Apply Coupon from URL ──
+  useEffect(() => {
+    if (typeof window === 'undefined' || checkedUrlCoupon.current) return;
+    checkedUrlCoupon.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('coupon');
+    if (code) {
+      applyCoupon(code).then(res => {
+        if (res.success) {
+          // Optionally remove the param from URL, but leaving it is fine for MVP
+        }
+      });
+    }
+  }, [applyCoupon]);
+
+  const removeCoupon = useCallback(() => {
+    dispatch({ type: 'REMOVE_COUPON' });
+  }, []);
+
   const itemCount = state.items.reduce((sum, i) => sum + i.quantity, 0);
 
   const openDrawer = useCallback(() => setIsDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
 
+  const contextValue = useMemo(() => ({
+    items: state.items,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    appliedCoupon: state.appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    itemCount,
+    subtotal,
+    taxableAmount,
+    gstAmount,
+    cgstAmount,
+    sgstAmount,
+    shippingFee,
+    discountAmount,
+    total,
+    isDrawerOpen,
+    openDrawer,
+    closeDrawer
+  }), [
+    state.items,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    state.appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    itemCount,
+    subtotal,
+    taxableAmount,
+    gstAmount,
+    cgstAmount,
+    sgstAmount,
+    shippingFee,
+    discountAmount,
+    total,
+    isDrawerOpen,
+    openDrawer,
+    closeDrawer
+  ]);
+
   return (
-    <CartContext.Provider value={{ 
-      items: state.items, addItem, removeItem, updateQuantity, clearCart, 
-      itemCount, subtotal, gstAmount, cgstAmount, sgstAmount, shippingFee, total,
-      isDrawerOpen, openDrawer, closeDrawer
-    }}>
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   );

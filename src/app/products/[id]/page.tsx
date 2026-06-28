@@ -2,9 +2,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+// Normalize image src: handle URLs, /paths, data URIs, and raw base64
+function normalizeImgSrc(src: string | undefined | null): string {
+  if (!src) return '/artisan_kitchenware.png';
+  if (src.startsWith('http') || src.startsWith('/') || src.startsWith('data:')) return src;
+  return `data:image/jpeg;base64,${src}`;
+}
+
 
 import { useParams, notFound, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -14,16 +21,55 @@ import { useAuth } from '@/lib/authContext';
 import { useWishlist } from '@/lib/wishlistContext';
 import { getItemBasePrice, getItemStock } from '@/lib/pricing';
 import {
-  Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus, Heart
+  Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus, Heart, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
-import BulkInquiryModal from '@/components/BulkInquiryModal';
+import dynamic from 'next/dynamic';
+const BulkInquiryModal = dynamic(() => import('@/components/BulkInquiryModal'), { ssr: false });
 import Image from 'next/image';
+import JsonLd from '@/components/seo/JsonLd';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
+import { productSchema } from '@/lib/schemas';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { products } = useProducts();
-  const product = products.find((p: any) => p.id === id);
+  const contextProduct = products.find((p: any) => p.id === id);
+  const [product, setProduct] = useState<any>(contextProduct);
+  const [isLoading, setIsLoading] = useState(!contextProduct);
+
+  useEffect(() => {
+    setSelectedImage(null);
+    setQuantity(1);
+    setIsDescriptionExpanded(false);
+    
+    // Reset selected size when product changes
+    if (contextProduct) {
+      const vSizes = contextProduct.variants ? Object.keys(contextProduct.variants).filter(Boolean) : [];
+      const lSizes = contextProduct.sizeCategory ? String(contextProduct.sizeCategory).split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+      const aSizes = vSizes.length > 0 ? vSizes : lSizes;
+      setSelectedSize(aSizes[0] || '');
+    } else {
+      setSelectedSize('');
+    }
+
+    fetch(`/api/products/${id}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && !data.error) {
+          setProduct(data);
+          const vSizes = data.variants ? Object.keys(data.variants).filter(Boolean) : [];
+          const lSizes = data.sizeCategory ? String(data.sizeCategory).split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+          const aSizes = vSizes.length > 0 ? vSizes : lSizes;
+          setSelectedSize(aSizes[0] || '');
+        }
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setIsLoading(false);
+      });
+  }, [id]);
   const { addItem, items } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
@@ -31,7 +77,7 @@ export default function ProductDetailPage() {
 
   const variants = product?.variants as Record<string, any> | undefined;
   const variantSizes = variants ? Object.keys(variants).filter(Boolean) : [];
-  const legacySizes = product?.sizeCategory ? product.sizeCategory.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const legacySizes = product?.sizeCategory ? product.sizeCategory.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
   const availableSizes = variantSizes.length > 0 ? variantSizes : legacySizes;
 
   const [selectedSize, setSelectedSize] = useState<string>(availableSizes[0] || '');
@@ -52,9 +98,48 @@ export default function ProductDetailPage() {
   const [added, setAdded] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [backgroundPosition, setBackgroundPosition] = useState('center center');
+
   const [activeTab, setActiveTab] = useState<'story' | 'Kitchenbay' | 'care'>('story');
 
+  const allImages = [product?.image, ...(product?.subImages || [])].filter(Boolean) as string[];
+  const currentImage = selectedImage || allImages[0] || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop';
+  const currentIndex = allImages.indexOf(currentImage);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button')) {
+      setIsZoomed(false);
+      return;
+    }
+    setIsZoomed(true);
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setBackgroundPosition(`${x}% ${y}%`);
+  };
+
+  const handleMouseLeave = () => {
+    setIsZoomed(false);
+  };
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (allImages.length <= 1) return;
+    const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+    setSelectedImage(allImages[prevIndex]);
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (allImages.length <= 1) return;
+    const nextIndex = (currentIndex + 1) % allImages.length;
+    setSelectedImage(allImages[nextIndex]);
+  };
+
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[--color-brand-bg]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div></div>;
   if (!product) return notFound();
 
   const related = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
@@ -72,8 +157,9 @@ export default function ProductDetailPage() {
     ? Math.round(displayBasePrice / (1 - product.discount / 100))
     : 0;
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
+  const formatPrice = (price: number) => {
+    return 'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(price);
+  };
 
   const handleAddToCart = () => {
     if (availableSizes.length > 0 && !selectedSize) {
@@ -98,51 +184,101 @@ export default function ProductDetailPage() {
     setTimeout(() => setAdded(false), 2000);
   };
 
+  const handleBuyNow = () => {
+    if (availableSizes.length > 0 && !selectedSize) {
+      setSizeError(true);
+      return;
+    }
+    setSizeError(false);
+    
+    if (displayStock <= 0) {
+      alert('This item is out of stock.');
+      return;
+    }
+    
+    const currentInCart = items.find(i => i.product.id === product.id && (i.size || "") === (selectedSize || ""))?.quantity || 0;
+    if (currentInCart + quantity > displayStock) {
+      alert(`You can only add up to ${displayStock} units. You already have ${currentInCart} in your cart.`);
+      return;
+    }
+
+    for (let i = 0; i < quantity; i++) addItem(product, selectedSize, true);
+    if (!currentUser) {
+      router.push('/login?next=/checkout&message=checkout');
+    } else {
+      router.push('/checkout');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[--color-brand-bg]">
       <Navbar />
       <main className="flex-1 w-full pb-24">
         
-        {/* Breadcrumb */}
-        <div className="border-b border-[--color-brand-border] bg-white">
-          <nav className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-2 text-xs uppercase tracking-widest text-[--color-brand-muted]">
-            <Link href="/" className="hover:text-[--color-brand-text] transition-colors">Home</Link>
-            <span>/</span>
-            <Link href="/products" className="hover:text-[--color-brand-text] transition-colors">Products</Link>
-            <span>/</span>
-            <span className="text-[--color-brand-text] font-bold line-clamp-1">{product.name}</span>
-          </nav>
-        </div>
+        <JsonLd data={productSchema(product)} />
+        <Breadcrumbs items={[
+          { name: 'Home', href: '/' },
+          { name: 'Products', href: '/products' },
+          ...(product.category ? [{ name: product.category, href: `/products?category=${product.category}` }] : []),
+          { name: product.name, href: `/products/${product.id}` },
+        ]} />
 
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-16">
             
             {/* Left: Image Gallery */}
             <div className="space-y-6">
-              <div className="relative w-full aspect-square bg-white rounded-sm overflow-hidden shadow-md">
+              <div 
+                className="group relative w-full aspect-square bg-white rounded-sm overflow-hidden shadow-md cursor-crosshair"
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <Image
-                  src={selectedImage || product.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop'}
+                  src={normalizeImgSrc(currentImage)}
                   alt={product.name}
                   fill
-                  className="object-contain"
-                  priority
+                  priority={true}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className={`absolute inset-0 w-full h-full object-contain transition-transform ease-out duration-150 ${isZoomed ? 'scale-[2.5]' : 'scale-100'}`}
+                  style={{ transformOrigin: isZoomed ? backgroundPosition : 'center center' }}
                 />
+                
+                {allImages.length > 1 && (
+                  <>
+                    <button 
+                      onClick={handlePrevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button 
+                      onClick={handleNextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </>
+                )}
               </div>
-              <div className="grid grid-cols-4 gap-4">
-                 {[product.image, ...(product.subImages || [])].filter(Boolean).map((img, idx) => (
-                   <div 
-                     key={idx} 
-                     onClick={() => setSelectedImage(img)}
-                     className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${
-                       (selectedImage === img) || (!selectedImage && idx === 0) 
-                         ? 'border-[--color-brand-text] opacity-100' 
-                         : 'border-transparent opacity-60 hover:opacity-100'
-                     }`}
-                   >
-                      <Image src={img || ''} alt={`Thumb ${idx + 1}`} fill className="object-contain" />
-                   </div>
-                 ))}
-              </div>
+              
+              {allImages.length > 1 && (
+                <div className="grid grid-cols-4 gap-4">
+                  {allImages.map((img, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => setSelectedImage(img)}
+                      className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${
+                        currentImage === img 
+                          ? 'border-[--color-brand-text] opacity-100' 
+                          : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                        <Image src={normalizeImgSrc(img)} alt={`Thumb ${idx + 1}`} fill sizes="100px" className="absolute inset-0 w-full h-full object-contain" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Right: Sticky Details */}
@@ -151,9 +287,16 @@ export default function ProductDetailPage() {
                 
                 {/* Header */}
                 <div>
-                  <span className="inline-block text-xs font-bold text-[--color-brand-accent] uppercase tracking-widest mb-4 border border-[--color-brand-accent] px-3 py-1">
-                    {product.material}
-                  </span>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="inline-block text-xs font-bold text-[--color-brand-accent] uppercase tracking-widest border border-[--color-brand-accent] px-3 py-1">
+                      {product.material}
+                    </span>
+                    {product.brand && (
+                      <span className="inline-block text-xs font-bold text-gray-500 uppercase tracking-widest border border-gray-300 px-3 py-1">
+                        Brand: {product.brand}
+                      </span>
+                    )}
+                  </div>
                   <h1 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] leading-tight mb-4">
                     {product.name}
                   </h1>
@@ -175,15 +318,18 @@ export default function ProductDetailPage() {
                 {/* Price block — Base MRP only. GST applied only at checkout. */}
                 <div className="pt-6 border-t border-[--color-brand-border]">
                   <div className="flex items-baseline gap-4 mb-2">
-                    <span className="text-3xl font-bold text-[--color-brand-text]">{formatPrice(displayBasePrice)}</span>
+                    <span className="text-3xl font-bold text-[--color-brand-text]">{formatPrice(displayBasePrice * quantity)}</span>
+                    {quantity > 1 && (
+                      <span className="text-sm text-[--color-brand-muted]">({formatPrice(displayBasePrice)} each)</span>
+                    )}
                     {hasDiscount && displayOriginalPrice > 0 && (
-                      <span className="text-xl line-through text-[--color-brand-muted]">{formatPrice(displayOriginalPrice)}</span>
+                      <span className="text-xl line-through text-[--color-brand-muted]">{formatPrice(displayOriginalPrice * quantity)}</span>
                     )}
                     {hasDiscount && (
                       <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{product.discount}% off</span>
                     )}
                   </div>
-                  <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-1">+ GST & shipping at checkout</p>
+                  <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-1">GST (5%) Added & shipping at checkout</p>
 
 
                 </div>
@@ -194,17 +340,41 @@ export default function ProductDetailPage() {
                     <Info size={12} />
                     About this Product
                   </p>
-                  <div className="space-y-3">
-                    {product.description
-                      .split(/\n+/)
-                      .map((para, i) => para.trim())
-                      .filter(para => para.length > 0)
-                      .map((para, i) => (
-                        <p key={i} className="text-[--color-brand-text] leading-relaxed text-sm">
-                          {para}
-                        </p>
-                      ))
-                    }
+                  <div className="space-y-3 text-sm text-[--color-brand-text] leading-relaxed">
+                    {product.description.length > 250 && !isDescriptionExpanded ? (
+                      <p>
+                        {product.description.slice(0, 250)}...
+                        <button
+                          type="button"
+                          onClick={() => setIsDescriptionExpanded(true)}
+                          className="ml-2 font-bold text-[--color-brand-accent] hover:underline focus:outline-none"
+                        >
+                          Read More
+                        </button>
+                      </p>
+                    ) : (
+                      <>
+                        {product.description
+                          .split(/\n+/)
+                          .map((para: string) => para.trim())
+                          .filter((para: string) => para.length > 0)
+                          .map((para: string, i: number) => (
+                            <p key={i} className="mb-2">
+                              {para}
+                            </p>
+                          ))
+                        }
+                        {product.description.length > 250 && (
+                          <button
+                            type="button"
+                            onClick={() => setIsDescriptionExpanded(false)}
+                            className="mt-2 font-bold text-[--color-brand-accent] hover:underline block focus:outline-none"
+                          >
+                            Show Less
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -285,13 +455,7 @@ export default function ProductDetailPage() {
                     </div>
 
                     <button
-                      onClick={() => {
-                        if (!currentUser) {
-                          router.push('/login?next=/checkout&message=checkout');
-                        } else {
-                          router.push('/checkout');
-                        }
-                      }}
+                      onClick={handleBuyNow}
                       className="block w-full text-center py-4 border-2 border-[--color-brand-text] text-[--color-brand-text] font-bold uppercase tracking-widest text-sm hover:bg-[--color-brand-text] hover:text-[--color-brand-bg] transition-colors rounded-sm"
                     >
                       Buy It Now
@@ -310,7 +474,7 @@ export default function ProductDetailPage() {
                 )}
 
                 {/* Dimensions / Specifications */}
-                {hasDimensions && (
+                {(hasDimensions || (product.attributes && product.attributes.length > 0)) && (
                   <div className="pt-8 mt-8 border-t border-[--color-brand-border]">
                     <h3 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-4">Specifications</h3>
                     <div className="grid grid-cols-2 gap-y-3 text-sm">
@@ -344,6 +508,12 @@ export default function ProductDetailPage() {
                           <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.diameter} cm</span>
                         </>
                       )}
+                      {product.attributes?.map((attr: {name: string, value: string}, idx: number) => (
+                        <div className="contents" key={idx}>
+                          <span className="text-[--color-brand-muted]">{attr.name}</span>
+                          <span className="font-medium text-[--color-brand-text] text-right">{attr.value}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -351,8 +521,8 @@ export default function ProductDetailPage() {
                 {/* Features */}
                 <div className="grid grid-cols-3 gap-4 pt-8">
                   {[
-                    { icon: Truck, label: 'Free Worldwide Shipping' },
-                    { icon: ShieldCheck, label: 'Authentic Heritage' },
+                    { icon: Truck, label: 'Free Shipping Above Rs. 2000' },
+                    { icon: ShieldCheck, label: 'Quality Handcrafted Products' },
                     { icon: Package, label: 'Secure Packaging' },
                   ].map(({ icon: Icon, label }) => (
                     <div key={label} className="flex flex-col items-center text-center gap-2 p-4 bg-white border border-[--color-brand-border] rounded-sm">
@@ -360,6 +530,23 @@ export default function ProductDetailPage() {
                       <span className="text-xs font-bold text-[--color-brand-text] uppercase tracking-wide leading-tight">{label}</span>
                     </div>
                   ))}
+                </div>
+
+                {/* Shipping, Returns & Care FAQs */}
+                <div className="pt-8 mt-8 border-t border-[--color-brand-border] space-y-4">
+                  <div>
+                    <h2 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-2">Shipping Information</h2>
+                    <p className="text-sm text-[--color-brand-text] leading-relaxed">Standard delivery takes 5-7 business days. We offer free shipping on all orders above Rs. 2000. Pan-India delivery available.</p>
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-2">Return Policy</h2>
+                    <p className="text-sm text-[--color-brand-text] leading-relaxed">We offer a hassle-free 48-hour return policy for damaged or defective items. Please contact our support team to initiate a return.</p>
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-2">Product Care FAQ</h2>
+                    <p className="text-sm text-[--color-brand-text] mb-2 leading-relaxed"><strong>Q: How do I clean this product?</strong><br/>A: Wash with mild soap and warm water. Avoid harsh chemicals and abrasive scrubbers to protect the finish.</p>
+                    <p className="text-sm text-[--color-brand-text] leading-relaxed"><strong>Q: Is it dishwasher safe?</strong><br/>A: We highly recommend hand washing to preserve the natural materials and craftsmanship.</p>
+                  </div>
                 </div>
 
                 {/* Bulk Wholesale */}

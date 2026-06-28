@@ -3,14 +3,14 @@ import { prisma } from '@/lib/prisma';
 import fs from 'fs/promises';
 import path from 'path';
 
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
   try {
     const videos = await prisma.traditionVideo.findMany({
       orderBy: { createdAt: 'desc' }
     });
-    return NextResponse.json(videos);
+    const response = NextResponse.json(videos);
+    response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    return response;
   } catch (error) {
     console.error('[GET /api/videos]', error);
     return NextResponse.json({ error: 'Failed to fetch videos', details: String(error) }, { status: 500 });

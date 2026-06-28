@@ -7,10 +7,32 @@ export async function GET(req: Request) {
   const category = searchParams.get('category')?.trim() || '';
   const subcategory = searchParams.get('subcategory')?.trim() || '';
 
-  console.log(`[GET /api/products] search="${search}", category="${category}", subcategory="${subcategory}"`);
+  const categoryParam = searchParams.get('category')?.trim() || '';
+  const subcategoryParam = searchParams.get('subcategory')?.trim() || '';
+  const featuredParam = searchParams.get('featured')?.trim() || '';
+  const materialParam = searchParams.get('material')?.trim() || '';
+  const brandParam = searchParams.get('brand')?.trim() || '';
+  const idsParam = searchParams.get('ids')?.trim() || '';
+  const sortByParam = searchParams.get('sortBy')?.trim() || '';
+
+  const page = parseInt(searchParams.get('page') || '1') || 1;
+  const limit = parseInt(searchParams.get('limit') || '100') || 100;
+  const skip = (page - 1) * limit;
+
+  console.log(`[GET /api/products] search="${search}", category="${categoryParam}", subcategory="${subcategoryParam}", page=${page}, limit=${limit}`);
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereClause: any = {};
+
+    if (idsParam) {
+      const ids = idsParam.split(',').map(id => id.trim()).filter(Boolean);
+      whereClause.id = { in: ids };
+    }
+    
+    const inStockParam = searchParams.get('inStock')?.trim() || '';
+    const minPriceParam = parseFloat(searchParams.get('minPrice') || '');
+    const maxPriceParam = parseFloat(searchParams.get('maxPrice') || '');
 
     if (search) {
       whereClause.OR = [
@@ -21,21 +43,80 @@ export async function GET(req: Request) {
         { material:    { contains: search, mode: 'insensitive' } },
       ];
     }
-
-    if (category) {
-      whereClause.category = { equals: category, mode: 'insensitive' };
+    
+    if (categoryParam) {
+      whereClause.category = { equals: categoryParam, mode: 'insensitive' };
+    }
+    
+    if (subcategoryParam) {
+      whereClause.subcategory = { equals: subcategoryParam, mode: 'insensitive' };
     }
 
-    if (subcategory) {
-      whereClause.subcategory = { equals: subcategory, mode: 'insensitive' };
+    if (featuredParam === 'true') {
+      whereClause.featured = true;
     }
 
+    if (materialParam) {
+      whereClause.material = { equals: materialParam, mode: 'insensitive' };
+    }
+
+    if (brandParam) {
+      whereClause.brand = { equals: brandParam, mode: 'insensitive' };
+    }
+
+    if (inStockParam === 'true') {
+      whereClause.stock = { gt: 0 };
+    }
+
+    if (!isNaN(minPriceParam) || !isNaN(maxPriceParam)) {
+      whereClause.price = {};
+      if (!isNaN(minPriceParam)) {
+        whereClause.price.gte = Math.round(minPriceParam * 100);
+      }
+      if (!isNaN(maxPriceParam)) {
+        whereClause.price.lt = Math.round(maxPriceParam * 100);
+      }
+    }
+
+    let orderClause: any = { createdAt: 'desc' };
+    if (sortByParam === 'price-asc') {
+      orderClause = { price: 'asc' };
+    } else if (sortByParam === 'price-desc') {
+      orderClause = { price: 'desc' };
+    } else if (sortByParam === 'popular') {
+      orderClause = { reviewCount: 'desc' };
+    }
+
+    // Select only columns needed for the list view to reduce bandwidth usage
     const dbProducts = await prisma.product.findMany({
       where: whereClause,
-      orderBy: { createdAt: 'desc' }
+      orderBy: orderClause,
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        discountPrice: true,
+        gstPercent: true,
+        stock: true,
+        category: true,
+        subcategory: true,
+        material: true,
+        image: true,
+        rating: true,
+        reviewCount: true,
+        featured: true,
+        brand: true,
+        shippingFee: true,
+        shippingMethod: true,
+        isActive: true,
+      }
     });
 
-    console.log(`[GET /api/products] search="${search}" → ${dbProducts.length} results`);
+    const totalCount = await prisma.product.count({ where: whereClause });
+
+    console.log(`[GET /api/products] page=${page} limit=${limit} → ${dbProducts.length} results (total: ${totalCount})`);
 
     const formattedProducts = dbProducts.map(p => {
       const basePrice = p.price / 100;
@@ -46,7 +127,7 @@ export async function GET(req: Request) {
       return {
         id: p.id,
         name: p.name,
-        description: p.description,
+        description: '', // description is large, exclude from list mode
         price: basePrice,
         originalPrice: originalPrice,
         finalPrice: finalPrice,
@@ -56,31 +137,35 @@ export async function GET(req: Request) {
         category: p.category,
         subcategory: p.subcategory || p.category,
         material: p.material || 'Standard',
-        dimensions: p.dimensions,
-        height: p.height,
-        width: p.width,
-        length: p.length,
-        diameter: p.diameter,
-        weight: p.weight,
-        sizeCategory: p.sizeCategory,
-        tags: p.tags,
+        dimensions: null,
+        height: null,
+        width: null,
+        length: null,
+        diameter: null,
+        weight: null,
+        sizeCategory: null,
+        tags: [],
         image: p.image,
-        subImages: p.subImages,
+        subImages: [], // OMIT to prevent 4.5MB Vercel limit
         rating: p.rating,
         reviewCount: p.reviewCount,
         featured: p.featured,
-        variants: p.variants,
-        isFromDb: true
+        variants: null,
+        attributes: null,
+        isFromDb: true,
+        brand: p.brand || undefined,
+        shippingFee: p.shippingFee ? p.shippingFee / 100 : undefined,
+        shippingMethod: p.shippingMethod || undefined
       };
     });
 
-    return NextResponse.json(formattedProducts);
-  } catch (error: any) {
+    const response = NextResponse.json(formattedProducts);
+    response.headers.set('X-Total-Count', totalCount.toString());
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
+    return response;
+  } catch (error) {
     console.error('Error fetching products:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch products', 
-      details: error?.message || String(error)
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch products', details: (error as Error)?.message || String(error) }, { status: 500 });
   }
 }
 
@@ -116,6 +201,10 @@ export async function POST(req: Request) {
         reviewCount: data.reviewCount || 0,
         featured: data.featured || false,
         variants: data.variants ? data.variants : undefined,
+        attributes: data.attributes ? data.attributes : undefined,
+        brand: data.brand || null,
+        shippingFee: data.shippingFee !== undefined && data.shippingFee !== null ? Math.round(parseFloat(data.shippingFee) * 100) : null,
+        shippingMethod: data.shippingMethod || null,
       }
     });
 
@@ -151,7 +240,11 @@ export async function POST(req: Request) {
       reviewCount: newProduct.reviewCount,
       featured: newProduct.featured,
       variants: newProduct.variants,
-      isFromDb: true
+      attributes: newProduct.attributes,
+      isFromDb: true,
+      brand: newProduct.brand || undefined,
+      shippingFee: newProduct.shippingFee ? newProduct.shippingFee / 100 : undefined,
+      shippingMethod: newProduct.shippingMethod || undefined
     });
   } catch (error) {
     console.error('Error creating product:', error);

@@ -17,12 +17,14 @@ export default function AddProductPage() {
   const router = useRouter();
   const { addProduct } = useProducts();
   const [form, setForm] = useState({
-    name: '', description: '', price: '', originalPrice: '', gstPercent: '18',
+    name: '', description: '', price: '', originalPrice: '', gstPercent: '5',
     stock: '', category: '', subcategory: '', categoryId: '', subcategoryId: '',
     material: '', image: '', subImages: [] as string[], rating: '5.0', reviewCount: '0',
-    height: '', width: '', length: '', diameter: '', weight: '', sizeCategory: ''
+    height: '', width: '', length: '', diameter: '', weight: '', sizeCategory: '',
+    brand: '', shippingFee: '', shippingMethod: ''
   });
   const [variants, setVariants] = useState<{ [size: string]: { weight: string, length: string, width: string, height: string, diameter: string, price: string, stock: string } }>({});
+  const [attributes, setAttributes] = useState<{name: string, value: string}[]>([]);
   const [saved, setSaved] = useState(false);
 
   // Dynamic categories/subcategories from DB
@@ -147,6 +149,12 @@ export default function AddProductPage() {
     setVariants(prev => ({ ...prev, [size]: { ...prev[size], [field]: value } }));
   };
 
+  const addAttribute = () => setAttributes(prev => [...prev, { name: '', value: '' }]);
+  const removeAttribute = (idx: number) => setAttributes(prev => prev.filter((_, i) => i !== idx));
+  const updateAttribute = (idx: number, field: 'name' | 'value', val: string) => {
+    setAttributes(prev => prev.map((attr, i) => i === idx ? { ...attr, [field]: val } : attr));
+  };
+
   const basePrice = parseFloat(form.price) || 0;
   const gst = parseFloat(form.gstPercent) || 0;
   const gstAmount = Math.round(basePrice * gst / 100);
@@ -157,7 +165,7 @@ export default function AddProductPage() {
 
   const formatPrice = (p: number) =>
     p > 0
-      ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p)
+      ? 'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(p)
       : '—';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -176,6 +184,9 @@ export default function AddProductPage() {
       category: form.category,
       subcategory: form.subcategory,
       material: form.material || 'Standard',
+      brand: form.brand || undefined,
+      shippingFee: form.shippingFee ? parseFloat(form.shippingFee) : undefined,
+      shippingMethod: form.shippingMethod || undefined,
       image: form.image,
       subImages: form.subImages,
       rating: parseFloat(form.rating) || 5.0,
@@ -187,6 +198,7 @@ export default function AddProductPage() {
       diameter: form.diameter ? parseFloat(form.diameter) : undefined,
       weight: form.weight ? parseFloat(form.weight) : undefined,
       sizeCategory: form.sizeCategory || undefined,
+      attributes: attributes.filter(a => a.name.trim() !== '' && a.value.trim() !== ''),
       variants: Object.keys(variants).length > 0 
         ? Object.fromEntries(
             Object.entries(variants).map(([size, data]) => [
@@ -251,6 +263,7 @@ export default function AddProductPage() {
                 ))}
               </FormInput>
               <FormInput id="material" label="Material" placeholder="e.g. Cast Iron, Copper" value={form.material} onChange={handleChange} required />
+              <FormInput id="brand" label="Brand" placeholder="e.g. KitchenBay" value={form.brand} onChange={handleChange} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormInput id="rating" label="Star Rating (0 to 5)" type="number" step="0.1" min="0" max="5" placeholder="e.g. 4.5" value={form.rating} onChange={handleChange} required />
@@ -305,8 +318,8 @@ export default function AddProductPage() {
             <Calculator size={18} className="text-blue-600" /> Pricing & GST
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-            <FormInput id="originalPrice" label="MRP (₹)" type="number" placeholder="e.g. 1999" value={form.originalPrice} onChange={handleChange} />
-            <FormInput id="price" label="Base Price (₹)" type="number" placeholder="e.g. 999" value={form.price} onChange={handleChange} required />
+            <FormInput id="originalPrice" label="MRP (Rs.)" type="number" placeholder="e.g. 1999" value={form.originalPrice} onChange={handleChange} />
+            <FormInput id="price" label="Base Price (Rs.)" type="number" placeholder="e.g. 999" value={form.price} onChange={handleChange} required />
             <FormInput id="gstPercent" label="GST Rate (%)" as="select" value={form.gstPercent} onChange={handleChange} required>
               <option value="0">0% — Exempt</option>
               <option value="5">5% — Essential Goods</option>
@@ -314,6 +327,11 @@ export default function AddProductPage() {
               <option value="18">18% — Standard</option>
               <option value="28">28% — Luxury</option>
             </FormInput>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+            <FormInput id="shippingFee" label="Shipping Fee (Rs.)" type="number" placeholder="e.g. 99" value={form.shippingFee} onChange={handleChange} />
+            <FormInput id="shippingMethod" label="Shipping Method" placeholder="e.g. Standard Delivery" value={form.shippingMethod} onChange={handleChange} />
           </div>
 
           {/* Live Calculator */}
@@ -365,9 +383,9 @@ export default function AddProductPage() {
                   )}
                   <p className="text-sm font-semibold text-gray-800 line-clamp-2 mb-1">{form.name}</p>
                   <div className="flex items-baseline flex-wrap gap-2">
-                    <span className="text-base font-bold text-gray-900">₹{finalPrice.toLocaleString('en-IN')}</span>
+                    <span className="text-base font-bold text-gray-900">Rs. {finalPrice.toLocaleString('en-IN')}</span>
                     {originalPriceInput > finalPrice && (
-                      <span className="text-sm line-through text-gray-400">₹{originalPrice.toLocaleString('en-IN')}</span>
+                      <span className="text-sm line-through text-gray-400">Rs. {originalPrice.toLocaleString('en-IN')}</span>
                     )}
                     {discount > 0 && (
                       <span className="text-xs text-green-600 font-semibold">{discount}% off</span>
@@ -418,7 +436,7 @@ export default function AddProductPage() {
                     <FormInput id={`width-${sz}`} label="Width (cm)" placeholder="e.g. 15" type="number" value={data.width} onChange={(e) => updateVariant(sz, 'width', e.target.value)} />
                     <FormInput id={`height-${sz}`} label="Height (cm)" placeholder="e.g. 10" type="number" value={data.height} onChange={(e) => updateVariant(sz, 'height', e.target.value)} />
                     <FormInput id={`diameter-${sz}`} label="Diameter (cm)" placeholder="e.g. 12" type="number" value={data.diameter} onChange={(e) => updateVariant(sz, 'diameter', e.target.value)} />
-                    <FormInput id={`price-${sz}`} label="Price Override (₹)" placeholder="Optional base price" type="number" value={data.price} onChange={(e) => updateVariant(sz, 'price', e.target.value)} />
+                    <FormInput id={`price-${sz}`} label="Price Override (Rs.)" placeholder="Optional base price" type="number" value={data.price} onChange={(e) => updateVariant(sz, 'price', e.target.value)} />
                     <FormInput id={`stock-${sz}`} label="Stock Override" placeholder="Optional" type="number" value={data.stock} onChange={(e) => updateVariant(sz, 'stock', e.target.value)} />
                   </div>
                 </div>
@@ -436,6 +454,50 @@ export default function AddProductPage() {
               </div>
             </>
           )}
+        </div>
+
+        {/* Dynamic Attributes */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Package size={18} className="text-blue-600" /> Custom Attributes
+          </h2>
+          <p className="text-xs text-gray-500 mb-4">Add custom key-value pairs like Capacity (Liters), Color, Finish, or Pattern.</p>
+          
+          <div className="space-y-3 mb-4">
+            {attributes.map((attr, idx) => (
+              <div key={idx} className="flex items-center gap-3">
+                <input 
+                  type="text" 
+                  placeholder="e.g. Capacity (Liters)" 
+                  value={attr.name} 
+                  onChange={(e) => updateAttribute(idx, 'name', e.target.value)}
+                  className="flex-1 px-4 py-2 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200"
+                />
+                <input 
+                  type="text" 
+                  placeholder="e.g. 2L" 
+                  value={attr.value} 
+                  onChange={(e) => updateAttribute(idx, 'value', e.target.value)}
+                  className="flex-1 px-4 py-2 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200"
+                />
+                <button 
+                  type="button" 
+                  onClick={() => removeAttribute(idx)}
+                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+          
+          <button 
+            type="button" 
+            onClick={addAttribute}
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-4 py-2 rounded-lg transition-colors"
+          >
+            + Add Attribute
+          </button>
         </div>
 
         {/* Validation Checklist */}

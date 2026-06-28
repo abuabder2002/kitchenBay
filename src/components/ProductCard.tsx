@@ -8,9 +8,21 @@ import { useCart } from '@/lib/cartContext';
 import { useWishlist } from '@/lib/wishlistContext';
 import { useAuth } from '@/lib/authContext';
 import { Check, Heart, Pencil, ShoppingCart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 // Created once at module level — not on every render
 const priceFormatter = new Intl.NumberFormat('en-IN');
+
+// Normalize image src: handle URLs, /paths, data URIs, and raw base64 blobs
+function normalizeImageSrc(image: string | undefined | null): string {
+  if (!image) return '/artisan_kitchenware.png';
+  // Already a valid URL or local path
+  if (image.startsWith('http') || image.startsWith('/') || image.startsWith('data:')) {
+    return image;
+  }
+  // Raw base64 blob stored in DB — prepend the data URI header
+  return `data:image/jpeg;base64,${image}`;
+}
 
 interface ProductCardProps {
   product: Product;
@@ -21,6 +33,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
   const { addItem: addToCart } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist, isItemLoading } = useWishlist();
   const { isAdmin } = useAuth();
+  const router = useRouter();
   const [added, setAdded] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -31,6 +44,12 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
     setTimeout(() => setAdded(false), 1500);
   };
 
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product, undefined, true);
+    router.push('/checkout');
+  };
 
   const formatPrice = (price: number) => priceFormatter.format(price);
 
@@ -40,12 +59,12 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
       {/* Image Area */}
       <div className={`relative ${isHero ? 'aspect-auto h-[300px] md:h-full' : 'aspect-square'} overflow-hidden`}>
         <Link href={`/products/${product.id}`} className="block w-full h-full relative">
-          <Image 
-            src={product.image || '/images/marketing/everyday_cooking.jpg'} 
-            alt={product.name} 
+          <Image
+            src={normalizeImageSrc(product.image)}
+            alt={`${product.name} - Premium ${product.material} ${product.category}`}
             fill
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-            className="object-contain object-center group-hover:scale-105 transition-transform duration-500 bg-white" 
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="absolute inset-0 w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500 bg-white"
             loading="lazy"
           />
         </Link>
@@ -135,21 +154,22 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         <div className="flex-1" />
 
         {/* Price Row */}
-        <div className="flex items-baseline flex-wrap gap-1 sm:gap-2 mb-3">
-          <span className="text-lg font-bold text-[--color-brand-text]">
-            ₹{formatPrice(product.price)}
+        <div className="flex items-baseline flex-wrap gap-1 sm:gap-2 mb-0.5">
+          <span className="text-base font-bold text-[--color-brand-text]">
+            Rs. {formatPrice(product.price)}
           </span>
           {product.originalPrice > product.price && (
-            <span className="text-sm line-through text-gray-400">
-              ₹{formatPrice(product.originalPrice)}
+            <span className="text-xs line-through text-gray-400">
+              Rs. {formatPrice(product.originalPrice)}
             </span>
           )}
           {product.discount > 0 && (
-            <span className="text-xs text-green-600 font-semibold">
+            <span className="text-[10px] text-green-600 font-semibold">
               {product.discount}% off
             </span>
           )}
         </div>
+        <div className="text-[10px] text-gray-400 font-semibold mb-2">GST (5%) Added</div>
 
         {/* Stock indicator */}
         <div className="flex items-center gap-1.5 mb-3">
@@ -159,21 +179,35 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
           </span>
         </div>
 
-        {/* Add to Cart */}
-        <button 
-          onClick={handleAddToCart}
-          disabled={added}
-          className={`w-full flex items-center justify-center gap-2 font-bold rounded-full py-2 text-sm transition-all duration-200 ${
-            added 
-              ? 'bg-green-500 text-white border-green-500 scale-95' 
-              : ''
-          }`}
-          style={added ? {} : {backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}
-          onMouseEnter={e => { if (!added) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-mid)'; }}
-          onMouseLeave={e => { if (!added) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-light)'; }}
-        >
-          {added ? <><Check size={15} /> Added!</> : <><ShoppingCart size={15} /> Add to Cart</>}
-        </button>
+        {/* Add to Cart & Buy Now grid */}
+        <div className="grid grid-cols-2 gap-2 mt-auto">
+          <button 
+            onClick={handleAddToCart}
+            disabled={added || product.stock <= 0}
+            className={`w-full flex items-center justify-center gap-1 font-bold rounded-full py-2 text-xs transition-all duration-200 ${
+              added 
+                ? 'bg-green-500 text-white border-green-500 scale-95' 
+                : ''
+            } ${product.stock <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            style={added ? {} : {backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}
+            onMouseEnter={e => { if (!added && product.stock > 0) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-mid)'; }}
+            onMouseLeave={e => { if (!added && product.stock > 0) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-light)'; }}
+          >
+            {added ? <><Check size={12} /> Added!</> : 'Add to Cart'}
+          </button>
+          <button 
+            onClick={handleBuyNow}
+            disabled={product.stock <= 0}
+            className={`w-full flex items-center justify-center gap-1 font-bold rounded-full py-2 text-xs transition-all duration-200 active:scale-95 ${
+              product.stock <= 0 ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            style={{backgroundColor: 'var(--color-brand-blue-text)', color: 'white', border: '1px solid var(--color-brand-blue-text)'}}
+            onMouseEnter={e => { if (product.stock > 0) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-accent)'; }}
+            onMouseLeave={e => { if (product.stock > 0) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-text)'; }}
+          >
+            Buy Now
+          </button>
+        </div>
       </div>
     </div>
   );

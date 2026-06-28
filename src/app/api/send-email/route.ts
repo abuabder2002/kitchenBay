@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { getAdminEmails } from '@/lib/adminAuth';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
@@ -24,29 +25,49 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465, // true for 465, false for 587
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });
+    let transporter;
+    try {
+      transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465, // true for 465, false for 587
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
+    } catch (transporterErr) {
+      console.error('Error creating primary transporter, trying fallback...', transporterErr);
+      transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: false,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
+    }
 
     // Helper to format currency in INR
     const formatPrice = (p: number) =>
-      new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p);
+      'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(p);
 
     // Get email specific body text based on status
     const getEmailMessage = (status: string) => {
       switch (status.toLowerCase()) {
         case 'processing':
-          return 'Excellent choice! Our master Kitchenbays are now preparing your hand-crafted items. We are making sure everything is checked and packed with the utmost care.';
+          return 'Excellent choice! Our master craftsmen are now preparing your hand-crafted items. We are making sure everything is checked and packed with the utmost care.';
         case 'shipped':
           return 'Great news! Your order has been handed over to our courier partner and is now in transit. A tracking number has been generated and your shipment is moving.';
         case 'delivered':
-          return 'Your order has been successfully delivered to your doorstep. We hope these authentic Indian handicrafts bring joy, style, and beauty to your home.';
+          return 'Your order has been successfully delivered to your doorstep. We hope these items bring joy, style, and beauty to your home.';
         case 'cancelled':
           return 'We are writing to confirm that your order has been cancelled. If a refund is applicable, it will be automatically processed to your original payment method in 5-7 business days.';
         default:
@@ -54,18 +75,90 @@ export async function POST(request: Request) {
       }
     };
 
+    let customerName = order.customer || 'Customer';
+    let customerEmail = order.email;
+    let subtotalRupees = order.subtotal;
+    let shippingRupees = order.shipping || order.shippingAmount || 99;
+    let gstRupees = order.tax || order.gstAmount || 0;
+    let totalRupees = order.total;
+    let emailItems = order.items || [];
+
+    try {
+      const dbOrder = await prisma.order.findUnique({
+        where: { id: order.id },
+        include: { user: true, items: true }
+      });
+
+      if (dbOrder) {
+        customerName = order.customer || dbOrder.user?.name || 'Customer';
+        customerEmail = order.email || dbOrder.user?.email || customerEmail;
+        subtotalRupees = dbOrder.subtotalAmount / 100;
+        gstRupees = dbOrder.gstAmount / 100;
+        shippingRupees = dbOrder.shippingAmount / 100;
+        totalRupees = dbOrder.totalAmount / 100;
+
+        const productIds = dbOrder.items.map(item => item.productId);
+        const dbProducts = await prisma.product.findMany({
+          where: { id: { in: productIds } }
+        });
+        const productMap = new Map(dbProducts.map(p => [p.id, p]));
+
+        emailItems = dbOrder.items.map(item => {
+          const product = productMap.get(item.productId);
+          return {
+            name: product ? product.name : 'Unknown Craft Item',
+            quantity: item.quantity,
+            price: item.price / 100, // convert to Rupees
+            size: item.size
+          };
+        });
+      } else {
+        // Fallback: if values from request are raw paise, divide by 100
+        if (subtotalRupees > 10000) subtotalRupees = subtotalRupees / 100;
+        if (shippingRupees > 10000) shippingRupees = shippingRupees / 100;
+        if (gstRupees > 10000) gstRupees = gstRupees / 100;
+        if (totalRupees > 10000) totalRupees = totalRupees / 100;
+        emailItems = emailItems.map((item: any) => {
+          let price = item.price || (item.product && (item.product.finalPrice || item.product.price));
+          if (price > 1000) price = price / 100;
+          return {
+            name: item.name || (item.product && item.product.name) || 'Unknown Craft Item',
+            quantity: item.quantity,
+            price: price,
+            size: item.size
+          };
+        });
+      }
+    } catch (dbErr) {
+      console.error('Database fetch error in send-email:', dbErr);
+      if (subtotalRupees > 10000) subtotalRupees = subtotalRupees / 100;
+      if (shippingRupees > 10000) shippingRupees = shippingRupees / 100;
+      if (gstRupees > 10000) gstRupees = gstRupees / 100;
+      if (totalRupees > 10000) totalRupees = totalRupees / 100;
+      emailItems = emailItems.map((item: any) => {
+        let price = item.price || (item.product && (item.product.finalPrice || item.product.price));
+        if (price > 1000) price = price / 100;
+        return {
+          name: item.name || (item.product && item.product.name) || 'Unknown Craft Item',
+          quantity: item.quantity,
+          price: price,
+          size: item.size
+        };
+      });
+    }
+
     const statusTitle = status.charAt(0).toUpperCase() + status.slice(1);
     const emailSubject = `Update: Your Order #${order.id} is now ${statusTitle}!`;
 
     // Map order items to list elements
-    const itemsHtml = order.items.map((item: any) => {
-      const name = item.name || (item.product && item.product.name);
+    const itemsHtml = emailItems.map((item: any) => {
+      const name = item.name;
       const qty = item.quantity;
-      const price = item.price || (item.product && (item.product.finalPrice || item.product.price));
+      const price = item.price;
       return `
         <tr style="border-bottom: 1px solid #f1f1f1;">
           <td style="padding: 10px 0; font-size: 14px; color: #4b5563; text-align: left;">
-            ${name} <span style="color: #9ca3af; font-size: 12px;">× ${qty}</span>
+            ${name} ${item.size ? `(${item.size})` : ''} <span style="color: #9ca3af; font-size: 12px;">× ${qty}</span>
           </td>
           <td style="padding: 10px 0; text-align: right; font-size: 14px; font-weight: 600; color: #1f2937;">
             ${formatPrice(price * qty)}
@@ -90,13 +183,13 @@ export async function POST(request: Request) {
                 <tr>
                   <td align="center" style="background: linear-gradient(to right, #1D4ED8, #4f46e5); padding: 30px 40px; color: #ffffff;">
                     <h1 style="margin: 0; font-size: 26px; font-weight: bold; letter-spacing: 1px;">Kitchenbay</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 13px; color: #ddd6fe;">Authentic Indian Handicrafts</p>
+                    <p style="margin: 5px 0 0 0; font-size: 13px; color: #ddd6fe;">The Home Needs</p>
                   </td>
                 </tr>
                 <!-- Content Body -->
                 <tr>
                   <td style="padding: 40px; text-align: left;">
-                    <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: bold; color: #1f2937;">Hello ${order.customer},</h2>
+                    <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: bold; color: #1f2937;">Hello ${customerName},</h2>
                     <p style="margin: 0 0 25px 0; font-size: 14px; line-height: 1.6; color: #4b5563;">
                       ${getEmailMessage(status)}
                     </p>
@@ -122,17 +215,22 @@ export async function POST(request: Request) {
                     <!-- Total Breakdown -->
                     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-top: 1px solid #f1f1f1; padding-top: 15px; margin-bottom: 30px; font-size: 13px;">
                       <tr>
-                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Subtotal</td>
-                        <td style="padding: 4px 0; text-align: right; color: #1f2937;">${formatPrice(order.subtotal)}</td>
+                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Subtotal:</td>
+                        <td style="padding: 4px 0; text-align: right; color: #1f2937;">${formatPrice(subtotalRupees)}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Tax</td>
-                        <td style="padding: 4px 0; text-align: right; color: #6b7280; font-size: 11px;">Inclusive of all taxes</td>
+                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Shipping: Flat rate</td>
+                        <td style="padding: 4px 0; text-align: right; color: #1f2937;">${formatPrice(shippingRupees)}</td>
                       </tr>
                       <tr style="font-size: 15px; font-weight: bold;">
-                        <td style="padding: 15px 0 0 0; color: #1f2937; border-top: 1px solid #f1f1f1; margin-top: 10px; text-align: left;">Total Paid</td>
+                        <td style="padding: 15px 0 0 0; color: #1f2937; border-top: 1px solid #f1f1f1; margin-top: 10px; text-align: left;">Total:</td>
                         <td style="padding: 15px 0 0 0; text-align: right; color: #1D4ED8; border-top: 1px solid #f1f1f1; margin-top: 10px;">
-                          ${formatPrice(order.total)}
+                          ${formatPrice(totalRupees)}
+                          ${gstRupees > 0 ? `
+                          <div style="font-size: 11px; color: #6b7280; font-weight: normal; margin-top: 4px;">
+                            (includes ${formatPrice(gstRupees)} Tax)
+                          </div>
+                          ` : ''}
                         </td>
                       </tr>
                     </table>
@@ -155,7 +253,7 @@ export async function POST(request: Request) {
                 <!-- Footer -->
                 <tr>
                   <td align="center" style="background-color: #f9fafb; border-top: 1px solid #f1f1f1; padding: 20px 40px; font-size: 11px; color: #9ca3af;">
-                    &copy; 2026 Kitchenbay Inc. 12 MG Road, Bangalore, India.
+                    &copy; 2015 KitchenBay Inc. 19/A Line Street, Attur, Salem, Tamil Nadu 636102.
                   </td>
                 </tr>
               </table>
@@ -168,7 +266,7 @@ export async function POST(request: Request) {
 
     await transporter.sendMail({
       from: smtpFrom,
-      to: `${order.customer} <${order.email}>`,
+      to: `${customerName} <${customerEmail}>`,
       bcc: getAdminEmails().join(','),
       subject: emailSubject,
       html: htmlBody,

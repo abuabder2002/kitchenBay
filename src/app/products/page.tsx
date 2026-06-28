@@ -11,6 +11,7 @@ import { useProducts } from '@/lib/productsContext';
 import { categories, subcategories, materials } from '@/lib/mockData';
 import type { Product } from '@/lib/mockData';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
 
 const priceRanges = [
   { label: 'Under ₹500', min: 0, max: 500 },
@@ -29,19 +30,28 @@ export default function ProductsPage() {
 }
 
 function ProductsContent() {
-  const { products, isLoading: ctxLoading } = useProducts();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('search')?.trim() || '';
-  const searchQueryLower = searchQuery.toLowerCase();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const urlCategory = searchParams.get('category') ?? '';
   const urlSubcategory = searchParams.get('subcategory') ?? '';
 
-  // DB search results state (used when a search query is active)
-  const [searchResults, setSearchResults] = useState<Product[] | null>(null);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState<string>('');
+  const [selectedBrand, setSelectedBrand] = useState<string>('');
+  const [selectedPriceRange, setSelectedPriceRange] = useState<number>(-1);
+  const [inStockOnly, setInStockOnly] = useState<boolean>(false);
+  const [featuredOnly, setFeaturedOnly] = useState<boolean>(false);
+  const [sortBy, setSortBy] = useState<string>('default');
+  const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
+
+  // Pagination & Loading States
+  const [page, setPage] = useState(1);
+  const [pageProducts, setPageProducts] = useState<Product[]>([]);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [brands, setBrands] = useState<string[]>([]);
 
   useEffect(() => {
     if (urlCategory) setSelectedCategory(urlCategory);
@@ -50,90 +60,98 @@ function ProductsContent() {
     else setSelectedSubcategory('');
   }, [urlCategory, urlSubcategory]);
 
-  // When a search query is present, hit /api/search for real DB results
+  // Load unique brands list once to populate filter sidebar
   useEffect(() => {
-    if (!searchQuery) {
-      setSearchResults(null);
-      return;
-    }
-    setSearchLoading(true);
-    console.log(`[ProductsPage] Searching DB for: "${searchQuery}"`);
-    fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`)
-      .then(r => r.json())
-      .then((results: Product[]) => {
-        console.log(`[ProductsPage] /api/search returned ${results.length} results for "${searchQuery}"`);
-        setSearchResults(Array.isArray(results) ? results : []);
+    fetch('/api/products?limit=500')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        if (Array.isArray(data)) {
+          const list = data.map((p: any) => p.brand).filter(Boolean);
+          setBrands(Array.from(new Set(list)) as string[]);
+        }
       })
-      .catch(err => {
-        console.error('[ProductsPage] Search API error:', err);
-        // Fall back to client-side filter on error
-        setSearchResults(null);
-      })
-      .finally(() => setSearchLoading(false));
-  }, [searchQuery]);
+      .catch(() => {});
+  }, []);
 
-  const [selectedMaterial, setSelectedMaterial] = useState<string>('');
-  const [selectedPriceRange, setSelectedPriceRange] = useState<number>(-1);
-  const [inStockOnly, setInStockOnly] = useState<boolean>(false);
-  const [featuredOnly, setFeaturedOnly] = useState<boolean>(false);
-  const [sortBy, setSortBy] = useState<string>('default');
-  const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
+  // Fetch paginated products based on query state
+  useEffect(() => {
+    setIsLoading(true);
+    const params = new URLSearchParams();
+    params.set('page', page.toString());
+    params.set('limit', '12'); // 12 items per page
+    
+    if (searchQuery) params.set('search', searchQuery);
+    if (selectedCategory) params.set('category', selectedCategory);
+    if (selectedSubcategory) params.set('subcategory', selectedSubcategory);
+    if (selectedMaterial) params.set('material', selectedMaterial);
+    if (selectedBrand) params.set('brand', selectedBrand);
+    if (featuredOnly) params.set('featured', 'true');
+    if (inStockOnly) params.set('inStock', 'true');
+    if (sortBy !== 'default') params.set('sortBy', sortBy);
 
-  const filtered = useMemo(() => {
-    // Base list: DB search results take priority over full product list
-    let list: Product[];
-    if (searchQuery) {
-      if (searchResults !== null) {
-        // Already filtered by /api/search — use those results directly
-        list = [...searchResults];
-      } else {
-        // Fallback: client-side partial-match across all text fields
-        list = products.filter(p => {
-          const hay = [
-            p.name,
-            p.description,
-            p.category,
-            p.subcategory,
-            p.material,
-            ...(Array.isArray(p.tags) ? p.tags : []),
-          ].join(' ').toLowerCase();
-          return hay.includes(searchQueryLower);
-        });
-      }
-    } else {
-      list = [...products];
-    }
-
-    if (selectedCategory) list = list.filter(p => p.category === selectedCategory);
-    if (selectedSubcategory) list = list.filter(p => p.subcategory === selectedSubcategory);
-    if (urlCategory && !selectedCategory) list = list.filter(p => p.category === urlCategory);
-    if (urlSubcategory && !selectedSubcategory) list = list.filter(p => p.subcategory === urlSubcategory);
-    if (selectedMaterial) list = list.filter(p => p.material === selectedMaterial);
     if (selectedPriceRange >= 0) {
       const range = priceRanges[selectedPriceRange];
-      list = list.filter(p => p.finalPrice >= range.min && p.finalPrice < range.max);
+      params.set('minPrice', range.min.toString());
+      if (range.max !== Infinity) {
+        params.set('maxPrice', range.max.toString());
+      }
     }
-    if (inStockOnly) list = list.filter(p => p.stock > 0);
-    if (featuredOnly) list = list.filter(p => p.featured);
-    switch (sortBy) {
-      case 'price-asc': list.sort((a, b) => a.finalPrice - b.finalPrice); break;
-      case 'price-desc': list.sort((a, b) => b.finalPrice - a.finalPrice); break;
-      case 'popular': list.sort((a, b) => b.reviewCount - a.reviewCount); break;
-    }
-    return list;
-  }, [selectedCategory, selectedPriceRange, sortBy, inStockOnly, featuredOnly, searchQuery, searchQueryLower, searchResults, urlCategory, urlSubcategory, selectedMaterial, products, selectedSubcategory]);
+
+    fetch(`/api/products?${params.toString()}`)
+      .then(async (res) => {
+        if (res.ok) {
+          const totalHeader = res.headers.get('X-Total-Count');
+          if (totalHeader) {
+            setTotalProducts(parseInt(totalHeader) || 0);
+          }
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setPageProducts(data);
+          }
+        }
+      })
+      .catch(err => console.error("Error loading products:", err))
+      .finally(() => setIsLoading(false));
+  }, [
+    page,
+    searchQuery,
+    selectedCategory,
+    selectedSubcategory,
+    selectedMaterial,
+    selectedBrand,
+    selectedPriceRange,
+    inStockOnly,
+    featuredOnly,
+    sortBy
+  ]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedSubcategory,
+    selectedMaterial,
+    selectedBrand,
+    selectedPriceRange,
+    inStockOnly,
+    featuredOnly,
+    sortBy
+  ]);
 
   const clearFilters = () => {
     setSelectedCategory('');
     setSelectedSubcategory('');
     setSelectedMaterial('');
+    setSelectedBrand('');
     setSelectedPriceRange(-1);
     setInStockOnly(false);
     setFeaturedOnly(false);
     setSortBy('default');
   };
 
-  const hasFilters = selectedCategory || selectedSubcategory || selectedMaterial || selectedPriceRange >= 0 || inStockOnly || featuredOnly;
+  const hasFilters = selectedCategory || selectedSubcategory || selectedMaterial || selectedBrand || selectedPriceRange >= 0 || inStockOnly || featuredOnly;
 
   const FilterPanel = () => (
     <div className="space-y-10">
@@ -205,6 +223,30 @@ function ProductsContent() {
         </div>
       </div>
 
+      {/* Brand */}
+      {brands.length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold text-[--color-brand-text] mb-4 uppercase tracking-widest font-[family-name:var(--font-heading)] border-b border-[--color-brand-border] pb-2">Brand</h3>
+          <div className="space-y-2 mt-4">
+            <button
+              onClick={() => setSelectedBrand('')}
+              className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${!selectedBrand ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
+            >
+              All Brands
+            </button>
+            {brands.map(br => (
+              <button
+                key={br}
+                onClick={() => setSelectedBrand(br)}
+                className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${selectedBrand === br ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
+              >
+                {br}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Price Range */}
       <div>
         <h3 className="text-sm font-bold text-[--color-brand-text] mb-4 uppercase tracking-widest font-[family-name:var(--font-heading)] border-b border-[--color-brand-border] pb-2">Price</h3>
@@ -261,18 +303,30 @@ function ProductsContent() {
     <div className="min-h-screen flex flex-col bg-[--color-brand-bg] font-sans">
       <Navbar />
 
+      <Breadcrumbs items={[
+        { name: 'Home', href: '/' },
+        { name: 'Products', href: '/products' },
+      ]} />
+
       {/* Page Header */}
       <div className="bg-[--color-brand-card] py-20 border-b border-[--color-brand-border] text-center">
         <span className="text-[--color-brand-accent] text-sm font-semibold tracking-[0.2em] uppercase mb-4 block">The Collection</span>
         <h1 className="font-[family-name:var(--font-heading)] text-5xl font-bold text-[--color-brand-text] mb-4">Kitchenbay Crafted</h1>
-        <p className="text-[--color-brand-muted] max-w-2xl mx-auto text-lg">Authentic materials shaped by generations of master Kitchenbays.</p>
+        <p className="text-[--color-brand-muted] max-w-2xl mx-auto text-lg mb-6">Authentic materials shaped by generations of master Kitchenbays.</p>
+        
+        {/* SEO Intro Text */}
+        <div className="max-w-3xl mx-auto px-4">
+          <p className="text-sm text-[--color-brand-muted] leading-relaxed hidden md:block">
+            Shop our premium selection of traditional Indian kitchenware, including pre-seasoned cast iron, pure brass vessels, copper drinkware, and authentic soapstone pots. Each piece is handcrafted by skilled artisans to bring health, durability, and heritage to your modern kitchen.
+          </p>
+        </div>
       </div>
 
       <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-[1600px]">
         {/* Controls */}
         <div className="flex items-center justify-between mb-12 pb-4 border-b border-[--color-brand-border]">
           <p className="text-sm font-medium text-[--color-brand-muted] tracking-wide">
-            {searchLoading ? 'Searching…' : `${filtered.length} curated products`}
+            {isLoading ? 'Loading…' : `${totalProducts} curated products`}
           </p>
           <div className="flex items-center gap-6">
             <div className="relative hidden sm:block">
@@ -333,7 +387,7 @@ function ProductsContent() {
                     onClick={() => setFiltersOpen(false)}
                     className="w-full bg-[--color-brand-text] text-[--color-brand-bg] font-bold py-4 uppercase tracking-widest text-sm hover:bg-[--color-brand-accent] transition-colors"
                   >
-                    View {filtered.length} Results
+                    View {totalProducts} Results
                   </button>
                 </div>
               </div>
@@ -343,20 +397,20 @@ function ProductsContent() {
           {/* Products Grid */}
           <div className="flex-1">
             {/* Search header */}
-            {searchQuery && !searchLoading && (
+            {searchQuery && !isLoading && (
               <div className="mb-6">
                 <p className="text-sm font-medium text-[--color-brand-muted]">
-                  Search results for <span className="font-bold text-[--color-brand-text]">&quot;{searchQuery}&quot;</span> — {filtered.length} product{filtered.length !== 1 ? 's' : ''} found
+                  Search results for <span className="font-bold text-[--color-brand-text]">&quot;{searchQuery}&quot;</span> — {totalProducts} product{totalProducts !== 1 ? 's' : ''} found
                 </p>
               </div>
             )}
 
-            {searchLoading ? (
+            {isLoading ? (
               <div className="flex flex-col items-center justify-center py-32 text-center">
                 <div className="w-12 h-12 border-4 border-[--color-brand-accent] border-t-transparent rounded-full animate-spin mb-6" />
-                <p className="text-[--color-brand-muted] font-medium">Searching products…</p>
+                <p className="text-[--color-brand-muted] font-medium">Loading products…</p>
               </div>
-            ) : filtered.length === 0 ? (
+            ) : pageProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-32 text-center bg-white border border-[--color-brand-border]">
                 <div className="w-16 h-16 bg-[--color-brand-card] rounded-full flex items-center justify-center mb-6">
                   <X className="text-[--color-brand-muted]" size={24} />
@@ -373,10 +427,50 @@ function ProductsContent() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
-                {filtered.map(p => (
-                  <ProductCard key={p.id} product={p} />
-                ))}
+              <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+                  {pageProducts.map(p => (
+                    <ProductCard key={p.id} product={p} />
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalProducts > 12 && (
+                  <div className="mt-16 flex items-center justify-center gap-2 border-t border-[--color-brand-border] pt-8">
+                    <button
+                      disabled={page === 1}
+                      onClick={() => setPage(p => Math.max(p - 1, 1))}
+                      className="px-4 py-2 border border-[--color-brand-text] text-sm font-semibold uppercase tracking-wider hover:bg-[--color-brand-text] hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[--color-brand-text] cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      Prev
+                    </button>
+                    
+                    {Array.from({ length: Math.ceil(totalProducts / 12) }).map((_, idx) => {
+                      const pNum = idx + 1;
+                      return (
+                        <button
+                          key={pNum}
+                          onClick={() => setPage(pNum)}
+                          className={`w-10 h-10 border text-sm font-semibold transition-colors rounded-full flex items-center justify-center cursor-pointer ${
+                            page === pNum
+                              ? 'bg-[--color-brand-accent] border-[--color-brand-accent] text-white font-bold'
+                              : 'border-[--color-brand-border] text-[--color-brand-text] hover:border-[--color-brand-text]'
+                          }`}
+                        >
+                          {pNum}
+                        </button>
+                      );
+                    })}
+                    
+                    <button
+                      disabled={page >= Math.ceil(totalProducts / 12)}
+                      onClick={() => setPage(p => p + 1)}
+                      className="px-4 py-2 border border-[--color-brand-text] text-sm font-semibold uppercase tracking-wider hover:bg-[--color-brand-text] hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[--color-brand-text] cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

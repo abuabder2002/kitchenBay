@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
       id: string;
       shippingAddrId: string | null;
       totalAmount: number;
+      subtotalAmount: number;
+      gstAmount: number;
+      shippingAmount: number;
       paymentStatus: string;
       status: string;
       createdAt: Date;
@@ -59,23 +62,26 @@ export async function GET(req: NextRequest) {
         const prod = productMap.get(i.productId);
         return {
           productId: i.productId,
-          product: prod || null,
+          product: prod ? { 
+            ...prod, 
+            price: Math.round(prod.price / 100), 
+          } : null,
           name: prod ? prod.name : i.productId,
           quantity: i.quantity,
-          price: i.price,
+          price: Math.round(i.price / 100),
         };
       });
 
-      // Calculate taxes dynamically matching context logic
-      const subtotal = mappedItems.reduce((sum: number, item: any) => {
-        const prod = item.product;
-        const basePrice = prod ? prod.price : Math.round(item.price / 1.18);
-        return sum + basePrice * item.quantity;
+      // Calculate taxes dynamically mapping paise to rupees
+      const subtotal = o.subtotalAmount ? Math.round(o.subtotalAmount / 100) : mappedItems.reduce((sum: number, item: any) => {
+        return sum + item.price * item.quantity;
       }, 0);
 
-      const gstAmount = o.totalAmount - subtotal;
+      const totalRupees = Math.round(o.totalAmount / 100);
+      const gstAmount = o.gstAmount ? Math.round(o.gstAmount / 100) : Math.max(0, totalRupees - subtotal - 99);
       const cgstAmount = Math.floor(gstAmount / 2);
       const sgstAmount = gstAmount - cgstAmount;
+      const shippingAmount = o.shippingAmount !== null ? Math.round(o.shippingAmount / 100) : Math.max(0, totalRupees - subtotal - gstAmount);
 
       return {
         id: o.id,
@@ -88,7 +94,8 @@ export async function GET(req: NextRequest) {
         cgstAmount,
         sgstAmount,
         gstAmount,
-        total: o.totalAmount,
+        shippingAmount,
+        total: totalRupees,
         paymentMethod: o.paymentStatus,
         status: o.status.toLowerCase(), // Frontend matches lowercase enum string
         date: o.createdAt.toISOString(),

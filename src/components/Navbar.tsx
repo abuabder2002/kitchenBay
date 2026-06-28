@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -23,22 +23,78 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isMobileSearchOpen) {
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => searchInputRef.current?.focus(), 50); // slight delay for smooth expansion
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileSearchOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileSearchOpen) {
+        setIsMobileSearchOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileSearchOpen]);
 
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  const searchSuggestions = searchQuery.trim()
-    ? products.filter(p => {
-        const q = searchQuery.toLowerCase();
-        return (
-          p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          (p.subcategory || '').toLowerCase().includes(q) ||
-          (p.material || '').toLowerCase().includes(q) ||
-          (p.description || '').toLowerCase().includes(q)
-        );
-      }).slice(0, 6)
-    : [];
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const cacheRef = useRef<Record<string, any[]>>({});
+
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q) {
+      setSuggestions([]);
+      return;
+    }
+
+    if (cacheRef.current[q]) {
+      setSuggestions(cacheRef.current[q]);
+      return;
+    }
+
+    const controller = new AbortController();
+    setSuggestionsLoading(true);
+
+    const timer = setTimeout(() => {
+      fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: controller.signal })
+        .then(res => res.ok ? res.json() : [])
+        .then(data => {
+          if (Array.isArray(data)) {
+            const sliced = data.slice(0, 6);
+            cacheRef.current[q] = sliced;
+            setSuggestions(sliced);
+          }
+        })
+        .catch(err => {
+          if (err.name !== 'AbortError') {
+            console.error("Suggestions fetch error:", err);
+          }
+        })
+        .finally(() => {
+          setSuggestionsLoading(false);
+        });
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [searchQuery]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,9 +134,6 @@ export default function Navbar() {
     <>
       {/* TIER 1: Top Utility Bar (Minimal) */}
       <div className="bg-[--color-brand-top-bar] text-[--color-brand-bg] h-8 text-[11px] flex items-center px-4 sm:px-6 lg:px-8 justify-between z-50 relative tracking-widest font-medium uppercase">
-        <div className="w-full text-center md:w-auto md:text-left truncate px-2">
-          Sign Up & Get ₹500 off on your First Purchase
-        </div>
         <div className="hidden md:flex items-center gap-6">
           {topBarLinks.map((link) => (
             <Link key={link.label} href={link.href} className="hover:text-[--color-brand-accent-yellow] transition-colors">
@@ -90,11 +143,21 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Mobile Search Backdrop Overlay */}
+      <div 
+        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${
+          isMobileSearchOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsMobileSearchOpen(false)}
+      />
+
       {/* Main Navbar */}
       <header
-        className={`z-40 w-full transition-all duration-500 sticky top-0 border-b border-[#E6F2FF] ${scrolled ? 'shadow-sm py-2 bg-white/70 backdrop-blur-lg' : 'py-4 bg-white backdrop-blur-none'}`}
+        className={`z-50 w-full transition-all duration-500 sticky top-0 border-b border-[#E6F2FF] ${scrolled ? 'shadow-sm py-2 bg-white/70 backdrop-blur-lg' : 'py-4 bg-white backdrop-blur-none'}`}
       >
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div className={`transition-all duration-[350ms] [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between ${
+          isMobileSearchOpen ? 'opacity-0 scale-95 -translate-x-4 pointer-events-none lg:opacity-100 lg:scale-100 lg:translate-x-0 lg:pointer-events-auto' : 'opacity-100 scale-100 translate-x-0'
+        }`}>
 
           {/* LEFT: Logo */}
           <Link href="/" className="flex items-center shrink-0 mr-2 sm:mr-8">
@@ -159,26 +222,27 @@ export default function Navbar() {
           {/* RIGHT: Actions */}
           <div className="flex items-center gap-2 sm:gap-4 lg:gap-6">
 
-            {/* Search Icon / Input */}
-            <div className="hidden md:flex items-center relative">
+            {/* Desktop Search Icon / Input */}
+            <div className="hidden lg:flex items-center relative">
               {isSearchOpen ? (
                 <>
-                  <div className="flex items-center border-b border-[--color-brand-text] pb-1 animate-in fade-in slide-in-from-right-4 relative z-50 bg-white">
+                  <div className="flex items-center border-b border-[--color-brand-text] pb-1 animate-in fade-in slide-in-from-right-4 absolute right-0 sm:relative z-50 bg-white">
                     <input
                       autoFocus
                       type="text"
-                      placeholder="Search products..."
+                      placeholder="Search..."
+                      aria-label="Search for products"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && executeSearch()}
-                      className="bg-transparent outline-none text-sm text-[--color-brand-text] w-48 font-medium placeholder:font-normal placeholder:text-[--color-brand-muted]"
+                      className="bg-transparent outline-none text-sm text-[--color-brand-text] w-28 sm:w-48 font-medium placeholder:font-normal placeholder:text-[--color-brand-muted]"
                     />
                     <X size={16} className="text-[--color-brand-muted] cursor-pointer hover:text-[--color-brand-text]" onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} />
                   </div>
-                  {searchSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white shadow-xl border border-gray-100 rounded-lg overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2">
+                  {suggestions.length > 0 && (
+                    <div className="absolute top-full right-0 sm:left-0 sm:right-0 mt-2 bg-white shadow-xl border border-gray-100 rounded-lg overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 w-[280px] sm:w-auto">
                       <ul className="flex flex-col">
-                        {searchSuggestions.map(product => (
+                        {suggestions.map(product => (
                           <li key={product.id}>
                             <div
                               onClick={() => { router.push(`/products/${product.id}`); setIsSearchOpen(false); setSearchQuery(''); }}
@@ -187,7 +251,7 @@ export default function Navbar() {
                               <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded-md border border-gray-200 shrink-0" />
                               <div className="flex flex-col overflow-hidden">
                                 <span className="text-[13px] font-bold text-[--color-brand-text] truncate">{product.name}</span>
-                                <span className="text-[11px] font-bold text-[--color-brand-muted] uppercase">₹{product.price}</span>
+                                <span className="text-[11px] font-bold text-[--color-brand-muted] uppercase">Rs. {product.price}</span>
                               </div>
                             </div>
                           </li>
@@ -202,6 +266,15 @@ export default function Navbar() {
                 </button>
               )}
             </div>
+
+            {/* Mobile Search Icon (Triggers Expansion) */}
+            <button 
+              onClick={() => setIsMobileSearchOpen(true)} 
+              className="lg:hidden text-[--color-brand-text] hover:text-[--color-brand-accent] transition-transform active:scale-90 p-2 rounded-full hover:bg-[--color-brand-blue-light]" 
+              aria-label="Search"
+            >
+              <Search size={22} strokeWidth={1.5} />
+            </button>
 
             {/* Find Store */}
             <Link href="/store-locator" className="hidden lg:block text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Find Store">
@@ -268,6 +341,65 @@ export default function Navbar() {
 
           </div>
         </div>
+
+        {/* Premium Mobile Search Overlay (Absolute over Navbar) */}
+        <div
+          className={`lg:hidden absolute inset-0 bg-transparent z-[60] px-4 flex items-center justify-center transition-all duration-[350ms] [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] ${
+            isMobileSearchOpen 
+              ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+              : 'opacity-0 -translate-y-2 scale-95 pointer-events-none'
+          }`}
+        >
+          <div className={`relative w-full flex items-center bg-gray-50 rounded-full border border-gray-200 shadow-sm transition-all duration-300 overflow-visible ${
+            isMobileSearchOpen ? 'ring-4 ring-[--color-brand-accent]/15 bg-white' : ''
+          }`}>
+            <Search size={20} className="text-[--color-brand-muted] absolute left-4 transition-transform duration-300" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search premium kitchenware..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  executeSearch();
+                  setIsMobileSearchOpen(false);
+                }
+              }}
+              className="w-full pl-11 pr-12 py-3 bg-transparent outline-none text-[15px] font-medium text-[--color-brand-text] placeholder:text-[--color-brand-muted]/70 placeholder:font-normal placeholder:transition-opacity placeholder:duration-300"
+            />
+            <button 
+              onClick={() => { setIsMobileSearchOpen(false); setSearchQuery(''); }}
+              className={`absolute right-2 p-1.5 text-[--color-brand-muted] hover:text-[--color-brand-text] bg-gray-100 hover:bg-gray-200 rounded-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                isMobileSearchOpen ? 'rotate-0 opacity-100 scale-100' : 'rotate-90 opacity-0 scale-50'
+              }`}
+            >
+              <X size={16} strokeWidth={2.5} />
+            </button>
+            
+            {/* Search Suggestions Dropdown for Mobile */}
+            {suggestions.length > 0 && isMobileSearchOpen && (
+              <div className="absolute top-full left-0 right-0 mt-3 bg-white shadow-2xl border border-gray-100 rounded-2xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
+                <ul className="flex flex-col">
+                  {suggestions.map((product, i) => (
+                    <li key={product.id} className="animate-in fade-in slide-in-from-left-4" style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}>
+                      <div
+                        onClick={() => { router.push(`/products/${product.id}`); setIsMobileSearchOpen(false); setSearchQuery(''); }}
+                        className="flex items-center gap-4 p-3.5 hover:bg-[--color-brand-blue-light] active:bg-gray-100 cursor-pointer transition-colors border-b border-gray-50 last:border-0"
+                      >
+                        <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded-xl border border-gray-200 shrink-0 shadow-sm" />
+                        <div className="flex flex-col overflow-hidden">
+                          <span className="text-[14px] font-bold text-[--color-brand-text] truncate">{product.name}</span>
+                          <span className="text-[12px] font-bold text-[--color-brand-muted] uppercase">Rs. {product.price}</span>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
       </header>
 
       {/* Mobile Category UI Bar (Only visible on mobile) */}
@@ -308,6 +440,7 @@ export default function Navbar() {
                 <input
                   type="text"
                   placeholder="Search products..."
+                  aria-label="Search products"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -319,10 +452,10 @@ export default function Navbar() {
                   className="w-full pl-12 pr-4 py-3 outline-none text-sm font-medium text-[--color-brand-text] bg-transparent"
                 />
               </div>
-              {searchSuggestions.length > 0 && (
+              {suggestions.length > 0 && (
                 <div className="absolute top-full left-6 right-6 -mt-3 pt-4 bg-white shadow-xl border border-gray-100 rounded-b-xl overflow-hidden z-40 max-h-64 overflow-y-auto animate-in fade-in">
                   <ul className="flex flex-col">
-                    {searchSuggestions.map(product => (
+                    {suggestions.map(product => (
                       <li key={product.id}>
                         <div
                           onClick={() => { router.push(`/products/${product.id}`); setMobileOpen(false); setSearchQuery(''); }}
@@ -331,7 +464,7 @@ export default function Navbar() {
                           <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded-md border border-gray-200 shrink-0" />
                           <div className="flex flex-col overflow-hidden">
                             <span className="text-sm font-bold text-[--color-brand-text] truncate">{product.name}</span>
-                            <span className="text-xs font-bold text-[--color-brand-muted] uppercase">₹{product.price}</span>
+                            <span className="text-xs font-bold text-[--color-brand-muted] uppercase">Rs. {product.price}</span>
                           </div>
                         </div>
                       </li>
