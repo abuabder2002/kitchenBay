@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'api.qrserver.com' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: '**.cloudinary.com' },
+      // Supabase Storage — for CMS uploaded images
+      { protocol: 'https', hostname: '*.supabase.co' },
     ],
     // Serve modern formats — AVIF (40–60% smaller) then WebP (25–35% smaller)
     formats: ['image/avif', 'image/webp'],
