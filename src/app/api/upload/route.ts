@@ -3,11 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-// ── Supabase Storage client (uses publishable/anon key — bucket must be public) ──
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+// Use service role key (bypasses RLS) for server-side admin uploads.
+// Falls back to publishable key if service role is not set.
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
 
-const BUCKET = 'cms-images'; // must be created as a PUBLIC bucket in your Supabase project
+const BUCKET = 'cms-images';
 
 export async function POST(req: Request) {
   try {
