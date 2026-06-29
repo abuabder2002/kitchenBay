@@ -21,13 +21,18 @@
  *   Never round intermediate values.
  *   Round ONLY when writing to the DB (Math.round × 100 → paise).
  *   Round ONLY at display time (Intl.NumberFormat).
+ *
+ * ── SHIPPING RULE ────────────────────────────────────────────
+ *   Shipping is product-specific. The caller is responsible for
+ *   computing the correct shippingFeeRupees from the cart items
+ *   (max of product fees, fallback to SHIPPING_FEE_RUPEES = ₹99).
+ *   There is NO automatic free-shipping threshold.
  */
 
 // ── Constants ─────────────────────────────────────────────────
-export const GST_RATE               = 0.05;  // 5%
-export const SHIPPING_FEE_RUPEES    = 99;
-export const FREE_SHIPPING_THRESHOLD = 2000; // ≥ ₹2,000 → free shipping
-export const COD_LIMIT_RUPEES       = 5999;  // COD blocked above this
+export const GST_RATE            = 0.05;  // 5%
+export const SHIPPING_FEE_RUPEES = 99;    // Default fallback when product has no fee configured
+export const COD_LIMIT_RUPEES    = 5999;  // COD blocked above this
 
 // ── Result type ───────────────────────────────────────────────
 export interface CheckoutPricingResult {
@@ -41,7 +46,7 @@ export interface CheckoutPricingResult {
   cgstAmount: number;
   /** gstAmount / 2 */
   sgstAmount: number;
-  /** ₹99 or ₹0 (free threshold or FREE_SHIPPING coupon) */
+  /** Shipping fee from product configuration (caller-supplied) */
   shippingFeeRupees: number;
   /** Coupon discount in rupees */
   couponDiscountRupees: number;
@@ -58,12 +63,12 @@ export interface CheckoutPricingResult {
 /**
  * Core pricing function — accepts ONLY primitive numbers.
  *
- * @param subtotal             Σ(basePrice × qty) in Rupees
- * @param opts.couponDiscountRupees  Coupon savings in Rupees (default 0)
- * @param opts.shippingFeeRupees     Shipping fee in Rupees (default auto-computed)
- * @param opts.isFirstOrder          Whether this is the customer's first order
- * @param opts.paymentMethod         'NETBANKING' triggers 2% extra discount
- * @param opts.freeShipping          True when a FREE_SHIPPING coupon is applied
+ * @param subtotal                    Σ(basePrice × qty) in Rupees
+ * @param opts.couponDiscountRupees   Coupon savings in Rupees (default 0)
+ * @param opts.shippingFeeRupees      Shipping fee in Rupees (default SHIPPING_FEE_RUPEES = ₹99)
+ * @param opts.isFirstOrder           Whether this is the customer's first order
+ * @param opts.paymentMethod          'NETBANKING' triggers 2% extra discount
+ * @param opts.freeShipping           True when a FREE_SHIPPING coupon is applied
  */
 export function calcCheckoutPricing(
   subtotal: number,
@@ -82,12 +87,13 @@ export function calcCheckoutPricing(
     freeShipping = false,
   } = opts;
 
-  // Shipping: explicit override → free-shipping coupon → threshold rule
+  // Shipping: explicit override → free-shipping coupon → fallback default
+  // NOTE: No automatic free-shipping threshold. Shipping is product-configured.
   const shippingFeeRupees =
-    opts.shippingFeeRupees !== undefined
-      ? opts.shippingFeeRupees
-      : freeShipping || subtotal >= FREE_SHIPPING_THRESHOLD
+    freeShipping
       ? 0
+      : opts.shippingFeeRupees !== undefined
+      ? opts.shippingFeeRupees
       : SHIPPING_FEE_RUPEES;
 
   // First-order discount (applied before GST — reduces taxable base)
@@ -134,7 +140,7 @@ export function calcCheckoutPricing(
  * (the shape stored in CartContext) rather than raw paise values.
  *
  * @param subtotal          Σ(basePrice × qty) in Rupees
- * @param shippingFeeRupees Shipping fee in Rupees (from cart context)
+ * @param shippingFeeRupees Shipping fee in Rupees (from cart context — product-derived)
  * @param appliedCoupon     { discountAmount: number (PAISE), type: string } | null
  * @param isFirstOrder      Whether this is the customer's first order
  * @param paymentMethod     'NETBANKING' | 'RAZORPAY' | 'COD'

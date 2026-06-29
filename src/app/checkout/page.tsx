@@ -918,11 +918,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Shipping</span>
-                    {shippingFee > 0 ? (
-                      <span className="font-semibold text-gray-800">{formatPrice(shippingFee)}</span>
-                    ) : (
-                      <span className="font-bold text-emerald-600">FREE</span>
-                    )}
+                    <span className="font-semibold text-gray-800">{formatPrice(shippingFee)}</span>
                   </div>
                   {netBankingDiscount > 0 && (
                     <div className="flex justify-between text-sm text-emerald-600 font-semibold">
@@ -931,16 +927,7 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {/* Shipping rule helper text */}
-                   <div className="pt-1">
-                    {shippingFee === 0 ? (
-                      <p className="text-[10px] text-emerald-600 font-semibold">🎉 You qualify for Free Shipping!</p>
-                    ) : (
-                      <p className="text-[10px] text-amber-600 font-semibold">
-                        Free Shipping on orders above {formatPrice(2000)} (Add {formatPrice(2000 - subtotal)} more)
-                      </p>
-                    )}
-                  </div>
+
 
                   <div className="border-t border-gray-200 my-2" />
 

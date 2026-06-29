@@ -3,7 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { prisma } from '@/lib/prisma';
 import { getDbUser } from '@/lib/serverAuth';
-import { calcCheckoutPricing, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE_RUPEES } from '@/lib/checkoutPricing';
+import { calcCheckoutPricing, SHIPPING_FEE_RUPEES } from '@/lib/checkoutPricing';
+
+/** Derive shipping fee in Rupees from a DB product's shippingFee (stored in paise).
+ *  Falls back to SHIPPING_FEE_RUPEES (₹99) when not configured. */
+function getDbProductShippingFee(product: { shippingFee: number | null }): number {
+  if (product.shippingFee === null || product.shippingFee === undefined) {
+    return SHIPPING_FEE_RUPEES;
+  }
+  return product.shippingFee > 1000
+    ? Math.round(product.shippingFee / 100)
+    : product.shippingFee;
+}
 
 /**
  * POST /api/checkout/razorpay
@@ -37,6 +48,7 @@ export async function POST(req: NextRequest) {
     // ── Calculate subtotal from DB product prices (authoritative) ─
     let subtotalRupees = 0;
     const orderItems: { productId: string; quantity: number; price: number; basePrice: number; size?: string }[] = [];
+    const productShippingFees: number[] = [];
 
     for (const item of items) {
       const dbProduct = await prisma.product.findUnique({ where: { id: item.productId } });
@@ -61,6 +73,7 @@ export async function POST(req: NextRequest) {
       }
 
       subtotalRupees += basePrice * item.quantity;
+      productShippingFees.push(getDbProductShippingFee(dbProduct));
 
       orderItems.push({
         productId: item.productId,
@@ -87,8 +100,10 @@ export async function POST(req: NextRequest) {
     });
     const isFirstOrder = completedOrdersCount === 0;
 
-    // Shipping fee (use cart threshold, not client-supplied value)
-    const shippingFeeRupees = subtotalRupees >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE_RUPEES;
+    // ── Shipping fee: max product-specific fee (authoritative from DB) ──
+    const shippingFeeRupees = productShippingFees.length > 0
+      ? Math.max(...productShippingFees)
+      : SHIPPING_FEE_RUPEES;
 
     // ── Canonical pricing via shared utility ────────────────
     const pricing = calcCheckoutPricing(subtotalRupees, {

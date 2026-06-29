@@ -23,11 +23,10 @@
 import { Product, CartItem } from './mockData';
 
 // ── Constants ─────────────────────────────────────────────────
-export const GST_RATE          = 0.05;          // 5%
-export const SHIPPING_FEE_RUPEES = 99;
+export const GST_RATE            = 0.05;          // 5%
+export const SHIPPING_FEE_RUPEES = 99;            // Default fallback when product has no fee
 export const SHIPPING_FEE_PAISE  = SHIPPING_FEE_RUPEES * 100;
-export const FREE_SHIPPING_THRESHOLD = 2000;    // ₹2,000+  → free shipping
-export const COD_LIMIT_RUPEES  = 5999;          // COD not allowed above this
+export const COD_LIMIT_RUPEES    = 5999;          // COD not allowed above this
 
 // ── Helper: Get the effective base price for a cart item ───────
 /** Returns the variant's base price (or product base price) in RUPEES. NO GST included. */
@@ -82,24 +81,15 @@ export function calcCartTotals(
   }
 
   // 2. Effective shipping fee:
-  //    - If any product in the cart has a custom shippingFee set by admin, use the
-  //      highest one as the cart-level fee (one consolidated shipping charge).
-  //    - Otherwise fall back to the global default (SHIPPING_FEE_RUPEES = ₹99).
-  //    - If the order subtotal crosses FREE_SHIPPING_THRESHOLD (₹2,000), shipping is always free.
-  let baseShippingFee = SHIPPING_FEE_RUPEES; // default
+  //    Product-specific fees are used. The highest fee among cart items wins
+  //    (one consolidated shipping charge). Falls back to SHIPPING_FEE_RUPEES (₹99)
+  //    if a product has no shippingFee configured.
+  //    NOTE: No automatic free-shipping threshold — shipping is product-configured only.
+  let shippingFee = 0;
   if (items.length > 0) {
-    // Collect product-specific fees (converting from paise if stored as > 1000)
     const productFees = items.map(item => getProductShippingFee(item.product));
-    const maxProductFee = Math.max(...productFees);
-    // Use the highest product-specific fee if it differs from the global default
-    if (maxProductFee !== SHIPPING_FEE_RUPEES) {
-      baseShippingFee = maxProductFee;
-    }
+    shippingFee = Math.max(...productFees);
   }
-
-  let shippingFee = items.length > 0
-    ? (subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : baseShippingFee)
-    : 0;
 
   // 3. Coupon discount
   let discountAmountRupees = 0;
@@ -225,7 +215,7 @@ export function calcCheckoutTotalsFromValues(
 ): CheckoutTotalsFromValues {
   const {
     couponDiscountRupees = 0,
-    shippingFeeRupees = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE_RUPEES,
+    shippingFeeRupees = SHIPPING_FEE_RUPEES,
     isFirstOrder = false,
     paymentMethod = 'COD',
   } = opts;
@@ -292,7 +282,7 @@ export function calcServerCheckoutTotals(
     isFirstOrder = false,
     couponDiscountPaise = 0,
     paymentMethod = 'COD',
-    shippingFeeRupees = subtotalRupees >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE_RUPEES,
+    shippingFeeRupees = SHIPPING_FEE_RUPEES,
   } = opts;
 
   const firstOrderDiscount     = isFirstOrder ? Math.min(100, subtotalRupees) : 0;

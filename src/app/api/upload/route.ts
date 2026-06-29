@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
+
+// ── Supabase Storage client (uses publishable/anon key — bucket must be public) ──
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+
+const BUCKET = 'cms-images'; // must be created as a PUBLIC bucket in your Supabase project
 
 export async function POST(req: Request) {
   try {
@@ -13,19 +18,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'cms_images');
-    await fs.mkdir(uploadDir, { recursive: true });
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json({ error: 'Storage not configured' }, { status: 500 });
+    }
 
-    const ext = path.extname(file.name) || '.jpg';
-    const fileName = `cms_${Date.now()}${ext}`;
-    const filePath = path.join(uploadDir, fileName);
-    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Build a unique file path inside the bucket
+    const ext = file.name.split('.').pop() || 'jpg';
+    const fileName = `cms_${Date.now()}.${ext}`;
+
     const buf = await file.arrayBuffer();
-    await fs.writeFile(filePath, Buffer.from(buf));
-    
-    const fileUrl = `/uploads/cms_images/${fileName}`;
 
-    return NextResponse.json({ success: true, url: fileUrl });
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(fileName, buf, {
+        contentType: file.type || 'image/jpeg',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('[POST /api/upload] Supabase upload error:', uploadError);
+      return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
+    }
+
+    // Get the permanent public URL
+    const { data: publicData } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
+
+    return NextResponse.json({ success: true, url: publicData.publicUrl });
   } catch (error) {
     console.error('[POST /api/upload]', error);
     return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
