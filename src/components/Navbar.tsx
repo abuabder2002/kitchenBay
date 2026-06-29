@@ -55,6 +55,33 @@ export default function Navbar() {
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const cacheRef = useRef<Record<string, any[]>>({});
 
+  const [dynamicSubcategories, setDynamicSubcategories] = useState<any[]>(subcategories);
+
+  useEffect(() => {
+    fetch('/api/admin/subcategories?limit=100&isActive=true')
+      .then(res => res.json())
+      .then(data => {
+        if (data.subcategories && data.subcategories.length > 0) {
+          const mapped = data.subcategories.map((s: any) => {
+            const catName = (s.category?.name || '').toLowerCase();
+            let catId = catName.replace(/[^a-z0-9]+/g, '-');
+            if (catName.includes('kitchen')) catId = 'kitchenware';
+            else if (catName.includes('dining')) catId = 'dining';
+            else if (catName.includes('brass') || catName.includes('copper')) catId = 'brass-copper';
+            else if (catName.includes('decor')) catId = 'decor';
+            
+            return {
+              id: s.slug,
+              name: s.name,
+              category: catId
+            };
+          });
+          setDynamicSubcategories(mapped);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   useEffect(() => {
     const q = searchQuery.trim();
     if (!q) {
@@ -199,7 +226,7 @@ export default function Navbar() {
                 {activeMenu === cat.name && cat.id !== 'gifting' && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 bg-[#F7F2E8] shadow-2xl border border-[--color-brand-border] py-3 min-w-[280px] z-50 rounded-sm animate-in fade-in zoom-in-95 duration-200">
                     <ul className="flex flex-col">
-                      {subcategories
+                      {dynamicSubcategories
                         .filter(sub => sub.category === cat.id)
                         .map(sub => (
                           <li key={sub.id}>
@@ -490,7 +517,7 @@ export default function Navbar() {
                     </div>
                     {cat.id !== 'gifting' && (
                       <ul className="flex flex-col gap-0.5">
-                        {subcategories
+                        {dynamicSubcategories
                           .filter(sub => sub.category === cat.id)
                           .map(sub => (
                             <li key={sub.id}>
