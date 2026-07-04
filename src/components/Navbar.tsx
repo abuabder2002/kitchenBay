@@ -1,4 +1,5 @@
 'use client';
+// Force compile to clear HMR hydration cache
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -204,10 +205,12 @@ export default function Navbar() {
                   : 'opacity-0 translate-x-full pointer-events-none'
               } hover:text-[--color-brand-accent-yellow]`}
             >
-              <span className={`mr-2 px-1.5 py-0.5 text-[8px] font-extrabold rounded-sm tracking-normal leading-none ${
-                ad.badge === 'OFFER' ? 'bg-[#FFEA00] text-black animate-pulse' : 'bg-green-500 text-white'
+              <span className={`relative overflow-hidden mr-2 px-1.5 py-0.5 text-[8.5px] font-extrabold rounded-sm tracking-normal leading-none shrink-0 ${
+                ad.badge === 'OFFER' ? 'bg-[#FFEA00] text-black' : 'bg-green-500 text-white'
               }`}>
-                {ad.badge}
+                {/* Glistening Shimmer Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent -translate-x-full animate-[shimmer_2s_ease-in-out_infinite]" />
+                <span className="relative z-10">{ad.badge}</span>
               </span>
               <span className="text-[--color-brand-bg]">{ad.text}</span>
             </Link>

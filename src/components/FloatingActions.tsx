@@ -1,4 +1,5 @@
 'use client';
+// Force compile to clear HMR hydration cache
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
@@ -91,7 +92,7 @@ function WhatsAppButton() {
 
   return (
     <Link
-      href="https://wa.me/919XXXXXXXXX?text=Hi%20KitchenBay!%20I%20need%20help."
+      href="https://wa.me/917502777766?text=Hi%20KitchenBay!%20I%20need%20help."
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp"

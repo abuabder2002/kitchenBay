@@ -71,8 +71,10 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         
         {/* Discount Badge */}
         {product.discount > 0 && (
-          <div className="absolute top-0 left-0 bg-[#F4D03F] text-[#4A2C2A] text-[10px] font-bold px-2.5 py-1 rounded-br-lg z-10 uppercase tracking-wide">
-            {product.discount}% OFF
+          <div className="absolute top-0 left-0 bg-[#F4D03F] text-[#4A2C2A] text-[10px] font-bold px-2.5 py-1 rounded-br-lg z-10 uppercase tracking-wide overflow-hidden shadow-sm">
+            {/* Glistening Shimmer Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent -translate-x-full animate-[shimmer_2.5s_ease-in-out_infinite]" />
+            <span className="relative z-10">{product.discount}% OFF</span>
           </div>
         )}
 
