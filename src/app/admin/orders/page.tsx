@@ -44,11 +44,23 @@ export default function AdminOrdersPage() {
     setError(null);
     try {
       const res = await fetch('/api/admin/orders');
+      const contentType = res.headers.get('content-type');
+      
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = '/login?next=/admin/orders';
+        return;
+      }
+      
       if (!res.ok) {
         throw new Error('Failed to fetch admin orders.');
       }
-      const data = await res.json();
-      setOrders(data);
+      
+      if (contentType && contentType.includes('application/json')) {
+        const data = await res.json();
+        setOrders(data);
+      } else {
+        throw new Error('Expected JSON response, but received HTML/Text from server');
+      }
     } catch (err: any) {
       setError(err.message || 'Error occurred while loading data.');
     } finally {

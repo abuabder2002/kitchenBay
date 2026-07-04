@@ -114,7 +114,11 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     fetch('/api/wishlist')
       .then(res => {
         if (!res.ok) throw new Error('Wishlist sync failed');
-        return res.json();
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return res.json();
+        }
+        throw new Error('Expected JSON response from /api/wishlist');
       })
       .then(data => {
         if (!Array.isArray(data) || data.length === 0) {

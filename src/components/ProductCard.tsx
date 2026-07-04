@@ -54,7 +54,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
   const formatPrice = (price: number) => priceFormatter.format(price);
 
   return (
-    <div className="bg-white rounded-2xl border border-[--color-brand-blue-mid] overflow-hidden hover:shadow-xl hover:shadow-[--color-brand-blue-light] transition-all duration-300 w-full h-full flex flex-col relative group">
+    <div className="bg-white rounded-2xl border border-[--color-brand-blue-mid] overflow-hidden hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] w-full h-full flex flex-col relative group">
       
       {/* Image Area */}
       <div className={`relative ${isHero ? 'aspect-auto h-[300px] md:h-full' : 'aspect-square'} overflow-hidden`}>
@@ -64,7 +64,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
             alt={`${product.name} - Premium ${product.material} ${product.category}`}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="absolute inset-0 w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500 bg-white"
+            className="absolute inset-0 w-full h-full object-contain object-center group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] bg-white"
             loading="lazy"
           />
         </Link>

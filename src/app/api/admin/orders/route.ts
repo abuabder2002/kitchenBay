@@ -85,8 +85,8 @@ export async function GET(req: NextRequest) {
 
       return {
         id: o.id,
-        customer: o.user.name || o.user.email.split('@')[0] || 'Customer',
-        email: o.user.email,
+        customer: o.user?.name || o.user?.email?.split('@')[0] || 'Customer',
+        email: o.user?.email || 'no-email@example.com',
         phone: '', // Placeholder if not stored in user profile directly
         address: address ? `${address.street}, ${address.city}, ${address.state} - ${address.zip}` : 'No address provided',
         items: mappedItems,

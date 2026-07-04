@@ -154,7 +154,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })
       .then(res => {
         if (!res.ok) throw new Error('Cart sync failed');
-        return res.json();
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return res.json();
+        }
+        throw new Error('Expected JSON response from /api/cart sync');
+      })
+      .then(() => {
+        return fetch(`/api/cart?userId=${currentUser.id}`, { cache: 'no-store' });
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch cart');
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return res.json();
+        }
+        throw new Error('Expected JSON response from /api/cart');
       })
       .then(data => {
         if (!Array.isArray(data) || data.length === 0) return; // keep local

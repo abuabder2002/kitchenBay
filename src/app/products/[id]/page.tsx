@@ -280,10 +280,6 @@ export default function ProductDetailPage() {
                       key={idx} 
                       onClick={() => {
                         setSelectedImage(img);
-                        if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                          setMobileViewerIndex(idx);
-                          setIsMobileViewerOpen(true);
-                        }
                       }}
                       className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${
                         currentImage === img 

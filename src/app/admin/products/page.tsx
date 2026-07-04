@@ -6,12 +6,37 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus, Pencil, Trash2, Search, Star, X, Upload, ShieldCheck, Package } from 'lucide-react';
 import { useProducts } from '@/lib/productsContext';
-import { categories, subcategories, Product } from '@/lib/mockData';
+import { Product } from '@/lib/mockData';
 
 export default function AdminProductsPage() {
   const { products, toggleFeatured, deleteProduct, updateProduct, refreshProducts } = useProducts();
   const [searchQuery, setSearchQuery] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  const [dbCategories, setDbCategories] = useState<any[]>([]);
+  const [dbSubcategories, setDbSubcategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/admin/categories?limit=100&isActive=true')
+      .then(r => r.json())
+      .then(d => setDbCategories(d.categories || []))
+      .catch(err => console.error(err));
+
+    fetch('/api/admin/subcategories?limit=1000&isActive=true')
+      .then(r => r.json())
+      .then(d => setDbSubcategories(d.subcategories || []))
+      .catch(err => console.error(err));
+  }, []);
+
+  const categories = dbCategories.map(c => ({ id: c.slug, name: c.name }));
+  const subcategories = dbSubcategories.map(s => {
+    const parentCat = dbCategories.find(c => c.id === s.categoryId);
+    return {
+      id: s.slug,
+      name: s.name,
+      category: parentCat ? parentCat.slug : ''
+    };
+  });
 
   useEffect(() => {
     refreshProducts();

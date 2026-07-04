@@ -83,9 +83,23 @@ export default function AdminDashboard() {
     const fetchOrders = async () => {
       try {
         const res = await fetch('/api/admin/orders');
-        if (!res.ok) throw new Error('Failed to fetch admin orders');
-        const data = await res.json();
-        setOrders(data);
+        const contentType = res.headers.get('content-type');
+        
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = '/login?next=/admin';
+          return;
+        }
+        
+        if (!res.ok) {
+          throw new Error('Failed to fetch admin orders');
+        }
+        
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          setOrders(data);
+        } else {
+          throw new Error('Expected JSON response, but received HTML/Text from server');
+        }
       } catch (err: any) {
         console.error(err);
         setError(err.message || 'Error fetching orders');

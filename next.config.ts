@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ['pg', '@prisma/client', '@prisma/adapter-pg'],
   compress: true,
   poweredByHeader: false,
   // Ensure clean URLs — no trailing slashes for canonical consistency
@@ -16,6 +17,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: '**.cloudinary.com' },
       // Supabase Storage — for CMS uploaded images
+      { protocol: 'https', hostname: 'eikhpeprhzovwkdqwyhu.supabase.co' },
       { protocol: 'https', hostname: '*.supabase.co' },
     ],
     // Serve modern formats — AVIF (40–60% smaller) then WebP (25–35% smaller)

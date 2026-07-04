@@ -1,4 +1,5 @@
 'use client';
+// Force Next.js recompile to fix hydration cache mismatch
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-unescaped-entities */
@@ -18,6 +19,8 @@ import { useProducts } from '@/lib/productsContext';
 import { useAuth } from '@/lib/authContext';
 import EditButton from '@/components/cms/EditButton';
 import dynamic from 'next/dynamic';
+import ScrollReveal from '@/components/ScrollReveal';
+import FloatingActions, { StickyOfferRibbon } from '@/components/FloatingActions';
 
 const CMSModal = dynamic(() => import('@/components/cms/CMSModal'), { ssr: false });
 
@@ -103,6 +106,8 @@ export default function HomePage() {
   const { isAdmin, currentUser } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [currentMainSlide, setCurrentMainSlide] = useState(0);
+  const [mainTouchStartX, setMainTouchStartX] = useState<number | null>(null);
   const [showWelcomeOffer, setShowWelcomeOffer] = useState(false);
 
   useEffect(() => {
@@ -171,7 +176,7 @@ export default function HomePage() {
             setJournalEntries(getParsed('journalEntries', defaultJournalEntries));
             setTestimonials(getParsed('testimonials', defaultTestimonials));
             setHeritage(getParsed('heritage', defaultHeritage));
-            
+
             bestsellersList = getParsed('bestsellers', []);
             newArrivalsList = getParsed('newArrivals', []);
             recommendedList = getParsed('recommended', []);
@@ -191,18 +196,33 @@ export default function HomePage() {
           }
         });
 
-        let productsUrl = '/api/products?limit=16';
-        if (idsSet.size > 0) {
-          productsUrl = `/api/products?ids=${Array.from(idsSet).join(',')}`;
-        }
-
-        const prodRes = await fetch(productsUrl);
+        // Always fetch a base set of products for fallbacks
+        let combinedProducts: any[] = [];
+        const prodRes = await fetch('/api/products?limit=16');
         if (prodRes.ok) {
           const prodData = await prodRes.json();
           if (Array.isArray(prodData)) {
-            setHomeProducts(prodData);
+            combinedProducts = prodData;
           }
         }
+
+        // If there are specific CMS IDs, fetch them and merge them in
+        if (idsSet.size > 0) {
+          const idRes = await fetch(`/api/products?ids=${Array.from(idsSet).join(',')}`);
+          if (idRes.ok) {
+            const idData = await idRes.json();
+            if (Array.isArray(idData)) {
+              // Add any products that aren't already in the combined list
+              idData.forEach(p => {
+                if (!combinedProducts.find(cp => cp.id === p.id)) {
+                  combinedProducts.push(p);
+                }
+              });
+            }
+          }
+        }
+
+        setHomeProducts(combinedProducts);
       } catch (error) {
         console.error("Error fetching CMS content & products:", error);
       }
@@ -232,6 +252,30 @@ export default function HomePage() {
       }
     }
     setTouchStartX(null);
+  };
+
+  useEffect(() => {
+    if (!mainHeroBanner || mainHeroBanner.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentMainSlide((prev) => (prev + 1) % mainHeroBanner.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [mainHeroBanner]);
+
+  const handleMainTouchStart = (e: React.TouchEvent) => {
+    setMainTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleMainTouchEnd = (e: React.TouchEvent) => {
+    if (mainTouchStartX !== null && mainHeroBanner && mainHeroBanner.length > 1) {
+      const diff = e.changedTouches[0].clientX - mainTouchStartX;
+      if (diff > 50) {
+        setCurrentMainSlide((prev) => (prev - 1 + mainHeroBanner.length) % mainHeroBanner.length);
+      } else if (diff < -50) {
+        setCurrentMainSlide((prev) => (prev + 1) % mainHeroBanner.length);
+      }
+    }
+    setMainTouchStartX(null);
   };
 
   const bestsellers = useMemo(() => {
@@ -278,23 +322,23 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
               {/* Left Main Banner (Summer Sale) */}
-              <div className="lg:col-span-8 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block">
+              <div className="lg:col-span-8 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block" onTouchStart={handleMainTouchStart} onTouchEnd={handleMainTouchEnd}>
                 {isEditMode && <EditButton onClick={() => handleEditClick('mainHeroBanner', 'Main Hero Banner', [
                   { key: 'title', label: 'Title' },
                   { key: 'image', label: 'Image URL', type: 'image' },
                   { key: 'link', label: 'Link URL', type: 'product-link' }
                 ], mainHeroBanner)} label="Edit Main Banner" />}
                 {mainHeroBanner.map((banner, idx) => (
-                  <Link key={idx} href={banner.link || '/products'} className="absolute inset-0 z-0">
+                  <Link key={idx} href={banner.link || '/products'} className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentMainSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
                     <Image
                       src={banner.image || "/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"}
                       alt={banner.title || "Collection for Everyday Cooking"}
                       fill
-                      priority={true}
+                      priority={idx === 0}
                       sizes="(max-width: 1024px) 100vw, 66vw"
-                      className="object-contain object-center group-hover:scale-105 transition-transform duration-700"
+                      className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentMainSlide ? 'scale-105' : 'scale-100'}`}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
+                    <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/10" />
                     <div className="absolute inset-0 z-0 flex flex-col justify-center items-center text-center p-6 sm:p-8 lg:p-12 pointer-events-none">
                       <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-md">{banner.title}</h2>
                     </div>
@@ -303,6 +347,20 @@ export default function HomePage() {
                     </div>
                   </Link>
                 ))}
+                
+                {/* Navigation Dots */}
+                {mainHeroBanner.length > 1 && (
+                  <div className="absolute bottom-5 left-0 right-0 z-20 flex justify-center gap-2 md:hidden">
+                    {mainHeroBanner.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentMainSlide(idx)}
+                        className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === currentMainSlide ? 'bg-black w-5' : 'bg-black/30 hover:bg-black/60'}`}
+                        aria-label={`Go to slide ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Right Side Banner (Premium Slideshow) */}
@@ -329,15 +387,14 @@ export default function HomePage() {
                       className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentSlide ? 'scale-105' : 'scale-100'
                         }`}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/80" />
                     <div className="absolute inset-0 flex flex-col items-center justify-end p-8 text-center pb-12">
-                      <span className="text-white/90 text-xs font-semibold tracking-[0.2em] uppercase mb-2">
+                      <span className="text-white/90 text-xs font-semibold tracking-[0.2em] uppercase mb-2 bg-black/65 px-2 py-0.5 rounded shadow-sm">
                         {slide.subtitle}
                       </span>
-                      <h3 className="text-2xl md:text-3xl font-bold text-white font-[family-name:var(--font-heading)] leading-tight mb-4">
+                      <h3 className="text-2xl md:text-3xl font-bold text-white font-[family-name:var(--font-heading)] leading-tight mb-4 bg-black/65 px-3 py-1.5 rounded shadow-md">
                         {slide.title}
                       </h3>
-                      <span className="border-b border-white/60 pb-1 text-xs font-bold text-white uppercase tracking-widest hover:border-white transition-colors">
+                      <span className="bg-black/65 px-3 py-1.5 rounded shadow-md border-b border-white/60 pb-1 text-xs font-bold text-white uppercase tracking-widest hover:border-white transition-colors">
                         Explore Collection
                       </span>
                     </div>
@@ -406,19 +463,21 @@ export default function HomePage() {
               {activeSecondaryBanners.slice(0, 3).map((banner, idx) => {
                 const isDark = idx === 1;
                 return (
-                  <Link key={idx} href={banner.link || '/products'} className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group/banner rounded-sm block bg-slate-100">
-                    <Image
-                      src={banner.image || '/images/marketing/everyday_cooking.jpg'}
-                      alt={banner.title || 'Banner Image'}
-                      fill
-                      sizes="100vw"
-                      className="object-cover object-center group-hover/banner:scale-105 transition-transform duration-700"
-                    />
-                    <div className={`absolute inset-0 bg-gradient-to-r ${isDark ? 'from-black/80 via-black/40' : 'from-white/90 via-white/40'} to-transparent`} />
-                    <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[60%]">
-                      <h4 className={`text-lg md:text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} leading-tight`}>{banner.title}</h4>
-                    </div>
-                  </Link>
+                  <ScrollReveal key={idx} direction={idx === 0 ? 'left' : idx === 2 ? 'right' : 'up'} duration={800} delay={idx * 150} className="w-full">
+                    <Link href={banner.link || '/products'} className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group/banner rounded-sm block bg-slate-100">
+                      <Image
+                        src={banner.image || '/images/marketing/everyday_cooking.jpg'}
+                        alt={banner.title || 'Banner Image'}
+                        fill
+                        sizes="100vw"
+                        className="object-cover object-center group-hover/banner:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-transparent" />
+                      <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[80%] items-start">
+                        <h4 className={`text-lg md:text-xl font-extrabold ${isDark ? 'bg-black/75 text-white' : 'bg-yellow-300 text-black'} px-3 py-1.5 rounded shadow-md leading-tight`}>{banner.title}</h4>
+                      </div>
+                    </Link>
+                  </ScrollReveal>
                 );
               })}
             </div>
@@ -438,20 +497,22 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {activeCategories.map((cat, idx) => (
-              <Link href={`/products?category=${cat.name.toLowerCase()}`} key={idx} className="group flex flex-col items-center cursor-pointer">
-                <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm mb-6 shadow-sm">
-                  <Image
-                    src={cat.img || '/images/marketing/everyday_cooking.jpg'}
-                    alt={cat.name || 'Category Image'}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover group-hover:scale-110 transition-transform duration-1000"
-                  />
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
-                </div>
-                <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-2">{cat.name}</h3>
-                <p className="text-sm font-medium text-[--color-brand-muted] uppercase tracking-widest">{cat.sub}</p>
-              </Link>
+              <ScrollReveal key={idx} direction="up" duration={800} delay={idx * 150} className="w-full">
+                <Link href={`/products?category=${cat.name.toLowerCase()}`} className="group flex flex-col items-center cursor-pointer">
+                  <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm mb-6 shadow-sm">
+                    <Image
+                      src={cat.img || '/images/marketing/everyday_cooking.jpg'}
+                      alt={cat.name || 'Category Image'}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover group-hover:scale-110 transition-transform duration-1000"
+                    />
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-2">{cat.name}</h3>
+                  <p className="text-sm font-medium text-[--color-brand-muted] uppercase tracking-widest">{cat.sub}</p>
+                </Link>
+              </ScrollReveal>
             ))}
           </div>
         </section>
@@ -465,8 +526,8 @@ export default function HomePage() {
             { key: 'image', label: 'Image URL', type: 'image' }
           ], heritage)} label="Edit Our Heritage" />}
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row items-center gap-16">
-              <div className="flex-1 lg:pr-12">
+            <div className="flex flex-col lg:flex-row items-center gap-16 overflow-hidden">
+              <ScrollReveal direction="left" duration={900} className="flex-1 lg:pr-12">
                 <span className="text-[--color-brand-accent-yellow] text-sm font-semibold tracking-[0.2em] uppercase mb-6 block">Our Heritage</span>
                 <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] mb-8 leading-tight">
                   {activeHeritage[0]?.title}
@@ -480,8 +541,8 @@ export default function HomePage() {
                 <Link href="/story" className="inline-block border-b-2 border-[--color-brand-accent-yellow] pb-1 text-sm font-bold uppercase tracking-widest hover:text-[--color-brand-accent-yellow] transition-colors">
                   Read Our Story
                 </Link>
-              </div>
-              <div className="flex-1 relative w-full aspect-square max-w-lg mx-auto lg:max-w-none">
+              </ScrollReveal>
+              <ScrollReveal direction="right" duration={900} className="flex-1 relative w-full aspect-square max-w-lg mx-auto lg:max-w-none">
                 <Image
                   src={activeHeritage[0]?.image || '/artisan_kitchenware.png'}
                   alt="Traditional Indian handcrafted kitchenware"
@@ -489,7 +550,7 @@ export default function HomePage() {
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover rounded-t-full shadow-2xl"
                 />
-              </div>
+              </ScrollReveal>
             </div>
           </div>
         </section>
@@ -512,8 +573,10 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-            {bestsellers.map(product => (
-              <ProductCard key={product.id} product={product} />
+            {bestsellers.map((product, idx) => (
+              <ScrollReveal key={product.id} direction="up" duration={600} delay={idx * 100} className="w-full">
+                <ProductCard product={product} />
+              </ScrollReveal>
             ))}
           </div>
           <div className="mt-12 text-center md:hidden">
@@ -538,14 +601,16 @@ export default function HomePage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {activeMaterials.map((mat, idx) => (
-                <Link href={mat.link || `/products?material=${mat.name}`} key={idx} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer">
-                  <Image src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-6 left-6 pr-6">
-                    <h3 className="text-white text-2xl font-bold font-[family-name:var(--font-heading)] mb-2">{mat.name}</h3>
-                    <p className="text-white/80 text-sm">{mat.desc}</p>
-                  </div>
-                </Link>
+                <ScrollReveal key={idx} direction="up" duration={600} delay={idx * 100} className="w-full">
+                  <Link href={mat.link || `/products?material=${mat.name}`} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer block">
+                    <Image src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-transparent" />
+                    <div className="absolute bottom-6 left-6 pr-6 flex flex-col items-start gap-1">
+                      <h3 className="text-white text-xl font-bold font-[family-name:var(--font-heading)] bg-black/65 px-2.5 py-1 rounded shadow-md mb-1">{mat.name}</h3>
+                      <p className="text-white/95 text-xs bg-black/65 px-2.5 py-1 rounded shadow-md">{mat.desc}</p>
+                    </div>
+                  </Link>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -564,8 +629,10 @@ export default function HomePage() {
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-              {newArrivals.map(product => (
-                <ProductCard key={product.id} product={product} />
+              {newArrivals.map((product, idx) => (
+                <ScrollReveal key={product.id} direction="up" duration={600} delay={idx * 100} className="w-full">
+                  <ProductCard product={product} />
+                </ScrollReveal>
               ))}
             </div>
           </section>
@@ -584,13 +651,15 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {activeJournalEntries.map((entry, idx) => (
-              <article key={idx} className="group cursor-pointer">
-                <div className="relative w-full aspect-[4/3] overflow-hidden rounded-sm mb-6">
-                  <Image src={entry.img || '/images/marketing/everyday_cooking.jpg'} alt={entry.title || 'Journal Image'} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                </div>
-                <span className="text-[--color-brand-accent] text-xs font-bold uppercase tracking-widest mb-3 block">{entry.category}</span>
-                <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] leading-snug group-hover:text-[--color-brand-accent] transition-colors">{entry.title}</h3>
-              </article>
+              <ScrollReveal key={idx} direction="up" duration={800} delay={idx * 150} className="w-full">
+                <article className="group cursor-pointer">
+                  <div className="relative w-full aspect-[4/3] overflow-hidden rounded-sm mb-6">
+                    <Image src={entry.img || '/images/marketing/everyday_cooking.jpg'} alt={entry.title || 'Journal Image'} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                  </div>
+                  <span className="text-[--color-brand-accent] text-xs font-bold uppercase tracking-widest mb-3 block">{entry.category}</span>
+                  <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] leading-snug group-hover:text-[--color-brand-accent] transition-colors">{entry.title}</h3>
+                </article>
+              </ScrollReveal>
             ))}
           </div>
         </section>
@@ -604,32 +673,34 @@ export default function HomePage() {
             { key: 'avatar', label: 'Avatar Image', type: 'image' },
             { key: 'productImg', label: 'Product Image', type: 'image' }
           ], activeTestimonials)} label="Edit Testimonials" />}
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_2.5fr] gap-8">
-            <div className="bg-[#F8F9FE] rounded-sm p-12 flex flex-col justify-center relative overflow-hidden border border-[#EBEFFA]">
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_2.5fr] gap-8 overflow-hidden">
+            <ScrollReveal direction="left" duration={800} className="bg-[#F8F9FE] rounded-sm p-12 flex flex-col justify-center relative overflow-hidden border border-[#EBEFFA] w-full">
               <Quote size={120} className="absolute top-[-20px] left-[-20px] text-blue-50 opacity-50" />
               <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[#1E3A8A] mb-4 relative z-10 leading-tight">
                 See Why<br />They Love Us
               </h2>
               <p className="text-sm font-semibold uppercase tracking-widest text-[#475569] relative z-10">Trusted By Over 500+ Happy Customers</p>
               <Quote size={120} className="absolute bottom-[-20px] right-[-20px] text-blue-50 opacity-50 rotate-180" />
-            </div>
+            </ScrollReveal>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {activeTestimonials.map((t, idx) => (
-                <div key={idx} className="bg-white p-6 rounded-sm shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-[--color-brand-border] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
-                  <div className="flex items-start gap-5">
-                    <Image src={t.avatar || 'https://i.pravatar.cc/150'} alt={t.name || 'Avatar'} width={50} height={50} className="rounded-full object-cover shrink-0 shadow-sm border border-gray-100" />
-                    <div className="flex-1">
-                      <p className="text-[13px] text-gray-600 italic mb-3 leading-relaxed">"{t.text}"</p>
-                      <h4 className="text-[13px] font-bold text-gray-900">- {t.name}</h4>
-                      <div className="flex text-[--color-brand-accent-yellow] mt-1.5 gap-0.5">
-                        {[...Array(t.rating)].map((_, i) => <Star key={i} size={11} fill="currentColor" />)}
+                <ScrollReveal key={idx} direction="right" duration={800} delay={idx * 150} className="w-full">
+                  <div className="bg-white p-6 rounded-sm shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-[--color-brand-border] flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex items-start gap-5">
+                      <Image src={t.avatar || 'https://i.pravatar.cc/150'} alt={t.name || 'Avatar'} width={50} height={50} className="rounded-full object-cover shrink-0 shadow-sm border border-gray-100" />
+                      <div className="flex-1">
+                        <p className="text-[13px] text-gray-600 italic mb-3 leading-relaxed">"{t.text}"</p>
+                        <h4 className="text-[13px] font-bold text-gray-900">- {t.name}</h4>
+                        <div className="flex text-[--color-brand-accent-yellow] mt-1.5 gap-0.5">
+                          {[...Array(t.rating)].map((_, i) => <Star key={i} size={11} fill="currentColor" />)}
+                        </div>
+                      </div>
+                      <div className="shrink-0">
+                        <Image src={t.productImg || '/images/marketing/everyday_cooking.jpg'} alt="Product" width={64} height={64} className="rounded-sm object-cover border border-gray-100 shadow-sm" />
                       </div>
                     </div>
-                    <div className="shrink-0">
-                      <Image src={t.productImg || '/images/marketing/everyday_cooking.jpg'} alt="Product" width={64} height={64} className="rounded-sm object-cover border border-gray-100 shadow-sm" />
-                    </div>
                   </div>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -644,8 +715,10 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Recommended For You</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-            {recommendedProducts.map(product => (
-              <ProductCard key={`rec-${product.id}`} product={product} />
+            {recommendedProducts.map((product, idx) => (
+              <ScrollReveal key={`rec-${product.id}`} direction="up" duration={600} delay={idx * 100} className="w-full">
+                <ProductCard product={product} />
+              </ScrollReveal>
             ))}
           </div>
         </section>
@@ -741,7 +814,7 @@ export default function HomePage() {
       {showWelcomeOffer && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md w-full relative animate-in zoom-in-95 duration-500">
-            <button 
+            <button
               onClick={() => setShowWelcomeOffer(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 bg-white/50 rounded-full p-1 transition-colors z-10"
             >
@@ -759,7 +832,7 @@ export default function HomePage() {
               <p className="text-sm text-gray-600 mb-8 leading-relaxed">
                 As a thank you for joining our community, a Rs. 100 discount has been automatically unlocked for your account. It will be seamlessly deducted at checkout!
               </p>
-              <button 
+              <button
                 onClick={() => setShowWelcomeOffer(false)}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 uppercase tracking-widest text-sm"
               >
@@ -786,6 +859,10 @@ export default function HomePage() {
           schema={modalConfig.schema}
         />
       )}
+
+      {/* Floating UI Features */}
+      <FloatingActions />
+      <StickyOfferRibbon />
     </div>
   );
 }

@@ -74,7 +74,14 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
     if (currentUser) {
       // Sync from server
       fetch('/api/orders')
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch orders');
+          const contentType = res.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            return res.json();
+          }
+          throw new Error('Expected JSON response from /api/orders');
+        })
         .then(data => {
           if (Array.isArray(data)) {
             // map DB orders to app Order format

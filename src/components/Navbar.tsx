@@ -26,6 +26,27 @@ export default function Navbar() {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  const [currentAdIdx, setCurrentAdIdx] = useState(0);
+  const ads = [
+    { 
+      badge: "OFFER",
+      text: "🔑 Log in to your account & get Rs. 100 off!", 
+      href: "/login" 
+    },
+    { 
+      badge: "SHIPPING",
+      text: "🚚 Free shipping on orders above Rs. 2000!", 
+      href: "/products" 
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentAdIdx((prev) => (prev + 1) % ads.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     if (isMobileSearchOpen) {
       document.body.style.overflow = 'hidden';
@@ -160,11 +181,35 @@ export default function Navbar() {
   return (
     <>
       {/* TIER 1: Top Utility Bar (Minimal) */}
-      <div className="bg-[--color-brand-top-bar] text-[--color-brand-bg] h-8 text-[11px] flex items-center px-4 sm:px-6 lg:px-8 justify-between z-50 relative tracking-widest font-medium uppercase">
+      <div className="bg-[--color-brand-top-bar] text-[--color-brand-bg] h-9 text-[11px] flex items-center px-4 sm:px-6 lg:px-8 justify-between z-50 relative tracking-widest font-medium uppercase overflow-hidden">
         <div className="hidden md:flex items-center gap-6">
           {topBarLinks.map((link) => (
             <Link key={link.label} href={link.href} className="hover:text-[--color-brand-accent-yellow] transition-colors">
               {link.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Moving advertisement side animation */}
+        <div className="flex-1 md:flex-none flex items-center justify-center md:justify-end overflow-hidden relative h-5 select-none md:min-w-[340px]">
+          {ads.map((ad, idx) => (
+            <Link
+              key={idx}
+              href={ad.href}
+              className={`absolute inset-0 flex items-center justify-center md:justify-end transition-all duration-700 ease-in-out whitespace-nowrap text-center text-[10px] md:text-[11px] font-bold ${
+                idx === currentAdIdx
+                  ? 'opacity-100 translate-x-0'
+                  : idx === (currentAdIdx - 1 + ads.length) % ads.length
+                  ? 'opacity-0 -translate-x-full pointer-events-none'
+                  : 'opacity-0 translate-x-full pointer-events-none'
+              } hover:text-[--color-brand-accent-yellow]`}
+            >
+              <span className={`mr-2 px-1.5 py-0.5 text-[8px] font-extrabold rounded-sm tracking-normal leading-none ${
+                ad.badge === 'OFFER' ? 'bg-[#FFEA00] text-black animate-pulse' : 'bg-green-500 text-white'
+              }`}>
+                {ad.badge}
+              </span>
+              <span className="text-[--color-brand-bg]">{ad.text}</span>
             </Link>
           ))}
         </div>
