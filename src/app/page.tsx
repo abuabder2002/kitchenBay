@@ -1,4 +1,5 @@
 'use client';
+// Force Next.js to rebuild and clear cache
 // Force Next.js recompile to fix hydration cache mismatch
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -109,6 +110,9 @@ export default function HomePage() {
   const [currentMainSlide, setCurrentMainSlide] = useState(0);
   const [mainTouchStartX, setMainTouchStartX] = useState<number | null>(null);
   const [showWelcomeOffer, setShowWelcomeOffer] = useState(false);
+  // mounted guard: prevents SSR/client HTML mismatch for CMS-driven dynamic content
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -131,9 +135,7 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsEditMode(!!isAdmin);
-    }
+    setIsEditMode(!!isAdmin);
   }, [isAdmin]);
 
   const [mainHeroBanner, setMainHeroBanner] = useState(defaultMainHeroBanner);
@@ -156,7 +158,7 @@ export default function HomePage() {
         let newArrivalsList: any[] = [];
         let recommendedList: any[] = [];
 
-        const res = await fetch('/api/content?page=home');
+        const res = await fetch('/api/content?page=home', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data.content) {
@@ -260,7 +262,7 @@ export default function HomePage() {
       setCurrentMainSlide((prev) => (prev + 1) % mainHeroBanner.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [mainHeroBanner]);
+  }, [mainHeroBanner.length]);
 
   const handleMainTouchStart = (e: React.TouchEvent) => {
     setMainTouchStartX(e.touches[0].clientX);
@@ -322,7 +324,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
               {/* Left Main Banner (Summer Sale) */}
-              <div className="lg:col-span-8 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block" onTouchStart={handleMainTouchStart} onTouchEnd={handleMainTouchEnd}>
+              <div className="lg:col-span-8 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block" onTouchStart={handleMainTouchStart} onTouchEnd={handleMainTouchEnd} suppressHydrationWarning>
                 {isEditMode && <EditButton onClick={() => handleEditClick('mainHeroBanner', 'Main Hero Banner', [
                   { key: 'title', label: 'Title' },
                   { key: 'image', label: 'Image URL', type: 'image' },
@@ -330,27 +332,21 @@ export default function HomePage() {
                 ], mainHeroBanner)} label="Edit Main Banner" />}
                 {mainHeroBanner.map((banner, idx) => (
                   <Link key={idx} href={banner.link || '/products'} className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentMainSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-                    <Image
+                    <img
                       src={banner.image || "/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"}
                       alt={banner.title || "Collection for Everyday Cooking"}
-                      fill
-                      priority={idx === 0}
-                      sizes="(max-width: 1024px) 100vw, 66vw"
-                      className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentMainSlide ? 'scale-105' : 'scale-100'}`}
+                      className={`absolute inset-0 w-full h-full object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentMainSlide ? 'scale-105' : 'scale-100'}`}
                     />
                     <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/10" />
                     <div className="absolute inset-0 z-0 flex flex-col justify-center items-center text-center p-6 sm:p-8 lg:p-12 pointer-events-none">
                       <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-md">{banner.title}</h2>
                     </div>
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-0 pointer-events-none">
-                      <span className="bg-white text-black font-semibold py-2 px-4 rounded hover:bg-gray-100 transition-colors mt-4 inline-block shadow-sm">Explore Collection</span>
-                    </div>
                   </Link>
                 ))}
                 
-                {/* Navigation Dots */}
-                {mainHeroBanner.length > 1 && (
-                  <div className="absolute bottom-5 left-0 right-0 z-20 flex justify-center gap-2 md:hidden">
+                {/* Navigation Dots - only render client-side to avoid SSR/CMS hydration mismatch */}
+                {mounted && mainHeroBanner.length > 1 && (
+                  <div className="absolute bottom-5 left-0 right-0 z-20 flex justify-center gap-2">
                     {mainHeroBanner.map((_, idx) => (
                       <button
                         key={idx}
@@ -364,7 +360,7 @@ export default function HomePage() {
               </div>
 
               {/* Right Side Banner (Premium Slideshow) */}
-              <div className="lg:col-span-4 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden block bg-slate-900" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+              <div className="hidden lg:block lg:col-span-4 relative w-full h-[300px] sm:h-[400px] md:h-[500px] group overflow-hidden bg-slate-900" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                 {isEditMode && <EditButton onClick={() => handleEditClick('promoSlides', 'Hero Banners', [
                   { key: 'title', label: 'Title' },
                   { key: 'subtitle', label: 'Subtitle' },
@@ -378,13 +374,10 @@ export default function HomePage() {
                     className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                       }`}
                   >
-                    <Image
+                    <img
                       src={slide.image || '/images/marketing/everyday_cooking.jpg'}
                       alt={slide.title || 'Slide Image'}
-                      fill
-                      priority={idx === 0}
-                      sizes="(max-width: 1024px) 100vw, 33vw"
-                      className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentSlide ? 'scale-105' : 'scale-100'
+                      className={`absolute inset-0 w-full h-full object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentSlide ? 'scale-105' : 'scale-100'
                         }`}
                     />
                     <div className="absolute inset-0 flex flex-col items-center justify-end p-8 text-center pb-12">
@@ -394,9 +387,6 @@ export default function HomePage() {
                       <h3 className="text-2xl md:text-3xl font-bold text-white font-[family-name:var(--font-heading)] leading-tight mb-4 bg-black/65 px-3 py-1.5 rounded shadow-md">
                         {slide.title}
                       </h3>
-                      <span className="bg-black/65 px-3 py-1.5 rounded shadow-md border-b border-white/60 pb-1 text-xs font-bold text-white uppercase tracking-widest hover:border-white transition-colors">
-                        Explore Collection
-                      </span>
                     </div>
                   </Link>
                 ))}
@@ -418,21 +408,66 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ── MOBILE QUICK CATEGORY STORIES (Instagram-style Stories) ──────────────── */}
+        {mounted && (
+          <section className="block md:hidden bg-white py-6 border-b border-gray-100 overflow-x-auto scrollbar-hide">
+            <div className="max-w-[1600px] mx-auto">
+              <span className="text-[10px] font-extrabold tracking-[0.2em] uppercase text-[--color-brand-muted] block mb-4 px-4">Explore Collections</span>
+              <div className="flex gap-5 px-4 min-w-max justify-start overflow-x-auto scrollbar-hide">
+                {[
+                  { name: 'Cast Iron', img: '/images/home/material_cast_iron.png', href: '/products?material=Cast%20Iron' },
+                  { name: 'Pure Brass', img: '/images/home/material_pure_brass.png', href: '/products?material=Pure%20Brass' },
+                  { name: 'Copper', img: '/images/home/material_copper.png', href: '/products?material=Copper' },
+                  { name: 'Soapstone', img: '/images/home/material_soapstone.png', href: '/products?material=Soapstone' },
+                  { name: 'Dining', img: '/images/home/modern_luxury_dining_card.png', href: '/products?category=Dining' },
+                  { name: 'Décor', img: '/images/home/modern_luxury_decor_card.png', href: '/products?category=Decor' },
+                ].map((cat, idx) => (
+                  <Link key={idx} href={cat.href} className="flex flex-col items-center gap-1.5 text-center cursor-pointer group">
+                    <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[--color-brand-accent] p-[2px] shadow-sm active:scale-95 transition-transform duration-300 bg-white">
+                      <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-50">
+                        <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-extrabold text-[--color-brand-text] tracking-tight group-hover:text-[--color-brand-accent] transition-colors">{cat.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* ── TRUST BADGES ROW ──────────────────────────────────────────── */}
         <section className="border-b border-gray-200 bg-white">
-          <div className="max-w-[1600px] mx-auto px-4 py-4">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
-              <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
+          <div className="max-w-[1600px] mx-auto px-4 py-3 md:py-4">
+            {/* Desktop View */}
+            <div className="hidden md:flex items-center justify-center gap-0 divide-x divide-gray-300">
+              <div className="flex-1 flex items-center justify-center gap-3 py-0">
                 <ShieldCheck className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">500+ Happy Deliveries</span>
+                <span className="text-base font-bold text-gray-800">500+ Happy Deliveries</span>
               </div>
-              <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
+              <div className="flex-1 flex items-center justify-center gap-3 py-0">
                 <Users className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">Premium Kitchenware Collection</span>
+                <span className="text-base font-bold text-gray-800">Premium Kitchenware Collection</span>
               </div>
-              <div className="flex-1 flex items-center justify-center gap-3 py-2 md:py-0">
+              <div className="flex-1 flex items-center justify-center gap-3 py-0">
                 <RotateCcw className="text-gray-600" size={28} />
-                <span className="text-sm md:text-base font-bold text-gray-800">48-Hour Easy Return Policy</span>
+                <span className="text-base font-bold text-gray-800">48-Hour Easy Return Policy</span>
+              </div>
+            </div>
+            
+            {/* Mobile View: Compact 3-Column Row */}
+            <div className="flex md:hidden items-center justify-between gap-1 text-center divide-x divide-gray-200">
+              <div className="flex-1 flex flex-col items-center justify-center py-1">
+                <ShieldCheck className="text-[--color-brand-accent] mb-1" size={20} />
+                <span className="text-[10px] font-extrabold text-gray-800 leading-tight">500+ Happy<br/>Deliveries</span>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center py-1">
+                <Users className="text-[--color-brand-accent] mb-1" size={20} />
+                <span className="text-[10px] font-extrabold text-gray-800 leading-tight">Artisan Made<br/>Collection</span>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center py-1">
+                <RotateCcw className="text-[--color-brand-accent] mb-1" size={20} />
+                <span className="text-[10px] font-extrabold text-gray-800 leading-tight">48-Hour Easy<br/>Returns</span>
               </div>
             </div>
           </div>
@@ -572,7 +607,7 @@ export default function HomePage() {
               Shop All
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-8 gap-y-6 sm:gap-y-12">
             {bestsellers.map((product, idx) => (
               <ScrollReveal key={product.id} direction="up" duration={600} delay={idx * 100} className="w-full">
                 <ProductCard product={product} />
@@ -628,7 +663,7 @@ export default function HomePage() {
                 <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">New Arrivals</h2>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-8 gap-y-6 sm:gap-y-12">
               {newArrivals.map((product, idx) => (
                 <ScrollReveal key={product.id} direction="up" duration={600} delay={idx * 100} className="w-full">
                   <ProductCard product={product} />
@@ -714,7 +749,7 @@ export default function HomePage() {
           <div className="mb-10">
             <h2 className="text-3xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Recommended For You</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-8 gap-y-6 sm:gap-y-12">
             {recommendedProducts.map((product, idx) => (
               <ScrollReveal key={`rec-${product.id}`} direction="up" duration={600} delay={idx * 100} className="w-full">
                 <ProductCard product={product} />

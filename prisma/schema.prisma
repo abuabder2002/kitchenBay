@@ -98,6 +98,7 @@ model Product {
   attributes       Json?             // [{ name: string, value: string }]
   image            String
   subImages        String[]          @default([])
+  video            String?           // Optional URL to product video
   rating           Float             @default(0)
   reviewCount      Int               @default(0)
   featured         Boolean           @default(false)

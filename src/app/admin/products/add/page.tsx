@@ -19,10 +19,11 @@ export default function AddProductPage() {
   const [form, setForm] = useState({
     name: '', description: '', price: '', originalPrice: '', gstPercent: '5',
     stock: '', category: '', subcategory: '', categoryId: '', subcategoryId: '',
-    material: '', image: '', subImages: [] as string[], rating: '5.0', reviewCount: '0',
+    material: '', image: '', subImages: [] as string[], video: '', rating: '5.0', reviewCount: '0',
     height: '', width: '', length: '', diameter: '', weight: '', sizeCategory: '',
     brand: '', shippingFee: '', shippingMethod: ''
   });
+  const [videoUploading, setVideoUploading] = useState(false);
   const [variants, setVariants] = useState<{ [size: string]: { weight: string, length: string, width: string, height: string, diameter: string, price: string, stock: string } }>({});
   const [attributes, setAttributes] = useState<{name: string, value: string}[]>([]);
   const [saved, setSaved] = useState(false);
@@ -111,6 +112,38 @@ export default function AddProductPage() {
     }
   };
 
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setVideoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        setForm(prev => ({ ...prev, video: data.url }));
+      } else if (data.error) {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Failed to upload video:', error);
+      alert(`Failed to upload video: ${(error as Error).message}`);
+    } finally {
+      setVideoUploading(false);
+    }
+  };
+
   const handleSubImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -189,6 +222,7 @@ export default function AddProductPage() {
       shippingMethod: form.shippingMethod || undefined,
       image: form.image,
       subImages: form.subImages,
+      video: form.video || undefined,
       rating: parseFloat(form.rating) || 5.0,
       reviewCount: parseInt(form.reviewCount) || 0,
       featured: false,
@@ -307,6 +341,37 @@ export default function AddProductPage() {
                   <Upload size={20} />
                   <input type="file" accept="image/*" multiple className="hidden" onChange={handleSubImageUpload} />
                 </label>
+              </div>
+            </div>
+            
+            {/* Product Video */}
+            <div className="flex flex-col gap-1.5 mt-4 border-t pt-4">
+              <label className="text-sm font-medium text-gray-700 block mb-2">Product Video (Optional)</label>
+              <div className="flex flex-wrap gap-4 items-center">
+                {form.video ? (
+                  <div className="relative group w-32 h-32">
+                    <video src={form.video} className="w-full h-full object-cover rounded-xl border border-gray-200" controls />
+                    <button
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, video: '' }))}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="w-32 h-32 cursor-pointer flex flex-col items-center justify-center text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors border-dashed border-2">
+                    {videoUploading ? (
+                      <span className="text-xs">Uploading...</span>
+                    ) : (
+                      <>
+                        <Upload size={20} className="mb-2" />
+                        <span className="text-xs text-center px-2">Upload Video<br/>(MP4, WebM)</span>
+                      </>
+                    )}
+                    <input type="file" accept="video/mp4,video/webm" className="hidden" onChange={handleVideoUpload} disabled={videoUploading} />
+                  </label>
+                )}
               </div>
             </div>
           </div>

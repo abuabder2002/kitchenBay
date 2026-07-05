@@ -17,6 +17,7 @@ export interface Product {
   material: string;     // Cast Iron | Stainless Steel | Soapstone | Brass | Copper | Bronze
   image: string;
   subImages?: string[];
+  video?: string;
   rating: number;
   reviewCount: number;
   featured: boolean;

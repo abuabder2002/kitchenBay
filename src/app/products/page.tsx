@@ -3,7 +3,7 @@
 
 
 import { useState, useMemo, Suspense, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -31,12 +31,14 @@ export default function ProductsPage() {
 
 function ProductsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const searchQuery = searchParams.get('search')?.trim() || '';
 
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const urlCategory = searchParams.get('category') ?? '';
   const urlSubcategory = searchParams.get('subcategory') ?? '';
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(urlCategory);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(urlSubcategory);
 
   const [selectedMaterial, setSelectedMaterial] = useState<string>('');
   const [selectedBrand, setSelectedBrand] = useState<string>('');
@@ -52,13 +54,38 @@ function ProductsContent() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [brands, setBrands] = useState<string[]>([]);
+  const [dynamicSubcategories, setDynamicSubcategories] = useState<any[]>(subcategories);
 
   useEffect(() => {
-    if (urlCategory) setSelectedCategory(urlCategory);
-    else setSelectedCategory('');
-    if (urlSubcategory) setSelectedSubcategory(urlSubcategory);
-    else setSelectedSubcategory('');
+    setSelectedCategory(urlCategory);
+    setSelectedSubcategory(urlSubcategory);
   }, [urlCategory, urlSubcategory]);
+
+  // Load dynamic subcategories (just like Navbar does)
+  useEffect(() => {
+    fetch('/api/admin/subcategories?limit=100&isActive=true')
+      .then(res => res.json())
+      .then(data => {
+        if (data.subcategories && data.subcategories.length > 0) {
+          const mapped = data.subcategories.map((s: any) => {
+            const catName = (s.category?.name || '').toLowerCase();
+            let catId = catName.replace(/[^a-z0-9]+/g, '-');
+            if (catName.includes('kitchen')) catId = 'kitchenware';
+            else if (catName.includes('dining')) catId = 'dining';
+            else if (catName.includes('brass') || catName.includes('copper')) catId = 'brass-copper';
+            else if (catName.includes('decor')) catId = 'decor';
+            
+            return {
+              id: s.slug,
+              name: s.name,
+              category: catId
+            };
+          });
+          setDynamicSubcategories(mapped);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   // Load unique brands list once to populate filter sidebar
   useEffect(() => {
@@ -73,8 +100,9 @@ function ProductsContent() {
       .catch(() => {});
   }, []);
 
-  // Fetch paginated products based on query state
+  // Fetch paginated products based on query state with race condition protection
   useEffect(() => {
+    let active = true;
     setIsLoading(true);
     const params = new URLSearchParams();
     params.set('page', page.toString());
@@ -99,19 +127,30 @@ function ProductsContent() {
 
     fetch(`/api/products?${params.toString()}`)
       .then(async (res) => {
+        if (!active) return;
         if (res.ok) {
           const totalHeader = res.headers.get('X-Total-Count');
-          if (totalHeader) {
+          if (totalHeader && active) {
             setTotalProducts(parseInt(totalHeader) || 0);
           }
           const data = await res.json();
-          if (Array.isArray(data)) {
+          if (active && Array.isArray(data)) {
             setPageProducts(data);
           }
         }
       })
-      .catch(err => console.error("Error loading products:", err))
-      .finally(() => setIsLoading(false));
+      .catch(err => {
+        if (active) {
+          console.error("Error loading products:", err);
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [
     page,
     searchQuery,
@@ -149,6 +188,7 @@ function ProductsContent() {
     setInStockOnly(false);
     setFeaturedOnly(false);
     setSortBy('default');
+    router.push('/products');
   };
 
   const hasFilters = selectedCategory || selectedSubcategory || selectedMaterial || selectedBrand || selectedPriceRange >= 0 || inStockOnly || featuredOnly;
@@ -160,7 +200,16 @@ function ProductsContent() {
         <h3 className="text-sm font-bold text-[--color-brand-text] mb-4 uppercase tracking-widest font-[family-name:var(--font-heading)] border-b border-[--color-brand-border] pb-2">Category</h3>
         <div className="space-y-2 mt-4">
           <button
-            onClick={() => setSelectedCategory('')}
+            onClick={() => {
+              setSelectedCategory('');
+              setSelectedSubcategory('');
+              const params = new URLSearchParams(window.location.search);
+              params.delete('category');
+              params.delete('subcategory');
+              params.delete('page');
+              const queryStr = params.toString();
+              router.push(queryStr ? `/products?${queryStr}` : '/products');
+            }}
             className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${!selectedCategory ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
           >
             All Categories
@@ -168,7 +217,15 @@ function ProductsContent() {
           {categories.map(cat => (
             <button
               key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => {
+                setSelectedCategory(cat.id);
+                setSelectedSubcategory('');
+                const params = new URLSearchParams(window.location.search);
+                params.set('category', cat.id);
+                params.delete('subcategory');
+                params.delete('page');
+                router.push(`/products?${params.toString()}`);
+              }}
               className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${selectedCategory === cat.id ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
             >
               {cat.name}
@@ -183,15 +240,28 @@ function ProductsContent() {
           <h3 className="text-sm font-bold text-[--color-brand-text] mb-4 uppercase tracking-widest font-[family-name:var(--font-heading)] border-b border-[--color-brand-border] pb-2">Subcategory</h3>
           <div className="space-y-2 mt-4">
             <button
-              onClick={() => setSelectedSubcategory('')}
+              onClick={() => {
+                setSelectedSubcategory('');
+                const params = new URLSearchParams(window.location.search);
+                params.delete('subcategory');
+                params.delete('page');
+                const queryStr = params.toString();
+                router.push(queryStr ? `/products?${queryStr}` : '/products');
+              }}
               className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${!selectedSubcategory ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
             >
               All Subcategories
             </button>
-            {subcategories.filter(sub => sub.category === selectedCategory).map(sub => (
+            {dynamicSubcategories.filter(sub => sub.category === selectedCategory).map(sub => (
               <button
                 key={sub.id}
-                onClick={() => setSelectedSubcategory(sub.id)}
+                onClick={() => {
+                  setSelectedSubcategory(sub.id);
+                  const params = new URLSearchParams(window.location.search);
+                  params.set('subcategory', sub.id);
+                  params.delete('page');
+                  router.push(`/products?${params.toString()}`);
+                }}
                 className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${selectedSubcategory === sub.id ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
               >
                 {sub.name}
@@ -428,7 +498,7 @@ function ProductsContent() {
               </div>
             ) : (
               <div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-8 sm:gap-y-12">
                   {pageProducts.map(p => (
                     <ProductCard key={p.id} product={p} />
                   ))}

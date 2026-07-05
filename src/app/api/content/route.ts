@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     });
 
     const response = NextResponse.json({ content });
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
+    response.headers.set('Cache-Control', 'no-store, max-age=0, must-revalidate');
     return response;
   } catch (error) {
     console.error('Error fetching site content:', error);

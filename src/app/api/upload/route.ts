@@ -42,7 +42,14 @@ export async function POST(req: Request) {
 
     if (uploadError) {
       console.error('[POST /api/upload] Supabase upload error:', uploadError);
-      return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
+      const isRlsError = uploadError.message?.toLowerCase().includes('row-level security') || 
+                         uploadError.message?.toLowerCase().includes('violates') ||
+                         (uploadError as any).status === 400 || 
+                         (uploadError as any).statusCode === '403';
+      const errorMsg = isRlsError
+        ? 'Upload failed: Row-level security policy violation. Make sure SUPABASE_SERVICE_ROLE_KEY is defined in .env.local to bypass RLS for admin uploads.'
+        : `Upload failed: ${uploadError.message || 'Unknown error'}`;
+      return NextResponse.json({ error: errorMsg }, { status: 500 });
     }
 
     // Get the permanent public URL

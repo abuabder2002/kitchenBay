@@ -111,6 +111,7 @@ export async function GET(req: Request) {
         shippingFee: true,
         shippingMethod: true,
         isActive: true,
+        video: true,
       }
     });
 
@@ -155,7 +156,8 @@ export async function GET(req: Request) {
         isFromDb: true,
         brand: p.brand || undefined,
         shippingFee: p.shippingFee ? p.shippingFee / 100 : undefined,
-        shippingMethod: p.shippingMethod || undefined
+        shippingMethod: p.shippingMethod || undefined,
+        video: p.video || undefined,
       };
     });
 
@@ -205,6 +207,7 @@ export async function POST(req: Request) {
         brand: data.brand || null,
         shippingFee: data.shippingFee !== undefined && data.shippingFee !== null ? Math.round(parseFloat(data.shippingFee) * 100) : null,
         shippingMethod: data.shippingMethod || null,
+        video: data.video || null,
       }
     });
 
@@ -244,7 +247,8 @@ export async function POST(req: Request) {
       isFromDb: true,
       brand: newProduct.brand || undefined,
       shippingFee: newProduct.shippingFee ? newProduct.shippingFee / 100 : undefined,
-      shippingMethod: newProduct.shippingMethod || undefined
+      shippingMethod: newProduct.shippingMethod || undefined,
+      video: newProduct.video || undefined,
     });
   } catch (error) {
     console.error('Error creating product:', error);

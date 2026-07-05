@@ -12,6 +12,7 @@ export default function AdminProductsPage() {
   const { products, toggleFeatured, deleteProduct, updateProduct, refreshProducts } = useProducts();
   const [searchQuery, setSearchQuery] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editVideoUploading, setEditVideoUploading] = useState(false);
 
   const [dbCategories, setDbCategories] = useState<any[]>([]);
   const [dbSubcategories, setDbSubcategories] = useState<any[]>([]);
@@ -125,6 +126,38 @@ export default function AdminProductsPage() {
       img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleEditVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setEditVideoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        setEditingProduct(prev => prev ? { ...prev, video: data.url } : null);
+      } else if (data.error) {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Failed to upload video:', error);
+      alert(`Failed to upload video: ${(error as Error).message}`);
+    } finally {
+      setEditVideoUploading(false);
+    }
   };
 
   const handleEditSubImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -791,6 +824,37 @@ export default function AdminProductsPage() {
                       <Upload size={18} />
                       <input type="file" accept="image/*" multiple className="hidden" onChange={handleEditSubImageUpload} />
                     </label>
+                  </div>
+                </div>
+
+                {/* Product Video Upload */}
+                <div className="flex flex-col gap-1.5 mt-2 pt-4 border-t border-gray-100">
+                  <label className="text-sm font-medium text-gray-700">Product Video (Optional)</label>
+                  <div className="flex items-center gap-4">
+                    {editingProduct.video ? (
+                      <div className="relative group w-32 h-32">
+                        <video src={editingProduct.video} className="w-full h-full object-cover rounded-xl border border-gray-200" controls />
+                        <button 
+                          type="button" 
+                          onClick={() => setEditingProduct(prev => prev ? { ...prev, video: '' } : null)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="w-32 h-32 cursor-pointer flex flex-col items-center justify-center text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors border-dashed border-2">
+                        {editVideoUploading ? (
+                          <span className="text-xs">Uploading...</span>
+                        ) : (
+                          <>
+                            <Upload size={20} className="mb-2" />
+                            <span className="text-xs text-center px-2">Upload Video<br/>(MP4, WebM)</span>
+                          </>
+                        )}
+                        <input type="file" accept="video/mp4,video/webm" className="hidden" onChange={handleEditVideoUpload} disabled={editVideoUploading} />
+                      </label>
+                    )}
                   </div>
                 </div>
               </div>

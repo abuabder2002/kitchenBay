@@ -109,9 +109,45 @@ export default function ProductDetailPage() {
 
   const [activeTab, setActiveTab] = useState<'story' | 'Kitchenbay' | 'care'>('story');
 
-  const allImages = [product?.image, ...(product?.subImages || [])].filter(Boolean) as string[];
-  const currentImage = selectedImage || allImages[0] || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop';
-  const currentIndex = allImages.indexOf(currentImage);
+  const isVideoUrl = (url: string | undefined | null): boolean => {
+    if (!url) return false;
+    if (url.startsWith('data:')) {
+      return url.startsWith('data:video/');
+    }
+    const lowercase = url.toLowerCase();
+    return (
+      lowercase.endsWith('.mp4') ||
+      lowercase.endsWith('.webm') ||
+      lowercase.endsWith('.ogg') ||
+      lowercase.endsWith('.mov') ||
+      lowercase.includes('/video')
+    );
+  };
+
+  const rawImages = [product?.image, ...(product?.subImages || [])].filter(Boolean);
+  const rawVideo = product?.video;
+
+  const imagesList: { type: string; url: string }[] = [];
+  const videosList: { type: string; url: string }[] = [];
+
+  rawImages.forEach(url => {
+    if (isVideoUrl(url)) {
+      videosList.push({ type: 'video', url });
+    } else {
+      imagesList.push({ type: 'image', url });
+    }
+  });
+
+  if (rawVideo) {
+    if (!videosList.some(v => v.url === rawVideo)) {
+      videosList.push({ type: 'video', url: rawVideo });
+    }
+  }
+
+  const allMedia = [...imagesList, ...videosList];
+  
+  const currentMedia = allMedia.find(m => m.url === selectedImage) || allMedia[0] || { type: 'image', url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop' };
+  const currentIndex = allMedia.findIndex(m => m.url === currentMedia.url);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) return; // Disable hover zoom on mobile
@@ -132,16 +168,16 @@ export default function ProductDetailPage() {
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (allImages.length <= 1) return;
-    const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
-    setSelectedImage(allImages[prevIndex]);
+    if (allMedia.length <= 1) return;
+    const prevIndex = (currentIndex - 1 + allMedia.length) % allMedia.length;
+    setSelectedImage(allMedia[prevIndex].url);
   };
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (allImages.length <= 1) return;
-    const nextIndex = (currentIndex + 1) % allImages.length;
-    setSelectedImage(allImages[nextIndex]);
+    if (allMedia.length <= 1) return;
+    const nextIndex = (currentIndex + 1) % allMedia.length;
+    setSelectedImage(allMedia[nextIndex].url);
   };
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[--color-brand-bg]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div></div>;
@@ -244,18 +280,29 @@ export default function ProductDetailPage() {
                   }
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <Image
-                  src={normalizeImgSrc(currentImage)}
-                  alt={product.name}
-                  fill
-                  priority={true}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className={`absolute inset-0 w-full h-full object-contain transition-transform ease-out duration-150 ${isZoomed ? 'scale-[2.5]' : 'scale-100'}`}
-                  style={{ transformOrigin: isZoomed ? backgroundPosition : 'center center' }}
-                />
+                {currentMedia.type === 'video' ? (
+                  <video
+                    src={currentMedia.url}
+                    className="absolute inset-0 w-full h-full object-contain"
+                    controls
+                    autoPlay
+                    muted
+                    loop
+                  />
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <Image
+                    src={normalizeImgSrc(currentMedia.url)}
+                    alt={product.name}
+                    fill
+                    priority={true}
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className={`absolute inset-0 w-full h-full object-contain transition-transform ease-out duration-150 ${isZoomed ? 'scale-[2.5]' : 'scale-100'}`}
+                    style={{ transformOrigin: isZoomed ? backgroundPosition : 'center center' }}
+                  />
+                )}
                 
-                {allImages.length > 1 && (
+                {allMedia.length > 1 && (
                   <>
                     <button 
                       onClick={handlePrevImage}
@@ -273,21 +320,30 @@ export default function ProductDetailPage() {
                 )}
               </div>
               
-              {allImages.length > 1 && (
+              {allMedia.length > 1 && (
                 <div className="grid grid-cols-4 gap-4">
-                  {allImages.map((img, idx) => (
+                  {allMedia.map((media, idx) => (
                     <div 
                       key={idx} 
-                      onClick={() => {
-                        setSelectedImage(img);
-                      }}
+                      onClick={() => setSelectedImage(media.url)}
                       className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${
-                        currentImage === img 
+                        currentMedia.url === media.url 
                           ? 'border-[--color-brand-text] opacity-100' 
                           : 'border-transparent opacity-60 hover:opacity-100'
                       }`}
                     >
-                        <Image src={normalizeImgSrc(img)} alt={`Thumb ${idx + 1}`} fill sizes="100px" className="absolute inset-0 w-full h-full object-contain" />
+                      {media.type === 'video' ? (
+                        <video src={media.url} className="absolute inset-0 w-full h-full object-cover" />
+                      ) : (
+                        <Image src={normalizeImgSrc(media.url)} alt={`Thumb ${idx + 1}`} fill sizes="100px" className="absolute inset-0 w-full h-full object-contain" />
+                      )}
+                      {media.type === 'video' && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <svg className="w-8 h-8 text-white opacity-80" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 4l12 6-12 6z" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -437,7 +493,7 @@ export default function ProductDetailPage() {
                         className={`flex-1 flex items-center justify-center gap-3 py-4 font-bold uppercase tracking-widest text-sm transition-all rounded-sm ${
                           added
                             ? 'bg-brand-success text-white'
-                            : 'bg-brand-text hover:bg-brand-accent text-brand-bg'
+                            : 'bg-brand-text hover:bg-brand-accent text-white'
                         }`}
                       >
                         {added ? <><Check size={18} /> Added</> : 'Add to Cart'}
@@ -632,7 +688,7 @@ export default function ProductDetailPage() {
               <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Complete The Look</span>
               <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">You May Also Love</h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
               {related.map(p => <ProductCard key={p.id} product={p} />)}
             </div>
           </section>
@@ -643,8 +699,8 @@ export default function ProductDetailPage() {
       <MobileImageViewer 
         isOpen={isMobileViewerOpen}
         onClose={() => setIsMobileViewerOpen(false)}
-        images={allImages.map(img => normalizeImgSrc(img))}
-        initialIndex={mobileViewerIndex}
+        images={allMedia.filter(m => m.type === 'image').map(m => normalizeImgSrc(m.url))}
+        initialIndex={Math.max(0, allMedia.filter(m => m.type === 'image').findIndex(m => m.url === currentMedia.url))}
       />
 
       {/* Bulk Order Inquiry Modal */}
