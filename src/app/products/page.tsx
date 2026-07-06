@@ -39,6 +39,7 @@ function ProductsContent() {
 
   const [selectedCategory, setSelectedCategory] = useState<string>(urlCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(urlSubcategory);
+  const [expandedCategory, setExpandedCategory] = useState<string>(urlCategory);
 
   const [selectedMaterial, setSelectedMaterial] = useState<string>('');
   const [selectedBrand, setSelectedBrand] = useState<string>('');
@@ -59,6 +60,7 @@ function ProductsContent() {
   useEffect(() => {
     setSelectedCategory(urlCategory);
     setSelectedSubcategory(urlSubcategory);
+    setExpandedCategory(urlCategory);
   }, [urlCategory, urlSubcategory]);
 
   // Load dynamic subcategories (just like Navbar does)
@@ -201,6 +203,7 @@ function ProductsContent() {
         <div className="space-y-2 mt-4">
           <button
             onClick={() => {
+              setExpandedCategory('');
               setSelectedCategory('');
               setSelectedSubcategory('');
               const params = new URLSearchParams(window.location.search);
@@ -218,15 +221,9 @@ function ProductsContent() {
             <button
               key={cat.id}
               onClick={() => {
-                setSelectedCategory(cat.id);
-                setSelectedSubcategory('');
-                const params = new URLSearchParams(window.location.search);
-                params.set('category', cat.id);
-                params.delete('subcategory');
-                params.delete('page');
-                router.push(`/products?${params.toString()}`);
+                setExpandedCategory(expandedCategory === cat.id ? '' : cat.id);
               }}
-              className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${selectedCategory === cat.id ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
+              className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${expandedCategory === cat.id ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
             >
               {cat.name}
             </button>
@@ -235,7 +232,7 @@ function ProductsContent() {
       </div>
 
       {/* Subcategory */}
-      {selectedCategory && (
+      {expandedCategory && (
         <div>
           <h3 className="text-sm font-bold text-[--color-brand-text] mb-4 uppercase tracking-widest font-[family-name:var(--font-heading)] border-b border-[--color-brand-border] pb-2">Subcategory</h3>
           <div className="space-y-2 mt-4">
@@ -244,25 +241,31 @@ function ProductsContent() {
                 setSelectedSubcategory('');
                 const params = new URLSearchParams(window.location.search);
                 params.delete('subcategory');
+                params.set('category', expandedCategory);
                 params.delete('page');
                 const queryStr = params.toString();
                 router.push(queryStr ? `/products?${queryStr}` : '/products');
               }}
-              className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${!selectedSubcategory ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
+              className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${!selectedSubcategory && selectedCategory === expandedCategory ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
             >
               All Subcategories
             </button>
-            {dynamicSubcategories.filter(sub => sub.category === selectedCategory).map(sub => (
+            {dynamicSubcategories.filter(sub => sub.category === expandedCategory).map(sub => (
               <button
                 key={sub.id}
                 onClick={() => {
                   setSelectedSubcategory(sub.id);
                   const params = new URLSearchParams(window.location.search);
                   params.set('subcategory', sub.id);
+                  params.set('category', expandedCategory);
                   params.delete('page');
                   router.push(`/products?${params.toString()}`);
                 }}
-                className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${selectedSubcategory === sub.id ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
+                className={`w-full text-left px-4 py-2 text-sm rounded-sm transition-colors ${
+                  selectedSubcategory === sub.id
+                    ? 'bg-[--color-brand-text] text-white font-medium'
+                    : 'text-[--color-brand-muted] hover:bg-gray-100'
+                }`}
               >
                 {sub.name}
               </button>

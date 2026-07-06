@@ -27,6 +27,7 @@ export default function Navbar() {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  const [mounted, setMounted] = useState(false);
   const [currentAdIdx, setCurrentAdIdx] = useState(0);
   const ads = [
     { 
@@ -42,11 +43,16 @@ export default function Navbar() {
   ];
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     const timer = setInterval(() => {
       setCurrentAdIdx((prev) => (prev + 1) % ads.length);
     }, 4500);
     return () => clearInterval(timer);
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
     if (isMobileSearchOpen) {
@@ -191,9 +197,9 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Moving advertisement side animation */}
+        {/* Moving advertisement side animation — only rendered client-side to avoid hydration mismatch */}
         <div className="flex-1 md:flex-none flex items-center justify-center md:justify-end overflow-hidden relative h-5 select-none md:min-w-[340px]">
-          {ads.map((ad, idx) => (
+          {mounted ? ads.map((ad, idx) => (
             <Link
               key={idx}
               href={ad.href}
@@ -214,7 +220,7 @@ export default function Navbar() {
               </span>
               <span className="text-[--color-brand-bg]">{ad.text}</span>
             </Link>
-          ))}
+          )) : null}
         </div>
       </div>
 
