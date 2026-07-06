@@ -43,6 +43,12 @@ export async function PUT(request: Request) {
       )
     );
 
+    // Clear in-memory content cache to reflect changes immediately
+    const globalAny = globalThis as any;
+    if (globalAny.contentCache) {
+      globalAny.contentCache = {};
+    }
+
     return NextResponse.json({ success: true, count: results.length });
   } catch (error) {
     console.error('Error updating site content:', error);

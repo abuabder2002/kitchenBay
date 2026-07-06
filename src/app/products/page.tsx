@@ -381,26 +381,11 @@ function ProductsContent() {
         { name: 'Products', href: '/products' },
       ]} />
 
-      {/* Page Header */}
-      <div className="bg-[--color-brand-card] py-20 border-b border-[--color-brand-border] text-center">
-        <span className="text-[--color-brand-accent] text-sm font-semibold tracking-[0.2em] uppercase mb-4 block">The Collection</span>
-        <h1 className="font-[family-name:var(--font-heading)] text-5xl font-bold text-[--color-brand-text] mb-4">Kitchenbay Crafted</h1>
-        <p className="text-[--color-brand-muted] max-w-2xl mx-auto text-lg mb-6">Authentic materials shaped by generations of master Kitchenbays.</p>
-        
-        {/* SEO Intro Text */}
-        <div className="max-w-3xl mx-auto px-4">
-          <p className="text-sm text-[--color-brand-muted] leading-relaxed hidden md:block">
-            Shop our premium selection of traditional Indian kitchenware, including pre-seasoned cast iron, pure brass vessels, copper drinkware, and authentic soapstone pots. Each piece is handcrafted by skilled artisans to bring health, durability, and heritage to your modern kitchen.
-          </p>
-        </div>
-      </div>
+
 
       <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-[1600px]">
         {/* Controls */}
-        <div className="flex items-center justify-between mb-12 pb-4 border-b border-[--color-brand-border]">
-          <p className="text-sm font-medium text-[--color-brand-muted] tracking-wide">
-            {isLoading ? 'Loading…' : `${totalProducts} curated products`}
-          </p>
+        <div className="flex items-center justify-end mb-12 pb-4 border-b border-[--color-brand-border]">
           <div className="flex items-center gap-6">
             <div className="relative hidden sm:block">
               <select
@@ -440,14 +425,14 @@ function ProductsContent() {
 
           {/* Mobile Filter Drawer */}
           {filtersOpen && (
-            <div className="fixed inset-0 z-50 flex md:hidden">
+            <div className="fixed inset-0 z-[100] flex md:hidden">
               <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={() => setFiltersOpen(false)} />
-              <div className="w-[85%] max-w-sm bg-[--color-brand-bg] h-full overflow-y-auto shadow-2xl flex flex-col">
-                <div className="flex justify-between items-center p-6 border-b border-[--color-brand-border] sticky top-0 bg-[--color-brand-bg] z-10">
+              <div className="w-[85%] max-w-sm bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
+                <div className="flex justify-between items-center p-6 border-b border-[--color-brand-border] sticky top-0 bg-white z-10">
                   <h2 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-[--color-brand-text]">Filters</h2>
                   <button onClick={() => setFiltersOpen(false)} className="text-[--color-brand-muted] hover:text-[--color-brand-text]"><X size={24} /></button>
                 </div>
-                <div className="p-6 flex-1">
+                <div className="p-6 flex-1 bg-white">
                   {hasFilters && (
                     <button onClick={clearFilters} className="mb-8 w-full py-3 border border-[--color-brand-accent] text-[--color-brand-accent] text-xs uppercase tracking-widest font-bold hover:bg-[--color-brand-accent] hover:text-[--color-brand-bg] transition-colors">
                       Clear Filters
@@ -455,10 +440,10 @@ function ProductsContent() {
                   )}
                   {FilterPanel()}
                 </div>
-                <div className="p-6 border-t border-[--color-brand-border] sticky bottom-0 bg-[--color-brand-bg]">
+                <div className="p-6 border-t border-[--color-brand-border] sticky bottom-0 bg-white">
                   <button
                     onClick={() => setFiltersOpen(false)}
-                    className="w-full bg-[--color-brand-text] text-[--color-brand-bg] font-bold py-4 uppercase tracking-widest text-sm hover:bg-[--color-brand-accent] transition-colors"
+                    className="w-full bg-[--color-brand-text] text-white font-bold py-4 uppercase tracking-widest text-sm hover:bg-[--color-brand-accent] transition-colors"
                   >
                     View {totalProducts} Results
                   </button>

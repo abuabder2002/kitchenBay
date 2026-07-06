@@ -36,6 +36,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       include: { category: { select: { id: true, name: true } } },
     });
 
+    // Clear subcategories cache on changes
+    const globalAny = globalThis as any;
+    globalAny.subcategoriesCache = {};
+
     return NextResponse.json({ subcategory });
   } catch (error) {
     console.error('[PUT /api/admin/subcategories/[id]]', error);
@@ -53,6 +57,11 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params;
     await prisma.subcategory.delete({ where: { id } });
+
+    // Clear subcategories cache on changes
+    const globalAny = globalThis as any;
+    globalAny.subcategoriesCache = {};
+
     return NextResponse.json({ message: 'Subcategory deleted successfully' });
   } catch (error) {
     console.error('[DELETE /api/admin/subcategories/[id]]', error);

@@ -27,7 +27,6 @@ export default function Navbar() {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const [mounted, setMounted] = useState(false);
   const [currentAdIdx, setCurrentAdIdx] = useState(0);
   const ads = [
     { 
@@ -43,16 +42,11 @@ export default function Navbar() {
   ];
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
     const timer = setInterval(() => {
       setCurrentAdIdx((prev) => (prev + 1) % ads.length);
     }, 4500);
     return () => clearInterval(timer);
-  }, [mounted]);
+  }, [ads.length]);
 
   useEffect(() => {
     if (isMobileSearchOpen) {
@@ -197,9 +191,9 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Moving advertisement side animation — only rendered client-side to avoid hydration mismatch */}
+        {/* Moving advertisement side animation */}
         <div className="flex-1 md:flex-none flex items-center justify-center md:justify-end overflow-hidden relative h-5 select-none md:min-w-[340px]">
-          {mounted ? ads.map((ad, idx) => (
+          {ads.map((ad, idx) => (
             <Link
               key={idx}
               href={ad.href}
@@ -215,12 +209,12 @@ export default function Navbar() {
                 ad.badge === 'OFFER' ? 'bg-[#FFEA00] text-black' : 'bg-green-500 text-white'
               }`}>
                 {/* Glistening Shimmer Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent -translate-x-full animate-[shimmer_2s_ease-in-out_infinite]" />
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent -translate-x-full animate-[shimmer_2s_ease-in-out_infinite]" />
                 <span className="relative z-10">{ad.badge}</span>
               </span>
               <span className="text-[--color-brand-bg]">{ad.text}</span>
             </Link>
-          )) : null}
+          ))}
         </div>
       </div>
 

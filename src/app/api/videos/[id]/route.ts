@@ -10,6 +10,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const globalAny = globalThis as any;
+    globalAny.videosCache = null;
     const { id } = await params;
     await prisma.traditionVideo.delete({ where: { id } });
     return NextResponse.json({ success: true });
@@ -24,6 +26,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const globalAny = globalThis as any;
+    globalAny.videosCache = null;
     const { id }          = await params;
     const contentType     = req.headers.get('content-type') || '';
 

@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/adminAuth';
 
+const globalAny = globalThis as any;
+if (!globalAny.subcategoriesCache) {
+  globalAny.subcategoriesCache = {};
+}
+const subcategoriesCache = globalAny.subcategoriesCache;
+const CACHE_TTL = 30000; // 30 seconds
+
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
@@ -16,6 +23,12 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
     const skip = (page - 1) * limit;
+
+    const cacheKey = `${categoryId}_${search}_${isActiveParam}_${page}_${limit}`;
+    const now = Date.now();
+    if (subcategoriesCache[cacheKey] && (now - subcategoriesCache[cacheKey].timestamp) < CACHE_TTL) {
+      return NextResponse.json(subcategoriesCache[cacheKey].data);
+    }
 
     const where: Record<string, unknown> = {};
     if (categoryId) where.categoryId = categoryId;
@@ -34,7 +47,9 @@ export async function GET(req: NextRequest) {
       prisma.subcategory.count({ where }),
     ]);
 
-    return NextResponse.json({ subcategories, total, page, totalPages: Math.ceil(total / limit) });
+    const result = { subcategories, total, page, totalPages: Math.ceil(total / limit) };
+    subcategoriesCache[cacheKey] = { data: result, timestamp: now };
+    return NextResponse.json(result);
   } catch (error) {
     console.error('[GET /api/admin/subcategories]', error);
     return NextResponse.json({ error: 'Failed to fetch subcategories' }, { status: 500 });
@@ -68,6 +83,9 @@ export async function POST(req: NextRequest) {
       data: { name: name.trim(), slug, categoryId, isActive: isActive ?? true },
       include: { category: { select: { id: true, name: true } } },
     });
+
+    // Clear subcategories cache on changes
+    globalAny.subcategoriesCache = {};
 
     return NextResponse.json({ subcategory }, { status: 201 });
   } catch (error) {

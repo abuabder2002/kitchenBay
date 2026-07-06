@@ -3,11 +3,25 @@ import { prisma } from '@/lib/prisma';
 import fs from 'fs/promises';
 import path from 'path';
 
+const globalAny = globalThis as any;
+if (!globalAny.videosCache) {
+  globalAny.videosCache = null;
+}
+const CACHE_TTL = 30000; // 30 seconds
+
 export async function GET() {
   try {
+    const now = Date.now();
+    if (globalAny.videosCache && (now - globalAny.videosCache.timestamp) < CACHE_TTL) {
+      return NextResponse.json(globalAny.videosCache.data);
+    }
+
     const videos = await prisma.traditionVideo.findMany({
       orderBy: { createdAt: 'desc' }
     });
+
+    globalAny.videosCache = { data: videos, timestamp: now };
+
     const response = NextResponse.json(videos);
     response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
     return response;
@@ -19,6 +33,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    globalAny.videosCache = null;
     const contentType = req.headers.get('content-type') || '';
 
     if (contentType.includes('multipart/form-data')) {

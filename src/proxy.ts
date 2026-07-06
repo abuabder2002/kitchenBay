@@ -4,8 +4,14 @@ import { createServerClient } from '@supabase/ssr';
 const PROTECTED_ROUTES = ['/checkout', '/payment', '/orders/create'];
 
 export async function proxy(request: NextRequest) {
-  const { supabaseResponse, supabase } = await updateSession(request);
   const pathname = request.nextUrl.pathname;
+
+  // Bypass proxy/session checks for API routes to dramatically improve site performance
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
+  const { supabaseResponse, supabase } = await updateSession(request);
 
   // Defensive check in case Supabase isn't properly configured
   if (!supabase || !supabase.auth) {
