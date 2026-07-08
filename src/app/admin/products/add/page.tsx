@@ -24,7 +24,7 @@ export default function AddProductPage() {
     brand: '', shippingFee: '', shippingMethod: ''
   });
   const [videoUploading, setVideoUploading] = useState(false);
-  const [variants, setVariants] = useState<{ [size: string]: { weight: string, length: string, width: string, height: string, diameter: string, price: string, stock: string } }>({});
+  const [variants, setVariants] = useState<{ [size: string]: { weight: string, length: string, width: string, height: string, diameter: string, price: string, stock: string, image?: string } }>({});
   const [attributes, setAttributes] = useState<{name: string, value: string}[]>([]);
   const [saved, setSaved] = useState(false);
 
@@ -169,7 +169,7 @@ export default function AddProductPage() {
     setVariants(prev => {
       const copy = { ...prev };
       if (copy[size]) delete copy[size];
-      else copy[size] = { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '' };
+      else copy[size] = { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '', image: '' };
       
       // Update form.sizeCategory automatically to comma separated list for legacy field
       const newSizes = Object.keys(copy).join(', ');
@@ -471,7 +471,7 @@ export default function AddProductPage() {
           <div className="mb-6">
             <label className="text-sm font-medium text-gray-700 block mb-2">Select Available Sizes</label>
             <div className="flex flex-wrap gap-2">
-              {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Standard', 'Custom'].map(sz => (
+              {['S', 'M', 'ML', 'L', 'XL', 'Standard', 'Custom'].map(sz => (
                 <button
                   key={sz}
                   type="button"
@@ -503,6 +503,40 @@ export default function AddProductPage() {
                     <FormInput id={`diameter-${sz}`} label="Diameter (cm)" placeholder="e.g. 12" type="number" value={data.diameter} onChange={(e) => updateVariant(sz, 'diameter', e.target.value)} />
                     <FormInput id={`price-${sz}`} label="Price Override (Rs.)" placeholder="Optional base price" type="number" value={data.price} onChange={(e) => updateVariant(sz, 'price', e.target.value)} />
                     <FormInput id={`stock-${sz}`} label="Stock Override" placeholder="Optional" type="number" value={data.stock} onChange={(e) => updateVariant(sz, 'stock', e.target.value)} />
+                    
+                    {/* Size Specific Image Upload */}
+                    <div className="flex flex-col gap-1.5 col-span-1 sm:col-span-2">
+                      <label className="text-xs font-medium text-gray-700">Size Variant Image</label>
+                      {data.image ? (
+                        <div className="flex items-center gap-3 bg-white p-2 border border-gray-200 rounded-xl">
+                          <img src={data.image} className="w-12 h-12 object-contain rounded-lg border bg-gray-50 shrink-0" alt={`${sz} variant`} />
+                          <button 
+                            type="button" 
+                            onClick={() => updateVariant(sz, 'image', '')}
+                            className="text-xs font-semibold text-red-600 hover:text-red-800 transition-colors"
+                          >
+                            Remove Image
+                          </button>
+                        </div>
+                      ) : (
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            try {
+                              const dataUrl = await processProductImage(file);
+                              updateVariant(sz, 'image', dataUrl);
+                            } catch (error) {
+                              console.error(error);
+                              alert('Failed to process image');
+                            }
+                          }}
+                          className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

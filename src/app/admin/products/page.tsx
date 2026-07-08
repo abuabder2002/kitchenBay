@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Plus, Pencil, Trash2, Search, Star, X, Upload, ShieldCheck, Package } from 'lucide-react';
 import { useProducts } from '@/lib/productsContext';
 import { Product } from '@/lib/mockData';
+import { processProductImage } from '@/lib/imageProcessor';
 
 export default function AdminProductsPage() {
   const { products, toggleFeatured, deleteProduct, updateProduct, refreshProducts } = useProducts();
@@ -219,7 +220,7 @@ export default function AdminProductsPage() {
       const currentVariants = (prev.variants as any) || {};
       const copy = { ...currentVariants };
       if (copy[sz]) delete copy[sz];
-      else copy[sz] = { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '' };
+      else copy[sz] = { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '', image: '' };
       
       const newSizes = Object.keys(copy).join(', ');
       return { ...prev, variants: copy, sizeCategory: newSizes };
@@ -679,7 +680,7 @@ export default function AdminProductsPage() {
                   <div className="mb-6">
                     <label className="text-sm font-medium text-gray-700 block mb-2">Select Available Sizes</label>
                     <div className="flex flex-wrap gap-2">
-                      {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Standard', 'Custom'].map(sz => {
+                      {['S', 'M', 'ML', 'L', 'XL', 'Standard', 'Custom'].map(sz => {
                         const isSelected = !!((editingProduct.variants as any)?.[sz]);
                         return (
                           <button
@@ -714,6 +715,40 @@ export default function AdminProductsPage() {
                             <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Diameter</label><input type="number" value={data.diameter || ''} onChange={(e) => updateEditVariant(sz, 'diameter', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
                             <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Price Override</label><input type="number" value={data.price || ''} onChange={(e) => updateEditVariant(sz, 'price', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
                             <div className="flex flex-col gap-1.5"><label className="text-xs font-medium text-gray-700">Stock Override</label><input type="number" value={data.stock || ''} onChange={(e) => updateEditVariant(sz, 'stock', e.target.value)} className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200" /></div>
+                            
+                            {/* Size Specific Image Upload */}
+                            <div className="flex flex-col gap-1.5 col-span-1 sm:col-span-2">
+                              <label className="text-xs font-medium text-gray-700">Size Variant Image</label>
+                              {data.image ? (
+                                <div className="flex items-center gap-3 bg-white p-2 border border-gray-200 rounded-lg">
+                                  <img src={data.image} className="w-12 h-12 object-contain rounded-lg border bg-gray-50 shrink-0" alt={`${sz} variant`} />
+                                  <button 
+                                    type="button" 
+                                    onClick={() => updateEditVariant(sz, 'image', '')}
+                                    className="text-xs font-semibold text-red-600 hover:text-red-800 transition-colors"
+                                  >
+                                    Remove Image
+                                  </button>
+                                </div>
+                              ) : (
+                                <input 
+                                  type="file" 
+                                  accept="image/*" 
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    try {
+                                      const dataUrl = await processProductImage(file);
+                                      updateEditVariant(sz, 'image', dataUrl);
+                                    } catch (error) {
+                                      console.error(error);
+                                      alert('Failed to process image');
+                                    }
+                                  }}
+                                  className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                                />
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}

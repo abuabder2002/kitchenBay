@@ -91,7 +91,7 @@ function ProductsContent() {
 
   // Load unique brands list once to populate filter sidebar
   useEffect(() => {
-    fetch('/api/products?limit=500')
+    fetch('/api/products?limit=500', { cache: 'no-store' })
       .then(res => res.ok ? res.json() : [])
       .then(data => {
         if (Array.isArray(data)) {
@@ -127,7 +127,7 @@ function ProductsContent() {
       }
     }
 
-    fetch(`/api/products?${params.toString()}`)
+    fetch(`/api/products?${params.toString()}`, { cache: 'no-store' })
       .then(async (res) => {
         if (!active) return;
         if (res.ok) {

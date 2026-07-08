@@ -1,0 +1,2 @@
+// Configuration moved to next.config.mjs to ensure ESM compatibility in development
+export default {};

@@ -21,7 +21,7 @@ import { useAuth } from '@/lib/authContext';
 import { useWishlist } from '@/lib/wishlistContext';
 import { getItemBasePrice, getItemStock } from '@/lib/pricing';
 import {
-  Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus, Heart, ChevronLeft, ChevronRight
+  Star, ShoppingCart, Truck, Package, ShieldCheck, Check, Info, Minus, Plus, Heart, ChevronLeft, ChevronRight, ChevronUp, ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -34,6 +34,87 @@ import { productSchema } from '@/lib/schemas';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
+
+  // Helper to get custom attributes
+  const getAttrValue = (name: string, fallback: string): string => {
+    if (!product || !product.attributes) return fallback;
+    const found = product.attributes.find((a: any) => a.name.toLowerCase() === name.toLowerCase());
+    return found ? found.value : fallback;
+  };
+
+  const getDefaultColor = (material: string): string => {
+    if (!material) return "Silver";
+    const mat = material.toLowerCase();
+    if (mat.includes("cast iron")) return "Charcoal Black";
+    if (mat.includes("brass")) return "Gold / Golden";
+    if (mat.includes("copper")) return "Reddish Bronze";
+    if (mat.includes("soapstone")) return "Grey Stone";
+    if (mat.includes("clay") || mat.includes("terracotta")) return "Clay Red";
+    return "Silver";
+  };
+
+  const hasLid = (name: string, category: string): string => {
+    const combined = `${name || ""} ${category || ""}`.toLowerCase();
+    if (combined.includes("lid") || combined.includes("casserole") || combined.includes("biryani pot") || combined.includes("kadai with lid")) {
+      return "Yes";
+    }
+    return "No";
+  };
+
+  const isDishwasherSafe = (material: string): string => {
+    if (!material) return "No (Hand wash recommended)";
+    const mat = material.toLowerCase();
+    if (mat.includes("stainless steel")) return "Yes";
+    return "No (Hand wash recommended)";
+  };
+
+  const getLidMaterial = (name: string, material: string): string => {
+    const combined = `${name || ""} ${material || ""}`.toLowerCase();
+    if (!combined.includes("lid") && !combined.includes("casserole") && !combined.includes("biryani pot")) {
+      return "N/A";
+    }
+    if (combined.includes("glass")) return "Glass";
+    if (combined.includes("stainless steel")) return "Stainless Steel";
+    if (combined.includes("brass")) return "Brass";
+    if (combined.includes("copper")) return "Copper";
+    if (combined.includes("cast iron")) return "Cast Iron";
+    return "Wood / Matching Material";
+  };
+
+  const isInductionBottom = (name: string, material: string): string => {
+    const combined = `${name || ""} ${material || ""}`.toLowerCase();
+    if (combined.includes("induction") || combined.includes("stainless steel") || combined.includes("cast iron")) {
+      return "Yes";
+    }
+    return "No";
+  };
+
+  const isAirtight = (name: string, category: string): string => {
+    const combined = `${name || ""} ${category || ""}`.toLowerCase();
+    if (combined.includes("casserole") || combined.includes("box") || combined.includes("container") || combined.includes("jar") || combined.includes("airtight") || combined.includes("tiffin")) {
+      return "Yes";
+    }
+    return "No";
+  };
+
+  const isOvenSafe = (material: string): string => {
+    if (!material) return "No";
+    const mat = material.toLowerCase();
+    if (mat.includes("cast iron") || mat.includes("clay") || mat.includes("soapstone") || mat.includes("terracotta")) {
+      return "Yes";
+    }
+    return "No";
+  };
+
+  const getRemainingAttributes = () => {
+    if (!product || !product.attributes) return [];
+    const standardKeys = [
+      "pack of", "sales package", "brand", "model name", "model number", "color",
+      "brand color", "lid included", "dishwasher safe", "lid material", "shape",
+      "capacity", "induction bottom", "airtight", "oven and broiler safe"
+    ];
+    return product.attributes.filter((attr: any) => !standardKeys.includes(attr.name.toLowerCase()));
+  };
   const { products } = useProducts();
   const contextProduct = products.find((p: any) => p.id === id);
   const [product, setProduct] = useState<any>(contextProduct);
@@ -43,7 +124,7 @@ export default function ProductDetailPage() {
     setSelectedImage(null);
     setQuantity(1);
     setIsDescriptionExpanded(false);
-    
+
     // Reset selected size when product changes
     if (contextProduct) {
       const vSizes = contextProduct.variants ? Object.keys(contextProduct.variants).filter(Boolean) : [];
@@ -54,7 +135,7 @@ export default function ProductDetailPage() {
       setSelectedSize('');
     }
 
-    fetch(`/api/products/${id}`)
+    fetch(`/api/products/${id}`, { cache: 'no-store' })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && !data.error) {
@@ -85,7 +166,7 @@ export default function ProductDetailPage() {
   const [sizeError, setSizeError] = useState(false);
 
   const activeVariant = selectedSize && variants ? variants[selectedSize] : undefined;
-  
+
   const displayDimensions = {
     weight: activeVariant?.weight || product?.weight,
     length: activeVariant?.length || product?.length,
@@ -99,15 +180,25 @@ export default function ProductDetailPage() {
   const [added, setAdded] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedSize && variants && variants[selectedSize]?.image) {
+      setSelectedImage(variants[selectedSize].image);
+    } else {
+      setSelectedImage(null);
+    }
+  }, [selectedSize, variants]);
+
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  
+
   const [isZoomed, setIsZoomed] = useState(false);
   const [backgroundPosition, setBackgroundPosition] = useState('center center');
 
   const [isMobileViewerOpen, setIsMobileViewerOpen] = useState(false);
   const [mobileViewerIndex, setMobileViewerIndex] = useState(0);
 
-  const [activeTab, setActiveTab] = useState<'story' | 'Kitchenbay' | 'care'>('story');
+  const [activeTab, setActiveTab] = useState<'specifications' | 'description' | 'manufacturer'>('specifications');
+  const [isDetailsOpen, setIsDetailsOpen] = useState(true);
 
   const isVideoUrl = (url: string | undefined | null): boolean => {
     if (!url) return false;
@@ -124,7 +215,17 @@ export default function ProductDetailPage() {
     );
   };
 
-  const rawImages = [product?.image, ...(product?.subImages || [])].filter(Boolean);
+  const variantImages = variants
+    ? Object.values(variants)
+      .map((v: any) => v?.image)
+      .filter(Boolean)
+    : [];
+
+  const rawImages = Array.from(new Set([
+    product?.image,
+    ...(product?.subImages || []),
+    ...variantImages
+  ])).filter(Boolean);
   const rawVideo = product?.video;
 
   const imagesList: { type: string; url: string }[] = [];
@@ -145,7 +246,7 @@ export default function ProductDetailPage() {
   }
 
   const allMedia = [...imagesList, ...videosList];
-  
+
   const currentMedia = allMedia.find(m => m.url === selectedImage) || allMedia[0] || { type: 'image', url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1200&auto=format&fit=crop' };
   const currentIndex = allMedia.findIndex(m => m.url === currentMedia.url);
 
@@ -208,12 +309,12 @@ export default function ProductDetailPage() {
       return;
     }
     setSizeError(false);
-    
+
     if (displayStock <= 0) {
       alert('This item is out of stock.');
       return;
     }
-    
+
     const currentInCart = items.find(i => i.product.id === product.id && (i.size || "") === (selectedSize || ""))?.quantity || 0;
     if (currentInCart + quantity > displayStock) {
       alert(`You can only add up to ${displayStock} units. You already have ${currentInCart} in your cart.`);
@@ -231,12 +332,12 @@ export default function ProductDetailPage() {
       return;
     }
     setSizeError(false);
-    
+
     if (displayStock <= 0) {
       alert('This item is out of stock.');
       return;
     }
-    
+
     const currentInCart = items.find(i => i.product.id === product.id && (i.size || "") === (selectedSize || ""))?.quantity || 0;
     if (currentInCart + quantity > displayStock) {
       alert(`You can only add up to ${displayStock} units. You already have ${currentInCart} in your cart.`);
@@ -255,7 +356,7 @@ export default function ProductDetailPage() {
     <div className="min-h-screen flex flex-col bg-[--color-brand-bg]">
       <Navbar />
       <main className="flex-1 w-full pb-24">
-        
+
         <JsonLd data={productSchema(product)} />
         <Breadcrumbs items={[
           { name: 'Home', href: '/' },
@@ -266,10 +367,10 @@ export default function ProductDetailPage() {
 
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-16">
-            
+
             {/* Left: Image Gallery */}
             <div className="space-y-6">
-              <div 
+              <div
                 className="group relative w-full aspect-square bg-white rounded-sm overflow-hidden shadow-md cursor-pointer md:cursor-crosshair"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
@@ -301,16 +402,16 @@ export default function ProductDetailPage() {
                     style={{ transformOrigin: isZoomed ? backgroundPosition : 'center center' }}
                   />
                 )}
-                
+
                 {allMedia.length > 1 && (
                   <>
-                    <button 
+                    <button
                       onClick={handlePrevImage}
                       className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer"
                     >
                       <ChevronLeft size={24} />
                     </button>
-                    <button 
+                    <button
                       onClick={handleNextImage}
                       className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white text-gray-800 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer"
                     >
@@ -319,18 +420,17 @@ export default function ProductDetailPage() {
                   </>
                 )}
               </div>
-              
+
               {allMedia.length > 1 && (
                 <div className="grid grid-cols-4 gap-4">
                   {allMedia.map((media, idx) => (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       onClick={() => setSelectedImage(media.url)}
-                      className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${
-                        currentMedia.url === media.url 
-                          ? 'border-[--color-brand-text] opacity-100' 
+                      className={`relative w-full aspect-square bg-white rounded-sm overflow-hidden border-2 cursor-pointer transition-all ${currentMedia.url === media.url
+                          ? 'border-[--color-brand-text] opacity-100'
                           : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
+                        }`}
                     >
                       {media.type === 'video' ? (
                         <video src={media.url} className="absolute inset-0 w-full h-full object-cover" />
@@ -353,7 +453,7 @@ export default function ProductDetailPage() {
             {/* Right: Sticky Details */}
             <div className="relative">
               <div className="sticky top-32 space-y-8">
-                
+
                 {/* Header */}
                 <div>
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -369,7 +469,7 @@ export default function ProductDetailPage() {
                   <h1 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] leading-tight mb-4">
                     {product.name}
                   </h1>
-                  
+
                   {/* Rating */}
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1">
@@ -455,14 +555,13 @@ export default function ProductDetailPage() {
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {availableSizes.map((size: string, idx: number) => (
-                        <button 
-                          key={idx} 
+                        <button
+                          key={idx}
                           onClick={() => { setSelectedSize(size); setSizeError(false); }}
-                          className={`px-4 py-2 border rounded-sm text-sm font-bold shadow-sm transition-colors ${
-                            selectedSize === size 
-                              ? 'border-brand-text bg-brand-text text-white' 
+                          className={`px-4 py-2 border rounded-sm text-sm font-bold shadow-sm transition-colors ${selectedSize === size
+                              ? 'border-brand-text bg-brand-text text-white'
                               : 'border-brand-border bg-white text-brand-text hover:border-brand-text'
-                          }`}
+                            }`}
                         >
                           {size}
                         </button>
@@ -474,35 +573,34 @@ export default function ProductDetailPage() {
                 {/* Add to Cart Area */}
                 {product.isActive === false ? (
                   <div className="pt-6 border-t border-[--color-brand-border]">
-                     <div className="bg-gray-100 text-gray-600 font-bold uppercase tracking-widest py-4 text-center rounded-sm border border-gray-300">
-                        Currently Unavailable
-                     </div>
+                    <div className="bg-gray-100 text-gray-600 font-bold uppercase tracking-widest py-4 text-center rounded-sm border border-gray-300">
+                      Currently Unavailable
+                    </div>
                   </div>
                 ) : displayStock > 0 ? (
                   <div className="space-y-4 pt-6 border-t border-[--color-brand-border]">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                       {/* Quantity selector */}
                       <div className="flex items-center justify-between sm:justify-center border border-[--color-brand-text] rounded-sm">
-                        <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-6 sm:px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Minus size={16}/></button>
+                        <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-6 sm:px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Minus size={16} /></button>
                         <span className="w-12 sm:w-8 text-center font-bold text-[--color-brand-text]">{quantity}</span>
-                        <button onClick={() => setQuantity(q => Math.min(displayStock, q + 1))} className="px-6 sm:px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Plus size={16}/></button>
+                        <button onClick={() => setQuantity(q => Math.min(displayStock, q + 1))} className="px-6 sm:px-4 py-3 text-[--color-brand-text] hover:bg-[--color-brand-card] transition-colors"><Plus size={16} /></button>
                       </div>
-                      
+
                       <button
                         onClick={handleAddToCart}
-                        className={`flex-1 flex items-center justify-center gap-3 py-4 font-bold uppercase tracking-widest text-sm transition-all rounded-sm ${
-                          added
+                        className={`flex-1 flex items-center justify-center gap-3 py-4 font-bold uppercase tracking-widest text-sm transition-all rounded-sm ${added
                             ? 'bg-brand-success text-white'
                             : 'bg-brand-text hover:bg-brand-accent text-white'
-                        }`}
+                          }`}
                       >
                         {added ? <><Check size={18} /> Added</> : 'Add to Cart'}
                       </button>
 
                       {/* Wishlist Button */}
-                      <button 
-                        onClick={(e) => { 
-                          e.preventDefault(); 
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
                           if (isItemLoading(product.id)) return;
                           if (isInWishlist(product.id)) {
                             removeFromWishlist(product.id);
@@ -511,11 +609,10 @@ export default function ProductDetailPage() {
                           }
                         }}
                         disabled={isItemLoading(product.id)}
-                        className={`flex items-center justify-center px-6 py-4 border-2 border-[--color-brand-border] rounded-sm transition-all duration-300 ${
-                          isItemLoading(product.id)
+                        className={`flex items-center justify-center px-6 py-4 border-2 border-[--color-brand-border] rounded-sm transition-all duration-300 ${isItemLoading(product.id)
                             ? 'opacity-50 cursor-wait text-gray-400 bg-gray-50'
                             : 'hover:scale-110 cursor-pointer text-gray-400 hover:text-red-500 hover:border-red-200'
-                        }`}
+                          }`}
                         aria-label="Toggle wishlist"
                         title={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
                       >
@@ -531,21 +628,21 @@ export default function ProductDetailPage() {
                     </button>
 
                     <p className="text-xs font-bold text-[--color-brand-success] uppercase tracking-widest text-center mt-4 flex items-center justify-center gap-2">
-                       <Check size={14}/> Ready to ship — {displayStock} in stock
+                      <Check size={14} /> Ready to ship — {displayStock} in stock
                     </p>
                   </div>
                 ) : (
                   <div className="pt-6 border-t border-[--color-brand-border]">
-                     <div className="bg-red-50 text-red-600 font-bold uppercase tracking-widest py-4 text-center rounded-sm border border-red-200">
-                        Out of Stock
-                     </div>
+                    <div className="bg-red-50 text-red-600 font-bold uppercase tracking-widest py-4 text-center rounded-sm border border-red-200">
+                      Out of Stock
+                    </div>
                   </div>
                 )}
 
-                {/* Dimensions / Specifications */}
-                {(hasDimensions || (product.attributes && product.attributes.length > 0)) && (
+                {/* Dimensions */}
+                {hasDimensions && (
                   <div className="pt-8 mt-8 border-t border-[--color-brand-border]">
-                    <h3 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-4">Specifications</h3>
+                    <h3 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-4">Dimensions</h3>
                     <div className="grid grid-cols-2 gap-y-3 text-sm">
                       {displayDimensions.weight && (
                         <>
@@ -577,12 +674,6 @@ export default function ProductDetailPage() {
                           <span className="font-medium text-[--color-brand-text] text-right">{displayDimensions.diameter} cm</span>
                         </>
                       )}
-                      {product.attributes?.map((attr: {name: string, value: string}, idx: number) => (
-                        <div className="contents" key={idx}>
-                          <span className="text-[--color-brand-muted]">{attr.name}</span>
-                          <span className="font-medium text-[--color-brand-text] text-right">{attr.value}</span>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 )}
@@ -613,8 +704,8 @@ export default function ProductDetailPage() {
                   </div>
                   <div>
                     <h2 className="font-bold text-[--color-brand-text] uppercase tracking-widest text-sm mb-2">Product Care FAQ</h2>
-                    <p className="text-sm text-[--color-brand-text] mb-2 leading-relaxed"><strong>Q: How do I clean this product?</strong><br/>A: Wash with mild soap and warm water. Avoid harsh chemicals and abrasive scrubbers to protect the finish.</p>
-                    <p className="text-sm text-[--color-brand-text] leading-relaxed"><strong>Q: Is it dishwasher safe?</strong><br/>A: We highly recommend hand washing to preserve the natural materials and craftsmanship.</p>
+                    <p className="text-sm text-[--color-brand-text] mb-2 leading-relaxed"><strong>Q: How do I clean this product?</strong><br />A: Wash with mild soap and warm water. Avoid harsh chemicals and abrasive scrubbers to protect the finish.</p>
+                    <p className="text-sm text-[--color-brand-text] leading-relaxed"><strong>Q: Is it dishwasher safe?</strong><br />A: We highly recommend hand washing to preserve the natural materials and craftsmanship.</p>
                   </div>
                 </div>
 
@@ -639,46 +730,195 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
+        {/* ── Tabs Section: Specifications / Description / Manufacturer info ── */}
+        <div className="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-[--color-brand-border] mt-16">
+          <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 font-[family-name:var(--font-heading)]">All details</h2>
+            <button
+              onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+              className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
+              aria-label="Toggle details"
+            >
+              {isDetailsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+          </div>
 
-        {/* ── Tabs Section: Story / Kitchenbay / Care ──────────────────────── */}
-        <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 py-24">
-           <div className="flex items-center justify-center gap-8 md:gap-16 border-b border-[--color-brand-border] mb-12">
-              {[
-                { id: 'story', label: 'The Story' },
-                { id: 'Kitchenbay', label: 'The Maker' },
-                { id: 'care', label: 'Care & Use' }
-              ].map(tab => (
-                 <button 
-                   key={tab.id}
-                   onClick={() => setActiveTab(tab.id as any)}
-                   className={`pb-4 text-sm font-bold uppercase tracking-widest transition-all ${
-                     activeTab === tab.id 
-                       ? 'text-[--color-brand-text] border-b-2 border-[--color-brand-accent]' 
-                       : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'
-                   }`}
-                 >
-                   {tab.label}
-                 </button>
-              ))}
-           </div>
-           
-           <div className="text-center font-serif text-xl md:text-2xl text-[--color-brand-text] leading-relaxed max-w-3xl mx-auto">
-              {activeTab === 'story' && (
-                <p>
-                  Rooted in centuries-old traditions, this {product.material} piece is shaped exactly as it was during the eras of ancient Indian kingdoms. The craft has survived through generations, passing from father to son, preserving not just a technique, but a way of life that celebrates slow, intentional creation.
-                </p>
-              )}
-              {activeTab === 'Kitchenbay' && (
-                <p>
-                  Crafted by master Kitchenbays in rural clusters who have dedicated their entire lives to perfecting the art of working with {product.material}. Every hammer mark and curve is a testament to human hands. By bringing this to your home, you directly support their livelihood and help keep this dying art alive.
-                </p>
-              )}
-              {activeTab === 'care' && (
-                <p>
-                  Natural materials require natural care. Wash only with mild soap and warm water. Avoid harsh chemicals or abrasive scrubbers. Dry completely immediately after washing to prevent natural oxidation. With love and proper seasoning, this piece will outlive us all.
-                </p>
-              )}
-           </div>
+          {isDetailsOpen && (
+            <div className="space-y-8">
+              <div className="flex flex-wrap gap-3 pb-5">
+                {[
+                  { id: 'specifications', label: 'Specifications' },
+                  { id: 'description', label: 'Description' },
+                  { id: 'manufacturer', label: 'Manufacturer info' }
+                ].map(tab => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`px-5 py-2 text-sm font-semibold rounded-md shadow-sm transition-all border ${isActive
+                          ? 'bg-[#1A1A1A] text-white border-transparent'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                        }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div>
+                {activeTab === 'specifications' && (
+                  <div className="text-left space-y-10 font-sans max-w-3xl">
+                    {/* In the Box */}
+                    <div className="space-y-4">
+                      <h4 className="font-bold text-gray-900 text-[16px] uppercase tracking-wider">In the Box</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+                        <div className="border-b border-gray-100 pb-3">
+                          <p className="text-[13px] text-gray-400 font-medium">Pack of</p>
+                          <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Pack of", "1")}</p>
+                        </div>
+                        <div className="border-b border-gray-100 pb-3">
+                          <p className="text-[13px] text-gray-400 font-medium">Sales Package</p>
+                          <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Sales Package", getAttrValue("Pack of", "1"))}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* General */}
+                    <div className="space-y-4 pt-4">
+                      <h4 className="font-bold text-gray-900 text-[16px] uppercase tracking-wider">General</h4>
+                      <div className="space-y-4">
+                        {/* Brand */}
+                        <div className="border-b border-gray-100 pb-3">
+                          <p className="text-[13px] text-gray-400 font-medium">Brand</p>
+                          <p className="text-[15px] font-semibold text-gray-800 mt-1">{product.brand || "KitchenBay"}</p>
+                        </div>
+
+                        {/* Model Name */}
+                        <div className="border-b border-gray-100 pb-3">
+                          <p className="text-[13px] text-gray-400 font-medium">Model Name</p>
+                          <p className="text-[15px] font-semibold text-gray-800 mt-1">{product.name}</p>
+                        </div>
+
+                        {/* Grid for two columns attributes */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+                          {/* Model Number */}
+                          <div className="border-b border-gray-100 pb-3">
+                            <p className="text-[13px] text-gray-400 font-medium">Model Number</p>
+                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{product.sku || `KB_${product.id.slice(0, 8).toUpperCase()}`}</p>
+                          </div>
+
+                          {/* Color */}
+                          <div className="border-b border-gray-100 pb-3">
+                            <p className="text-[13px] text-gray-400 font-medium">Color</p>
+                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Color", getDefaultColor(product.material))}</p>
+                          </div>
+
+                          {/* Brand Color */}
+                          <div className="border-b border-gray-100 pb-3">
+                            <p className="text-[13px] text-gray-400 font-medium">Brand Color</p>
+                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Brand Color", getAttrValue("Color", getDefaultColor(product.material)))}</p>
+                          </div>
+
+                          {/* Lid Included */}
+                          <div className="border-b border-gray-100 pb-3">
+                            <p className="text-[13px] text-gray-400 font-medium">Lid Included</p>
+                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Lid Included", hasLid(product.name, product.category))}</p>
+                          </div>
+
+                          {/* Dishwasher Safe */}
+                          <div className="border-b border-gray-100 pb-3">
+                            <p className="text-[13px] text-gray-400 font-medium">Dishwasher Safe</p>
+                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Dishwasher Safe", isDishwasherSafe(product.material))}</p>
+                          </div>
+
+                          {/* Induction Bottom */}
+                          <div className="border-b border-gray-100 pb-3">
+                            <p className="text-[13px] text-gray-400 font-medium">Induction Bottom</p>
+                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Induction Bottom", isInductionBottom(product.name, product.material))}</p>
+                          </div>
+
+                          {/* Airtight */}
+                          <div className="border-b border-gray-100 pb-3">
+                            <p className="text-[13px] text-gray-400 font-medium">Airtight</p>
+                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Airtight", isAirtight(product.name, product.category))}</p>
+                          </div>
+
+                          {/* Oven and Broiler Safe */}
+                          <div className="border-b border-gray-100 pb-3">
+                            <p className="text-[13px] text-gray-400 font-medium">Oven and Broiler Safe</p>
+                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Oven and Broiler Safe", isOvenSafe(product.material))}</p>
+                          </div>
+
+                          {/* Shape */}
+                          <div className="border-b border-gray-100 pb-3">
+                            <p className="text-[13px] text-gray-400 font-medium">Shape</p>
+                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Shape", "Round")}</p>
+                          </div>
+
+                          {/* Capacity */}
+                          <div className="border-b border-gray-100 pb-3">
+                            <p className="text-[13px] text-gray-400 font-medium">Capacity</p>
+                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Capacity", selectedSize || "Standard")}</p>
+                          </div>
+
+                          {/* Remaining Custom Attributes */}
+                          {getRemainingAttributes().map((attr: any, idx: number) => (
+                            <div className="border-b border-gray-100 pb-3" key={idx}>
+                              <p className="text-[13px] text-gray-400 font-medium">{attr.name}</p>
+                              <p className="text-[15px] font-semibold text-gray-800 mt-1">{attr.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'description' && (
+                  <div className="text-left space-y-4 text-sm text-gray-700 leading-relaxed max-w-3xl font-sans">
+                    {product.description
+                      .split(/\n+/)
+                      .map((para: string) => para.trim())
+                      .filter((para: string) => para.length > 0)
+                      .map((para: string, i: number) => (
+                        <p key={i} className="mb-3">
+                          {para}
+                        </p>
+                      ))
+                    }
+                  </div>
+                )}
+
+                {activeTab === 'manufacturer' && (
+                  <div className="text-left space-y-6 font-sans max-w-3xl">
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-base uppercase tracking-wider mb-3">Manufacturer Details</h4>
+                      <div className="space-y-4 text-sm text-gray-700">
+                        <div className="border-b border-gray-100 pb-3">
+                          <p className="text-xs text-gray-400 font-medium">Manufactured, Packed & Marketed By</p>
+                          <p className="text-sm font-semibold text-gray-800 mt-0.5">KitchenBay Private Limited</p>
+                        </div>
+                        <div className="border-b border-gray-100 pb-3">
+                          <p className="text-xs text-gray-400 font-medium">Registered Address</p>
+                          <p className="text-sm font-semibold text-gray-800 mt-0.5">KitchenBay Craft Cluster, Chennai, Tamil Nadu, 600001, India</p>
+                        </div>
+                        <div className="border-b border-gray-100 pb-3">
+                          <p className="text-xs text-gray-400 font-medium">Country of Origin</p>
+                          <p className="text-sm font-semibold text-gray-800 mt-0.5">India</p>
+                        </div>
+                        <div className="border-b border-gray-100 pb-3">
+                          <p className="text-xs text-gray-400 font-medium">Customer Support Contact</p>
+                          <p className="text-sm font-semibold text-gray-800 mt-0.5">support@kitchenbay.com</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Related Products ──────────────────────────────────────────── */}
@@ -696,7 +936,7 @@ export default function ProductDetailPage() {
       </main>
       <Footer />
 
-      <MobileImageViewer 
+      <MobileImageViewer
         isOpen={isMobileViewerOpen}
         onClose={() => setIsMobileViewerOpen(false)}
         images={allMedia.filter(m => m.type === 'image').map(m => normalizeImgSrc(m.url))}
@@ -704,7 +944,7 @@ export default function ProductDetailPage() {
       />
 
       {/* Bulk Order Inquiry Modal */}
-      <BulkInquiryModal 
+      <BulkInquiryModal
         product={{
           id: product.id,
           name: product.name,

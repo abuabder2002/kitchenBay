@@ -200,7 +200,7 @@ export default function HomePage() {
 
         // Always fetch a base set of products for fallbacks
         let combinedProducts: any[] = [];
-        const prodRes = await fetch('/api/products?limit=16');
+        const prodRes = await fetch('/api/products?limit=16', { cache: 'no-store' });
         if (prodRes.ok) {
           const prodData = await prodRes.json();
           if (Array.isArray(prodData)) {
@@ -210,7 +210,7 @@ export default function HomePage() {
 
         // If there are specific CMS IDs, fetch them and merge them in
         if (idsSet.size > 0) {
-          const idRes = await fetch(`/api/products?ids=${Array.from(idsSet).join(',')}`);
+          const idRes = await fetch(`/api/products?ids=${Array.from(idsSet).join(',')}`, { cache: 'no-store' });
           if (idRes.ok) {
             const idData = await idRes.json();
             if (Array.isArray(idData)) {
@@ -283,9 +283,9 @@ export default function HomePage() {
   const bestsellers = useMemo(() => {
     if (manualBestsellers.length > 0) {
       const validProducts = manualBestsellers.map(m => homeProducts.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
-      if (validProducts.length > 0) return validProducts;
+      if (validProducts.length > 0) return validProducts.slice(0, 6);
     }
-    return homeProducts.slice(0, 4);
+    return homeProducts.slice(0, 6);
   }, [homeProducts, manualBestsellers]);
 
   const newArrivals = useMemo(() => {
@@ -293,7 +293,7 @@ export default function HomePage() {
       const validProducts = manualNewArrivals.map(m => homeProducts.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
       if (validProducts.length > 0) return validProducts;
     }
-    return homeProducts.slice(4, 8);
+    return homeProducts.slice(8, 12);
   }, [homeProducts, manualNewArrivals]);
 
   const recommendedProducts = useMemo(() => {
@@ -408,6 +408,65 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ── BESTSELLERS ───────────────────────────────────────────────── */}
+        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('bestsellers', 'Bestsellers', [
+            { key: 'productId', label: 'Select Product', type: 'product-link' }
+          ], manualBestsellers)} label="Edit Bestsellers" />}
+          <div className="flex items-end justify-between mb-16">
+            <div>
+              <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Most Loved</span>
+              <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Bestsellers</h2>
+            </div>
+            <Link href="/products" className="border-b border-[--color-brand-text] pb-1 text-sm font-bold text-[--color-brand-text] uppercase tracking-widest hover:text-[--color-brand-accent] hover:border-[--color-brand-accent] transition-colors hidden md:block">
+              Shop All
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-x-4 sm:gap-x-8 gap-y-6 sm:gap-y-12">
+            {bestsellers.map((product, idx) => (
+              <ScrollReveal key={product.id} direction="up" duration={600} delay={idx * 100} className="w-full">
+                <ProductCard product={product} />
+              </ScrollReveal>
+            ))}
+          </div>
+          <div className="mt-12 text-center md:hidden">
+            <Link href="/products" className="inline-block border-b border-[--color-brand-text] pb-1 text-sm font-bold text-[--color-brand-text] uppercase tracking-widest">
+              Shop All
+            </Link>
+          </div>
+        </section>
+
+        {/* ── CATEGORY SHOWCASE ─────────────────────────────────────────── */}
+        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('categories', 'Categories', [
+            { key: 'name', label: 'Name' },
+            { key: 'sub', label: 'Subtitle' },
+            { key: 'img', label: 'Image', type: 'image' }
+          ], activeCategories)} label="Edit Categories" />}
+          <div className="text-center mb-16">
+            <span className="text-[--color-brand-accent] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Curated Categories</span>
+            <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Discover Our Collections</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {activeCategories.map((cat, idx) => (
+              <ScrollReveal key={idx} direction="up" duration={800} delay={idx * 150} className="w-full">
+                <Link href={`/products?category=${cat.name.toLowerCase()}`} className="group flex flex-col items-center cursor-pointer">
+                  <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm mb-6 shadow-sm">
+                    <img
+                      src={cat.img || '/images/marketing/everyday_cooking.jpg'}
+                      alt={cat.name || 'Category Image'}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                    />
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-2">{cat.name}</h3>
+                  <p className="text-sm font-medium text-[--color-brand-muted] uppercase tracking-widest">{cat.sub}</p>
+                </Link>
+              </ScrollReveal>
+            ))}
+          </div>
+        </section>
+
         {/* ── MOBILE QUICK CATEGORY STORIES (Instagram-style Stories) ──────────────── */}
         {mounted && (
           <section className="block md:hidden bg-white py-6 border-b border-gray-100 overflow-x-auto scrollbar-hide">
@@ -435,6 +494,141 @@ export default function HomePage() {
             </div>
           </section>
         )}
+
+        {/* ── FULL WIDTH PROMO BAR ──────────────────────────────────────── */}
+        <section className="bg-[#E8F5E9] text-black py-4 relative">
+          <div className="max-w-[1600px] mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <span className="text-xl sm:text-2xl italic font-[family-name:var(--font-heading)] font-medium">Now Serving:</span>
+              <span className="text-lg sm:text-xl md:text-2xl font-extrabold">Get Upto Rs.100 Off On Your First Order</span>
+            </div>
+            <Link href="/login" className="flex items-center gap-2 text-lg font-bold border-b border-black transition-all duration-300 ease-in-out hover:text-gray-700 hover:border-gray-700 hover:scale-105">
+              Sign Up Now <span className="text-xl">&gt;</span>
+            </Link>
+          </div>
+        </section>
+
+        {/* ── 3 CATEGORY BANNERS ────────────────────────────────────────── */}
+        <section className="bg-white py-6 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('secondaryBanners', 'Secondary Banners', [
+            { key: 'title', label: 'Title' },
+            { key: 'image', label: 'Image URL', type: 'image' },
+            { key: 'link', label: 'Link URL', type: 'product-link' }
+          ], activeSecondaryBanners)} label="Edit Secondary Banners" />}
+          <div className="max-w-[1600px] mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {activeSecondaryBanners.slice(0, 3).map((banner, idx) => {
+                const isDark = idx === 1;
+                return (
+                  <ScrollReveal key={idx} direction={idx === 0 ? 'left' : idx === 2 ? 'right' : 'up'} duration={800} delay={idx * 150} className="w-full">
+                    <Link href={banner.link || '/products'} className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group/banner rounded-sm block bg-slate-100">
+                      <img
+                        src={banner.image || '/images/marketing/everyday_cooking.jpg'}
+                        alt={banner.title || 'Banner Image'}
+                        className="absolute inset-0 w-full h-full object-cover object-center group-hover/banner:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-transparent" />
+                      <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[80%] items-start">
+                        <h4 className={`text-lg md:text-xl font-extrabold ${isDark ? 'bg-black/75 text-white' : 'bg-yellow-300 text-black'} px-3 py-1.5 rounded shadow-md leading-tight`}>{banner.title}</h4>
+                      </div>
+                    </Link>
+                  </ScrollReveal>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── TRADITIONAL MATERIALS SHOWCASE ────────────────────────────── */}
+        <section className="bg-white py-24 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('materials', 'Materials', [
+            { key: 'name', label: 'Name' },
+            { key: 'desc', label: 'Description' },
+            { key: 'img', label: 'Image', type: 'image' },
+            { key: 'link', label: 'Link URL', type: 'product-link' }
+          ], activeMaterials)} label="Edit Materials" />}
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">The Essence of Earth</h2>
+              <p className="text-[--color-brand-muted] mt-4 max-w-2xl mx-auto">Explore our range categorized by the timeless, natural materials that form their foundation.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {activeMaterials.map((mat, idx) => (
+                <ScrollReveal key={idx} direction="up" duration={600} delay={idx * 100} className="w-full">
+                  <Link href={mat.link || `/products?material=${mat.name}`} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer block">
+                    <img src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-transparent" />
+                    <div className="absolute bottom-6 left-6 pr-6 flex flex-col items-start gap-1">
+                      <h3 className="text-white text-xl font-bold font-[family-name:var(--font-heading)] bg-black/65 px-2.5 py-1 rounded shadow-md mb-1">{mat.name}</h3>
+                      <p className="text-white/95 text-xs bg-black/65 px-2.5 py-1 rounded shadow-md">{mat.desc}</p>
+                    </div>
+                  </Link>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── NEW ARRIVALS ──────────────────────────────────────────────── */}
+        {newArrivals.length >= 4 && (
+          <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-[--color-brand-card]/30 relative group">
+            {isEditMode && <EditButton onClick={() => handleEditClick('newArrivals', 'New Arrivals', [
+              { key: 'productId', label: 'Select Product', type: 'product-link' }
+            ], manualNewArrivals)} label="Edit New Arrivals" />}
+            <div className="flex items-end justify-between mb-16">
+              <div>
+                <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Just In</span>
+                <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">New Arrivals</h2>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-8 gap-y-6 sm:gap-y-12">
+              {newArrivals.map((product, idx) => (
+                <ScrollReveal key={product.id} direction="up" duration={600} delay={idx * 100} className="w-full">
+                  <ProductCard product={product} />
+                </ScrollReveal>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Kitchenbay STORY SECTION ─────────────────────────────────────── */}
+        <section className="bg-[--color-brand-top-bar] text-[--color-brand-bg] py-24 relative group">
+          {isEditMode && <EditButton onClick={() => handleEditClick('heritage', 'Our Heritage', [
+            { key: 'title', label: 'Title' },
+            { key: 'paragraph1', label: 'Paragraph 1', type: 'textarea' },
+            { key: 'paragraph2', label: 'Paragraph 2', type: 'textarea' },
+            { key: 'image', label: 'Image URL', type: 'image' }
+          ], heritage)} label="Edit Our Heritage" />}
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col lg:flex-row items-center gap-16 overflow-hidden">
+              <ScrollReveal direction="left" duration={900} className="flex-1 lg:pr-12">
+                <span className="text-[--color-brand-accent-yellow] text-sm font-semibold tracking-[0.2em] uppercase mb-6 block">Our Heritage</span>
+                <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] mb-8 leading-tight">
+                  {activeHeritage[0]?.title}
+                </h2>
+                <p className="text-lg text-[--color-brand-bg]/80 mb-6 leading-relaxed">
+                  {activeHeritage[0]?.paragraph1}
+                </p>
+                <p className="text-lg text-[--color-brand-bg]/80 mb-10 leading-relaxed">
+                  {activeHeritage[0]?.paragraph2}
+                </p>
+                <Link href="/story" className="inline-block border-b-2 border-[--color-brand-accent-yellow] pb-1 text-sm font-bold uppercase tracking-widest hover:text-[--color-brand-accent-yellow] transition-colors">
+                  Read Our Story
+                </Link>
+              </ScrollReveal>
+              <ScrollReveal direction="right" duration={900} className="flex-1 relative w-full aspect-square max-w-lg mx-auto lg:max-w-none">
+                <img
+                  src={activeHeritage[0]?.image || '/artisan_kitchenware.png'}
+                  alt="Traditional Indian handcrafted kitchenware"
+                  className="absolute inset-0 w-full h-full object-cover rounded-t-full shadow-2xl"
+                />
+              </ScrollReveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ── TRADITION VIDEO SECTION ────────────────────────────────────── */}
+        <TraditionVideoSection />
 
         {/* ── TRUST BADGES ROW ──────────────────────────────────────────── */}
         <section className="border-b border-gray-200 bg-white">
@@ -470,232 +664,6 @@ export default function HomePage() {
                 <span className="text-[10px] font-extrabold text-gray-800 leading-tight">48-Hour Easy<br/>Returns</span>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* ── FULL WIDTH PROMO BAR ──────────────────────────────────────── */}
-        <section className="bg-[#E8F5E9] text-black py-4 relative">
-          <div className="max-w-[1600px] mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-4">
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-              <span className="text-xl sm:text-2xl italic font-[family-name:var(--font-heading)] font-medium">Now Serving:</span>
-              <span className="text-lg sm:text-xl md:text-2xl font-extrabold">Get Upto Rs.100 Off On Your First Order</span>
-            </div>
-            <Link href="/login" className="flex items-center gap-2 text-lg font-bold border-b border-black transition-all duration-300 ease-in-out hover:text-gray-700 hover:border-gray-700 hover:scale-105">
-              Sign Up Now <span className="text-xl">&gt;</span>
-            </Link>
-          </div>
-        </section>
-
-        {/* ── 3 CATEGORY BANNERS ────────────────────────────────────────── */}
-        <section className="bg-white py-6 relative group">
-          {isEditMode && <EditButton onClick={() => handleEditClick('secondaryBanners', 'Secondary Banners', [
-            { key: 'title', label: 'Title' },
-            { key: 'image', label: 'Image URL', type: 'image' },
-            { key: 'link', label: 'Link URL', type: 'product-link' }
-          ], activeSecondaryBanners)} label="Edit Secondary Banners" />}
-          <div className="max-w-[1600px] mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {activeSecondaryBanners.slice(0, 3).map((banner, idx) => {
-                const isDark = idx === 1;
-                return (
-                  <ScrollReveal key={idx} direction={idx === 0 ? 'left' : idx === 2 ? 'right' : 'up'} duration={800} delay={idx * 150} className="w-full">
-                    <Link href={banner.link || '/products'} className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group/banner rounded-sm block bg-slate-100">
-                      <Image
-                        src={banner.image || '/images/marketing/everyday_cooking.jpg'}
-                        alt={banner.title || 'Banner Image'}
-                        fill
-                        sizes="100vw"
-                        className="object-cover object-center group-hover/banner:scale-105 transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-transparent" />
-                      <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[80%] items-start">
-                        <h4 className={`text-lg md:text-xl font-extrabold ${isDark ? 'bg-black/75 text-white' : 'bg-yellow-300 text-black'} px-3 py-1.5 rounded shadow-md leading-tight`}>{banner.title}</h4>
-                      </div>
-                    </Link>
-                  </ScrollReveal>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ── CATEGORY SHOWCASE ─────────────────────────────────────────── */}
-        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
-          {isEditMode && <EditButton onClick={() => handleEditClick('categories', 'Categories', [
-            { key: 'name', label: 'Name' },
-            { key: 'sub', label: 'Subtitle' },
-            { key: 'img', label: 'Image', type: 'image' }
-          ], activeCategories)} label="Edit Categories" />}
-          <div className="text-center mb-16">
-            <span className="text-[--color-brand-accent] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Curated Categories</span>
-            <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Discover Our Collections</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {activeCategories.map((cat, idx) => (
-              <ScrollReveal key={idx} direction="up" duration={800} delay={idx * 150} className="w-full">
-                <Link href={`/products?category=${cat.name.toLowerCase()}`} className="group flex flex-col items-center cursor-pointer">
-                  <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm mb-6 shadow-sm">
-                    <Image
-                      src={cat.img || '/images/marketing/everyday_cooking.jpg'}
-                      alt={cat.name || 'Category Image'}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      className="object-cover group-hover:scale-110 transition-transform duration-1000"
-                    />
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
-                  </div>
-                  <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] mb-2">{cat.name}</h3>
-                  <p className="text-sm font-medium text-[--color-brand-muted] uppercase tracking-widest">{cat.sub}</p>
-                </Link>
-              </ScrollReveal>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Kitchenbay STORY SECTION ─────────────────────────────────────── */}
-        <section className="bg-[--color-brand-top-bar] text-[--color-brand-bg] py-24 relative group">
-          {isEditMode && <EditButton onClick={() => handleEditClick('heritage', 'Our Heritage', [
-            { key: 'title', label: 'Title' },
-            { key: 'paragraph1', label: 'Paragraph 1', type: 'textarea' },
-            { key: 'paragraph2', label: 'Paragraph 2', type: 'textarea' },
-            { key: 'image', label: 'Image URL', type: 'image' }
-          ], heritage)} label="Edit Our Heritage" />}
-          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row items-center gap-16 overflow-hidden">
-              <ScrollReveal direction="left" duration={900} className="flex-1 lg:pr-12">
-                <span className="text-[--color-brand-accent-yellow] text-sm font-semibold tracking-[0.2em] uppercase mb-6 block">Our Heritage</span>
-                <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] mb-8 leading-tight">
-                  {activeHeritage[0]?.title}
-                </h2>
-                <p className="text-lg text-[--color-brand-bg]/80 mb-6 leading-relaxed">
-                  {activeHeritage[0]?.paragraph1}
-                </p>
-                <p className="text-lg text-[--color-brand-bg]/80 mb-10 leading-relaxed">
-                  {activeHeritage[0]?.paragraph2}
-                </p>
-                <Link href="/story" className="inline-block border-b-2 border-[--color-brand-accent-yellow] pb-1 text-sm font-bold uppercase tracking-widest hover:text-[--color-brand-accent-yellow] transition-colors">
-                  Read Our Story
-                </Link>
-              </ScrollReveal>
-              <ScrollReveal direction="right" duration={900} className="flex-1 relative w-full aspect-square max-w-lg mx-auto lg:max-w-none">
-                <Image
-                  src={activeHeritage[0]?.image || '/artisan_kitchenware.png'}
-                  alt="Traditional Indian handcrafted kitchenware"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover rounded-t-full shadow-2xl"
-                />
-              </ScrollReveal>
-            </div>
-          </div>
-        </section>
-
-        {/* ── TRADITION VIDEO SECTION ────────────────────────────────────── */}
-        <TraditionVideoSection />
-
-        {/* ── BESTSELLERS ───────────────────────────────────────────────── */}
-        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
-          {isEditMode && <EditButton onClick={() => handleEditClick('bestsellers', 'Bestsellers', [
-            { key: 'productId', label: 'Select Product', type: 'product-link' }
-          ], manualBestsellers)} label="Edit Bestsellers" />}
-          <div className="flex items-end justify-between mb-16">
-            <div>
-              <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Most Loved</span>
-              <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Bestsellers</h2>
-            </div>
-            <Link href="/products" className="border-b border-[--color-brand-text] pb-1 text-sm font-bold text-[--color-brand-text] uppercase tracking-widest hover:text-[--color-brand-accent] hover:border-[--color-brand-accent] transition-colors hidden md:block">
-              Shop All
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-8 gap-y-6 sm:gap-y-12">
-            {bestsellers.map((product, idx) => (
-              <ScrollReveal key={product.id} direction="up" duration={600} delay={idx * 100} className="w-full">
-                <ProductCard product={product} />
-              </ScrollReveal>
-            ))}
-          </div>
-          <div className="mt-12 text-center md:hidden">
-            <Link href="/products" className="inline-block border-b border-[--color-brand-text] pb-1 text-sm font-bold text-[--color-brand-text] uppercase tracking-widest">
-              Shop All
-            </Link>
-          </div>
-        </section>
-
-        {/* ── TRADITIONAL MATERIALS SHOWCASE ────────────────────────────── */}
-        <section className="bg-white py-24 relative group">
-          {isEditMode && <EditButton onClick={() => handleEditClick('materials', 'Materials', [
-            { key: 'name', label: 'Name' },
-            { key: 'desc', label: 'Description' },
-            { key: 'img', label: 'Image', type: 'image' },
-            { key: 'link', label: 'Link URL', type: 'product-link' }
-          ], activeMaterials)} label="Edit Materials" />}
-          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">The Essence of Earth</h2>
-              <p className="text-[--color-brand-muted] mt-4 max-w-2xl mx-auto">Explore our range categorized by the timeless, natural materials that form their foundation.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {activeMaterials.map((mat, idx) => (
-                <ScrollReveal key={idx} direction="up" duration={600} delay={idx * 100} className="w-full">
-                  <Link href={mat.link || `/products?material=${mat.name}`} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer block">
-                    <Image src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-transparent" />
-                    <div className="absolute bottom-6 left-6 pr-6 flex flex-col items-start gap-1">
-                      <h3 className="text-white text-xl font-bold font-[family-name:var(--font-heading)] bg-black/65 px-2.5 py-1 rounded shadow-md mb-1">{mat.name}</h3>
-                      <p className="text-white/95 text-xs bg-black/65 px-2.5 py-1 rounded shadow-md">{mat.desc}</p>
-                    </div>
-                  </Link>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── NEW ARRIVALS ──────────────────────────────────────────────── */}
-        {newArrivals.length >= 4 && (
-          <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-[--color-brand-card]/30 relative group">
-            {isEditMode && <EditButton onClick={() => handleEditClick('newArrivals', 'New Arrivals', [
-              { key: 'productId', label: 'Select Product', type: 'product-link' }
-            ], manualNewArrivals)} label="Edit New Arrivals" />}
-            <div className="flex items-end justify-between mb-16">
-              <div>
-                <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Just In</span>
-                <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">New Arrivals</h2>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-8 gap-y-6 sm:gap-y-12">
-              {newArrivals.map((product, idx) => (
-                <ScrollReveal key={product.id} direction="up" duration={600} delay={idx * 100} className="w-full">
-                  <ProductCard product={product} />
-                </ScrollReveal>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ── THE JOURNAL / BLOG ────────────────────────────────────────── */}
-        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
-          {isEditMode && <EditButton onClick={() => handleEditClick('journalEntries', 'Journal', [
-            { key: 'title', label: 'Title' },
-            { key: 'category', label: 'Category' },
-            { key: 'img', label: 'Image', type: 'image' }
-          ], activeJournalEntries)} label="Edit Journal" />}
-          <div className="text-center mb-16">
-            <span className="text-[--color-brand-accent] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">The Kitchenbay Journal</span>
-            <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Wisdom &amp; Stories</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {activeJournalEntries.map((entry, idx) => (
-              <ScrollReveal key={idx} direction="up" duration={800} delay={idx * 150} className="w-full">
-                <article className="group cursor-pointer">
-                  <div className="relative w-full aspect-[4/3] overflow-hidden rounded-sm mb-6">
-                    <Image src={entry.img || '/images/marketing/everyday_cooking.jpg'} alt={entry.title || 'Journal Image'} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                  </div>
-                  <span className="text-[--color-brand-accent] text-xs font-bold uppercase tracking-widest mb-3 block">{entry.category}</span>
-                  <h3 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text] leading-snug group-hover:text-[--color-brand-accent] transition-colors">{entry.title}</h3>
-                </article>
-              </ScrollReveal>
-            ))}
           </div>
         </section>
 
