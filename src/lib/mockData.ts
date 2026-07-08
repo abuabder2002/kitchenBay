@@ -1,6 +1,9 @@
-// ============================================================
-// KITCHENBAY — Complete Product Database (from KB 2.0 Excel)
-// ============================================================
+
+
+
+
+
+
 
 export interface Product {
   id: string;
@@ -30,11 +33,13 @@ export interface Product {
   weight?: number;
   sizeCategory?: string;
   tags?: string[];
-  variants?: Record<string, { price: number; stock: number }>;
+  variants?: Record<string, { price: number; stock: number; image?: string; weight?: string; length?: string; width?: string; height?: string; diameter?: string }>;
   attributes?: { name: string; value: string }[];
   brand?: string;
   shippingFee?: number;
   shippingMethod?: string;
+  categoryId?: string | null;
+  subcategoryId?: string | null;
 }
 
 export interface CartItem {
