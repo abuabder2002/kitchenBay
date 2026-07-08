@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     const [subcategories, total] = await Promise.all([
       prisma.subcategory.findMany({
         where,
-        include: { category: { select: { id: true, name: true } }, _count: { select: { products: true } } },
+        include: { category: { select: { id: true, name: true, slug: true } }, _count: { select: { products: true } } },
         orderBy: { name: 'asc' },
         skip,
         take: limit,
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
     const subcategory = await prisma.subcategory.create({
       data: { name: name.trim(), slug, categoryId, isActive: isActive ?? true },
-      include: { category: { select: { id: true, name: true } } },
+      include: { category: { select: { id: true, name: true, slug: true } } },
     });
 
     // Clear subcategories cache on changes

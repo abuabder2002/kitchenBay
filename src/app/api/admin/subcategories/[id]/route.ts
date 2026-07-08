@@ -33,7 +33,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const subcategory = await prisma.subcategory.update({
       where: { id },
       data: { name: name.trim(), slug, categoryId, isActive: isActive ?? true },
-      include: { category: { select: { id: true, name: true } } },
+      include: { category: { select: { id: true, name: true, slug: true } } },
     });
 
     // Clear subcategories cache on changes
