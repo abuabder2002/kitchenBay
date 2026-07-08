@@ -408,6 +408,34 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ── MOBILE QUICK CATEGORY STORIES (Instagram-style Stories) ──────────────── */}
+        {mounted && (
+          <section className="block md:hidden bg-white py-6 border-b border-gray-100 overflow-x-auto scrollbar-hide">
+            <div className="max-w-[1600px] mx-auto">
+              <span className="text-[10px] font-extrabold tracking-[0.2em] uppercase text-[--color-brand-muted] block mb-4 px-4">Explore Collections</span>
+              <div className="flex gap-5 px-4 min-w-max justify-start overflow-x-auto scrollbar-hide pb-2">
+                {[
+                  { name: 'Cast Iron', img: '/images/home/material_cast_iron.png', href: '/products?material=Cast%20Iron' },
+                  { name: 'Pure Brass', img: '/images/home/material_pure_brass.png', href: '/products?material=Pure%20Brass' },
+                  { name: 'Copper', img: '/images/home/material_copper.png', href: '/products?material=Copper' },
+                  { name: 'Soapstone', img: '/images/home/material_soapstone.png', href: '/products?material=Soapstone' },
+                  { name: 'Dining', img: '/images/home/modern_luxury_dining_card.png', href: '/products?category=dining' },
+                  { name: 'Décor', img: '/images/home/modern_luxury_decor_card.png', href: '/products?category=decor' },
+                ].map((cat, idx) => (
+                  <Link key={idx} href={cat.href} className="flex flex-col items-center gap-1.5 text-center cursor-pointer group">
+                    <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[--color-brand-accent] p-[2px] shadow-sm active:scale-95 transition-transform duration-300 bg-white">
+                      <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-50">
+                        <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-extrabold text-[--color-brand-text] tracking-tight group-hover:text-[--color-brand-accent] transition-colors">{cat.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* ── BESTSELLERS ───────────────────────────────────────────────── */}
         <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('bestsellers', 'Bestsellers', [
@@ -467,33 +495,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── MOBILE QUICK CATEGORY STORIES (Instagram-style Stories) ──────────────── */}
-        {mounted && (
-          <section className="block md:hidden bg-white py-6 border-b border-gray-100 overflow-x-auto scrollbar-hide">
-            <div className="max-w-[1600px] mx-auto">
-              <span className="text-[10px] font-extrabold tracking-[0.2em] uppercase text-[--color-brand-muted] block mb-4 px-4">Explore Collections</span>
-              <div className="flex gap-5 px-4 min-w-max justify-start overflow-x-auto scrollbar-hide">
-                {[
-                  { name: 'Cast Iron', img: '/images/home/material_cast_iron.png', href: '/products?material=Cast%20Iron' },
-                  { name: 'Pure Brass', img: '/images/home/material_pure_brass.png', href: '/products?material=Pure%20Brass' },
-                  { name: 'Copper', img: '/images/home/material_copper.png', href: '/products?material=Copper' },
-                  { name: 'Soapstone', img: '/images/home/material_soapstone.png', href: '/products?material=Soapstone' },
-                  { name: 'Dining', img: '/images/home/modern_luxury_dining_card.png', href: '/products?category=Dining' },
-                  { name: 'Décor', img: '/images/home/modern_luxury_decor_card.png', href: '/products?category=Decor' },
-                ].map((cat, idx) => (
-                  <Link key={idx} href={cat.href} className="flex flex-col items-center gap-1.5 text-center cursor-pointer group">
-                    <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[--color-brand-accent] p-[2px] shadow-sm active:scale-95 transition-transform duration-300 bg-white">
-                      <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-50">
-                        <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-extrabold text-[--color-brand-text] tracking-tight group-hover:text-[--color-brand-accent] transition-colors">{cat.name}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+
 
         {/* ── FULL WIDTH PROMO BAR ──────────────────────────────────────── */}
         <section className="bg-[#E8F5E9] text-black py-4 relative">
@@ -557,10 +559,10 @@ export default function HomePage() {
                 <ScrollReveal key={idx} direction="up" duration={600} delay={idx * 100} className="w-full">
                   <Link href={mat.link || `/products?material=${mat.name}`} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer block">
                     <img src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-transparent" />
-                    <div className="absolute bottom-6 left-6 pr-6 flex flex-col items-start gap-1">
-                      <h3 className="text-white text-xl font-bold font-[family-name:var(--font-heading)] bg-black/65 px-2.5 py-1 rounded shadow-md mb-1">{mat.name}</h3>
-                      <p className="text-white/95 text-xs bg-black/65 px-2.5 py-1 rounded shadow-md">{mat.desc}</p>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500" />
+                    <div className="absolute bottom-6 left-6 pr-6 flex flex-col items-start gap-1 z-10">
+                      <h3 className="text-white text-2xl font-bold font-[family-name:var(--font-heading)] drop-shadow-lg mb-1">{mat.name}</h3>
+                      <p className="text-gray-100 text-sm font-medium drop-shadow-md">{mat.desc}</p>
                     </div>
                   </Link>
                 </ScrollReveal>

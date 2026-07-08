@@ -38,6 +38,7 @@ export async function GET(req: Request) {
         { category:    { contains: search, mode: 'insensitive' } },
         { subcategory: { contains: search, mode: 'insensitive' } },
         { material:    { contains: search, mode: 'insensitive' } },
+        { brand:       { contains: search, mode: 'insensitive' } },
       ];
     }
     
