@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -114,6 +115,9 @@ model Product {
   @@index([subcategory])
   @@index([material])
   @@index([featured])
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([isActive])
 }
 
 model Order {

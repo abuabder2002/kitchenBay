@@ -55,6 +55,7 @@ function ProductsContent() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [brands, setBrands] = useState<string[]>([]);
+  const [dynamicCategories, setDynamicCategories] = useState<any[]>(categories);
   const [dynamicSubcategories, setDynamicSubcategories] = useState<any[]>(subcategories);
 
   useEffect(() => {
@@ -63,27 +64,33 @@ function ProductsContent() {
     setExpandedCategory(urlCategory);
   }, [urlCategory, urlSubcategory]);
 
-  // Load dynamic subcategories (just like Navbar does)
+  // Load dynamic categories & subcategories from DB
   useEffect(() => {
+    // 1. Fetch categories
+    fetch('/api/admin/categories?limit=100&isActive=true')
+      .then(res => res.ok ? res.json() : {})
+      .then(data => {
+        if (data.categories && data.categories.length > 0) {
+          const mappedCats = data.categories.map((c: any) => ({
+            id: c.slug,
+            name: c.name
+          }));
+          setDynamicCategories(mappedCats);
+        }
+      })
+      .catch(console.error);
+
+    // 2. Fetch subcategories
     fetch('/api/admin/subcategories?limit=100&isActive=true')
       .then(res => res.json())
       .then(data => {
         if (data.subcategories && data.subcategories.length > 0) {
-          const mapped = data.subcategories.map((s: any) => {
-            const catName = (s.category?.name || '').toLowerCase();
-            let catId = catName.replace(/[^a-z0-9]+/g, '-');
-            if (catName.includes('kitchen')) catId = 'kitchenware';
-            else if (catName.includes('dining')) catId = 'dining';
-            else if (catName.includes('brass') || catName.includes('copper')) catId = 'brass-copper';
-            else if (catName.includes('decor')) catId = 'decor';
-            
-            return {
-              id: s.slug,
-              name: s.name,
-              category: catId
-            };
-          });
-          setDynamicSubcategories(mapped);
+          const mappedSubs = data.subcategories.map((s: any) => ({
+            id: s.slug,
+            name: s.name,
+            category: s.category?.slug || ''
+          }));
+          setDynamicSubcategories(mappedSubs);
         }
       })
       .catch(console.error);
@@ -217,7 +224,7 @@ function ProductsContent() {
           >
             All Categories
           </button>
-          {categories.map(cat => (
+          {dynamicCategories.map(cat => (
             <button
               key={cat.id}
               onClick={() => {

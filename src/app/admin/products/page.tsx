@@ -65,9 +65,19 @@ export default function AdminProductsPage() {
     setEditingProduct(prev => {
       if (!prev) return null;
       
-      const updated = { ...prev, [id]: value };
+      let updated = { ...prev, [id]: value };
       
-      if (id === 'price' || id === 'gstPercent' || id === 'originalPrice') {
+      if (id === 'category') {
+        const dbCat = dbCategories.find(c => c.slug === value);
+        updated.category = value;
+        updated.categoryId = dbCat ? dbCat.id : null;
+        updated.subcategory = '';
+        updated.subcategoryId = null;
+      } else if (id === 'subcategory') {
+        const dbSub = dbSubcategories.find(s => s.slug === value);
+        updated.subcategory = value;
+        updated.subcategoryId = dbSub ? dbSub.id : null;
+      } else if (id === 'price' || id === 'gstPercent' || id === 'originalPrice') {
         const bp = parseFloat(id === 'price' ? value : String(prev.price)) || 0;
         const gp = parseFloat(id === 'gstPercent' ? value : String(prev.gstPercent)) || 0;
         const opInput = parseFloat(id === 'originalPrice' ? value : String(prev.originalPrice)) || 0;
@@ -222,6 +232,7 @@ export default function AdminProductsPage() {
       if (copy[sz]) delete copy[sz];
       else copy[sz] = { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '', image: '' };
       
+      // Update automatically to comma separated list for legacy field
       const newSizes = Object.keys(copy).join(', ');
       return { ...prev, variants: copy, sizeCategory: newSizes };
     });

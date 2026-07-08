@@ -1,7 +1,7 @@
 'use client';
 // Force compile to clear HMR hydration cache
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -77,28 +77,36 @@ export default function Navbar() {
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const cacheRef = useRef<Record<string, any[]>>({});
 
+  const [dynamicCategories, setDynamicCategories] = useState<any[]>([]);
   const [dynamicSubcategories, setDynamicSubcategories] = useState<any[]>(subcategories);
 
   useEffect(() => {
+    // 1. Fetch categories dynamically
+    fetch('/api/admin/categories?limit=100&isActive=true')
+      .then(res => res.ok ? res.json() : {})
+      .then(data => {
+        if (data.categories) {
+          const mappedCats = data.categories.map((c: any) => ({
+            id: c.slug,
+            name: c.name,
+            href: `/products?category=${c.slug}`
+          }));
+          setDynamicCategories(mappedCats);
+        }
+      })
+      .catch(console.error);
+
+    // 2. Fetch subcategories dynamically
     fetch('/api/admin/subcategories?limit=100&isActive=true')
       .then(res => res.json())
       .then(data => {
         if (data.subcategories && data.subcategories.length > 0) {
-          const mapped = data.subcategories.map((s: any) => {
-            const catName = (s.category?.name || '').toLowerCase();
-            let catId = catName.replace(/[^a-z0-9]+/g, '-');
-            if (catName.includes('kitchen')) catId = 'kitchenware';
-            else if (catName.includes('dining')) catId = 'dining';
-            else if (catName.includes('brass') || catName.includes('copper')) catId = 'brass-copper';
-            else if (catName.includes('decor')) catId = 'decor';
-            
-            return {
-              id: s.slug,
-              name: s.name,
-              category: catId
-            };
-          });
-          setDynamicSubcategories(mapped);
+          const mappedSubs = data.subcategories.map((s: any) => ({
+            id: s.slug,
+            name: s.name,
+            category: s.category?.slug || ''
+          }));
+          setDynamicSubcategories(mappedSubs);
         }
       })
       .catch(console.error);
@@ -164,13 +172,21 @@ export default function Navbar() {
     { label: "Contact Us", href: "/contact" }
   ];
 
-  const categories = [
-    { id: 'kitchenware', name: "Kitchenware", href: "/products?category=kitchenware" },
-    { id: 'dining', name: "Dining", href: "/products?category=dining" },
-    { id: 'brass-copper', name: "Brass/Copper", href: "/products?category=brass-copper" },
-    { id: 'gifting', name: "Gifting", href: "/gift-concierge" },
-    { id: 'decor', name: "Décor", href: "/products?category=decor" }
-  ];
+  const categories = useMemo(() => {
+    if (dynamicCategories.length === 0) {
+      return [
+        { id: 'kitchenware', name: "Kitchenware", href: "/products?category=kitchenware" },
+        { id: 'dining', name: "Dining", href: "/products?category=dining" },
+        { id: 'brass-copper', name: "Brass/Copper", href: "/products?category=brass-copper" },
+        { id: 'decor', name: "Décor", href: "/products?category=decor" },
+        { id: 'gifting', name: "Gifting", href: "/gift-concierge" }
+      ];
+    }
+    return [
+      ...dynamicCategories,
+      { id: 'gifting', name: "Gifting", href: "/gift-concierge" }
+    ];
+  }, [dynamicCategories]);
 
   const executeSearch = () => {
     if (searchQuery.trim()) {

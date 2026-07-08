@@ -4,9 +4,6 @@ import { prisma } from '@/lib/prisma';
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search')?.trim() || searchParams.get('q')?.trim() || '';
-  const category = searchParams.get('category')?.trim() || '';
-  const subcategory = searchParams.get('subcategory')?.trim() || '';
-
   const categoryParam = searchParams.get('category')?.trim() || '';
   const subcategoryParam = searchParams.get('subcategory')?.trim() || '';
   const featuredParam = searchParams.get('featured')?.trim() || '';
@@ -188,6 +185,8 @@ export async function POST(req: Request) {
         stock: data.stock,
         category: data.category,
         subcategory: data.subcategory || data.category,
+        categoryId: data.categoryId || null,
+        subcategoryId: data.subcategoryId || null,
         material: data.material || 'Standard',
         dimensions: data.dimensions,
         height: data.height ? parseFloat(data.height) : null,

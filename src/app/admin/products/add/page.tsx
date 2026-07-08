@@ -194,28 +194,26 @@ export default function AddProductPage() {
   const finalPrice = basePrice + gstAmount;
   const originalPriceInput = parseFloat(form.originalPrice);
   const originalPrice = originalPriceInput > finalPrice ? originalPriceInput : finalPrice;
-  const discount = originalPrice > finalPrice ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
-
-  const formatPrice = (p: number) =>
-    p > 0
-      ? 'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(p)
-      : '—';
+  const discount = Math.round(((originalPrice - finalPrice) / originalPrice) * 100) || 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.image) return;
+    if (!allValid) { alert('Please fill in all required fields correctly.'); return; }
+    if (!form.image) { alert('Please upload a product image.'); return; }
 
     const result = await addProduct({
       name: form.name,
       description: form.description,
       price: basePrice,
-      originalPrice: originalPriceInput > 0 ? originalPriceInput : finalPrice,
+      originalPrice: originalPrice,
       finalPrice: finalPrice,
       discount: discount,
       gstPercent: gst,
       stock: parseInt(form.stock) || 0,
       category: form.category,
       subcategory: form.subcategory,
+      categoryId: form.categoryId || undefined,
+      subcategoryId: form.subcategoryId || undefined,
       material: form.material || 'Standard',
       brand: form.brand || undefined,
       shippingFee: form.shippingFee ? parseFloat(form.shippingFee) : undefined,
@@ -407,20 +405,20 @@ export default function AddProductPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Base Price</span>
-                <span className="font-medium text-gray-800">{formatPrice(basePrice)}</span>
+                <span className="font-medium text-gray-800">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(basePrice)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">GST ({gst}%)</span>
-                <span className="font-medium text-emerald-600">+ {formatPrice(gstAmount)}</span>
+                <span className="font-medium text-emerald-600">+ {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(gstAmount)}</span>
               </div>
               <div className="border-t border-blue-200 pt-2 flex justify-between">
                 <span className="font-bold text-gray-900">Final Price (GST Incl.)</span>
-                <span className="text-xl font-bold text-blue-700">{formatPrice(finalPrice)}</span>
+                <span className="text-xl font-bold text-blue-700">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(finalPrice)}</span>
               </div>
               {originalPriceInput > finalPrice && (
                 <div className="border-t border-blue-200 pt-2 flex justify-between items-center">
                   <span className="text-gray-600 text-sm">MRP (crossed out)</span>
-                  <span className="text-sm line-through text-gray-400">{formatPrice(originalPrice)}</span>
+                  <span className="text-sm line-through text-gray-400">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(originalPrice)}</span>
                 </div>
               )}
               {discount > 0 && (
@@ -606,7 +604,7 @@ export default function AddProductPage() {
           </h2>
           
           {(!isCategoryValid || !isSubcategoryValid) && (
-            <div className="text-red-600 font-medium text-sm mb-4 bg-red-50 p-3 rounded-lg border border-red-100">
+            <div className="bg-red-50 text-red-800 p-3 rounded-lg border border-red-100 text-sm font-medium mb-4">
               Please select Category and Subcategory.
             </div>
           )}
