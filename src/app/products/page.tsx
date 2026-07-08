@@ -69,7 +69,7 @@ function ProductsContent() {
     // 1. Fetch categories
     fetch('/api/admin/categories?limit=100&isActive=true')
       .then(res => res.ok ? res.json() : {})
-      .then(data => {
+      .then((data: any) => {
         if (data.categories && data.categories.length > 0) {
           const mappedCats = data.categories.map((c: any) => ({
             id: c.slug,
@@ -83,7 +83,7 @@ function ProductsContent() {
     // 2. Fetch subcategories
     fetch('/api/admin/subcategories?limit=100&isActive=true')
       .then(res => res.json())
-      .then(data => {
+      .then((data: any) => {
         if (data.subcategories && data.subcategories.length > 0) {
           const mappedSubs = data.subcategories.map((s: any) => ({
             id: s.slug,
@@ -100,7 +100,7 @@ function ProductsContent() {
   useEffect(() => {
     fetch('/api/products?limit=500', { cache: 'no-store' })
       .then(res => res.ok ? res.json() : [])
-      .then(data => {
+      .then((data: any) => {
         if (Array.isArray(data)) {
           const list = data.map((p: any) => p.brand).filter(Boolean);
           setBrands(Array.from(new Set(list)) as string[]);

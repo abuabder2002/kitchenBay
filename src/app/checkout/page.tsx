@@ -110,7 +110,7 @@ export default function CheckoutPage() {
     if (currentUser) {
       fetch('/api/orders')
         .then(res => res.ok ? res.json() : [])
-        .then(orders => {
+        .then((orders: any) => {
           const completedOrders = orders.filter((o: any) => o.paymentStatus === 'PAID' || o.paymentStatus === 'COD_PENDING' || o.status === 'PROCESSING' || o.status === 'DELIVERED');
           setIsFirstOrder(completedOrders.length === 0);
         })

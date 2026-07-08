@@ -47,7 +47,7 @@ export default function TrackOrdersPage() {
     setFetchLoading(true);
     fetch('/api/orders')
       .then(res => res.ok ? res.json() : [])
-      .then(data => {
+      .then((data: any) => {
         if (Array.isArray(data)) setOrders(data);
       })
       .catch(() => setOrders([]))

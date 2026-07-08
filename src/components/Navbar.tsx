@@ -84,7 +84,7 @@ export default function Navbar() {
     // 1. Fetch categories dynamically
     fetch('/api/admin/categories?limit=100&isActive=true')
       .then(res => res.ok ? res.json() : {})
-      .then(data => {
+      .then((data: any) => {
         if (data.categories) {
           const mappedCats = data.categories.map((c: any) => ({
             id: c.slug,
@@ -99,7 +99,7 @@ export default function Navbar() {
     // 2. Fetch subcategories dynamically
     fetch('/api/admin/subcategories?limit=100&isActive=true')
       .then(res => res.json())
-      .then(data => {
+      .then((data: any) => {
         if (data.subcategories && data.subcategories.length > 0) {
           const mappedSubs = data.subcategories.map((s: any) => ({
             id: s.slug,
@@ -130,7 +130,7 @@ export default function Navbar() {
     const timer = setTimeout(() => {
       fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: controller.signal })
         .then(res => res.ok ? res.json() : [])
-        .then(data => {
+        .then((data: any) => {
           if (Array.isArray(data)) {
             const sliced = data.slice(0, 6);
             cacheRef.current[q] = sliced;
