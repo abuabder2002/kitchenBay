@@ -229,8 +229,15 @@ function ProductsContent() {
               key={cat.id}
               onClick={() => {
                 setExpandedCategory(expandedCategory === cat.id ? '' : cat.id);
+                setSelectedCategory(cat.id);
+                setSelectedSubcategory('');
+                const params = new URLSearchParams(window.location.search);
+                params.set('category', cat.id);
+                params.delete('subcategory');
+                params.delete('page');
+                router.push(`/products?${params.toString()}`);
               }}
-              className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${expandedCategory === cat.id ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
+              className={`w-full text-left text-sm px-2 py-1.5 transition-colors ${selectedCategory === cat.id ? 'text-[--color-brand-accent] font-bold' : 'text-[--color-brand-muted] hover:text-[--color-brand-text]'}`}
             >
               {cat.name}
             </button>
