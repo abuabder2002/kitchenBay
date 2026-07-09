@@ -173,19 +173,29 @@ export default function Navbar() {
   ];
 
   const categories = useMemo(() => {
-    if (dynamicCategories.length === 0) {
-      return [
-        { id: 'kitchenware', name: "Kitchenware", href: "/products?category=kitchenware" },
-        { id: 'dining', name: "Dining", href: "/products?category=dining" },
-        { id: 'brass-copper', name: "Brass/Copper", href: "/products?category=brass-copper" },
-        { id: 'decor', name: "Décor", href: "/products?category=decor" },
-        { id: 'gifting', name: "Gifting", href: "/gift-concierge" }
-      ];
-    }
-    return [
-      ...dynamicCategories,
-      { id: 'gifting', name: "Gifting", href: "/gift-concierge" }
-    ];
+    const list = dynamicCategories.length === 0
+      ? [
+          { id: 'kitchenware', name: "Kitchenware", href: "/products?category=kitchenware" },
+          { id: 'kitchen-appliances', name: "Kitchen Appliances", href: "/products?category=kitchen-appliances" },
+          { id: 'dining', name: "Dining", href: "/products?category=dining" },
+          { id: 'brass-copper', name: "Brass/Copper", href: "/products?category=brass-copper" },
+          { id: 'decor', name: "Décor", href: "/products?category=decor" },
+          { id: 'gifting', name: "Gifting", href: "/gift-concierge" }
+        ]
+      : [
+          ...dynamicCategories,
+          { id: 'gifting', name: "Gifting", href: "/gift-concierge" }
+        ];
+
+    const order = ['kitchenware', 'kitchen-appliances', 'dining', 'brass-copper', 'decor', 'gifting'];
+
+    return [...list].sort((a, b) => {
+      const indexA = order.indexOf(a.id);
+      const indexB = order.indexOf(b.id);
+      const scoreA = indexA === -1 ? 999 : indexA;
+      const scoreB = indexB === -1 ? 999 : indexB;
+      return scoreA - scoreB;
+    });
   }, [dynamicCategories]);
 
   const executeSearch = () => {

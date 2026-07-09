@@ -6,13 +6,6 @@ const nextConfig = {
   trailingSlash: false,
   images: {
     unoptimized: false,
-    domains: [
-      'eikhpeprhzovwkdqwyhu.supabase.co',
-      'images.unsplash.com',
-      'i.pravatar.cc',
-      'res.cloudinary.com',
-      'api.qrserver.com'
-    ],
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'i.pravatar.cc' },
@@ -22,6 +15,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'eikhpeprhzovwkdqwyhu.supabase.co' },
       { protocol: 'https', hostname: '*.supabase.co' },
       { protocol: 'https', hostname: '**.supabase.co' },
+      { protocol: 'https', hostname: 'ih1pyq2xo6ba0khe.public.blob.vercel-storage.com' },
+      { protocol: 'https', hostname: '**.public.blob.vercel-storage.com' },
     ],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24 * 7,

@@ -318,7 +318,7 @@ export default function HomePage() {
       <JsonLd data={faqPageSchema(homeFaqs)} />
       <main className="flex-1">
 
-        {/* ── NEW HERO SECTION (Banner Grid) ────────────────────────────── */}
+        {/* -- NEW HERO SECTION (Banner Grid) ------------------------------ */}
         <section className="bg-white">
           <div className="max-w-[1600px] mx-auto p-4">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -408,7 +408,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── MOBILE QUICK CATEGORY STORIES (Instagram-style Stories) ──────────────── */}
+        {/* -- MOBILE QUICK CATEGORY STORIES (Instagram-style Stories) ---------------- */}
         {mounted && (
           <section className="block md:hidden bg-white py-6 border-b border-gray-100 overflow-x-auto scrollbar-hide">
             <div className="max-w-[1600px] mx-auto">
@@ -436,7 +436,7 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* ── BESTSELLERS ───────────────────────────────────────────────── */}
+        {/* -- BESTSELLERS ------------------------------------------------- */}
         <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('bestsellers', 'Bestsellers', [
             { key: 'productId', label: 'Select Product', type: 'product-link' }
@@ -464,7 +464,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── CATEGORY SHOWCASE ─────────────────────────────────────────── */}
+        {/* -- CATEGORY SHOWCASE ------------------------------------------- */}
         <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('categories', 'Categories', [
             { key: 'name', label: 'Name' },
@@ -497,7 +497,7 @@ export default function HomePage() {
 
 
 
-        {/* ── FULL WIDTH PROMO BAR ──────────────────────────────────────── */}
+        {/* -- FULL WIDTH PROMO BAR ---------------------------------------- */}
         <section className="bg-[#E8F5E9] text-black py-4 relative">
           <div className="max-w-[1600px] mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
@@ -510,7 +510,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── 3 CATEGORY BANNERS ────────────────────────────────────────── */}
+        {/* -- 3 CATEGORY BANNERS ------------------------------------------ */}
         <section className="bg-white py-6 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('secondaryBanners', 'Secondary Banners', [
             { key: 'title', label: 'Title' },
@@ -541,7 +541,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── TRADITIONAL MATERIALS SHOWCASE ────────────────────────────── */}
+        {/* -- TRADITIONAL MATERIALS SHOWCASE ------------------------------ */}
         <section className="bg-white py-24 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('materials', 'Materials', [
             { key: 'name', label: 'Name' },
@@ -571,7 +571,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── NEW ARRIVALS ──────────────────────────────────────────────── */}
+        {/* -- NEW ARRIVALS ------------------------------------------------ */}
         {newArrivals.length >= 4 && (
           <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-[--color-brand-card]/30 relative group">
             {isEditMode && <EditButton onClick={() => handleEditClick('newArrivals', 'New Arrivals', [
@@ -593,7 +593,7 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* ── Kitchenbay STORY SECTION ─────────────────────────────────────── */}
+        {/* -- Kitchenbay STORY SECTION --------------------------------------- */}
         <section className="bg-[--color-brand-top-bar] text-[--color-brand-bg] py-24 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('heritage', 'Our Heritage', [
             { key: 'title', label: 'Title' },
@@ -629,10 +629,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── TRADITION VIDEO SECTION ────────────────────────────────────── */}
+        {/* -- TRADITION VIDEO SECTION -------------------------------------- */}
         <TraditionVideoSection />
 
-        {/* ── TRUST BADGES ROW ──────────────────────────────────────────── */}
+        {/* -- TRUST BADGES ROW -------------------------------------------- */}
         <section className="border-b border-gray-200 bg-white">
           <div className="max-w-[1600px] mx-auto px-4 py-3 md:py-4">
             {/* Desktop View */}
@@ -669,7 +669,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── CUSTOMER TESTIMONIALS ─────────────────────────────────────── */}
+        {/* -- CUSTOMER TESTIMONIALS --------------------------------------- */}
         <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('testimonials', 'Testimonials', [
             { key: 'name', label: 'Name' },
@@ -711,7 +711,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── RECOMMENDED FOR YOU ───────────────────────────────────────── */}
+        {/* -- RECOMMENDED FOR YOU ----------------------------------------- */}
         <section className="py-12 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('recommended', 'Recommended For You', [
             { key: 'productId', label: 'Select Product', type: 'product-link' }
@@ -728,7 +728,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── TRUST & CREDIBILITY STRIP ─────────────────────────────────── */}
+        {/* -- TRUST & CREDIBILITY STRIP ----------------------------------- */}
         <section className="border-t border-[--color-brand-border] bg-white py-12 mt-16">
           <div className="max-w-[1400px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-10 divide-y md:divide-y-0 md:divide-x divide-[--color-brand-border]">
             <div className="flex items-center gap-5 flex-1 justify-center w-full">
