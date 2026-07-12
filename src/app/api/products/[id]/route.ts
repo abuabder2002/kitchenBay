@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { variantsToPaise, variantsToRupees } from '@/lib/pricing';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -27,6 +28,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (priceInPaise !== undefined) updateData.price = priceInPaise;
     if (originalPriceInPaise !== undefined) updateData.discountPrice = originalPriceInPaise;
     if (shippingFeeInPaise !== undefined) updateData.shippingFee = shippingFeeInPaise;
+    if (updateData.variants) updateData.variants = variantsToPaise(updateData.variants);
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
@@ -83,7 +85,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       originalPrice,
       finalPrice: basePrice,
       shippingFee,
-      discount
+      discount,
+      variants: variantsToRupees(existing.variants as Record<string, any> | null),
     };
 
     return NextResponse.json(formattedProduct);

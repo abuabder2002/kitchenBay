@@ -337,3 +337,28 @@ export function paiseToRupees(paise: number): number {
 export function rupeesToPaise(rupees: number): number {
   return Math.round(rupees * 100);
 }
+
+/**
+ * variants[size].price is stored in PAISE in the DB (same convention as Product.price).
+ * These helpers convert the whole variants map at the API boundary — mirrors how
+ * Product.price/discountPrice/shippingFee are converted in the products API routes.
+ */
+export function variantsToRupees<T extends Record<string, any>>(variants: T | null | undefined): T | null | undefined {
+  if (!variants) return variants;
+  return Object.fromEntries(
+    Object.entries(variants).map(([size, data]) => [
+      size,
+      { ...data, price: typeof data?.price === 'number' ? data.price / 100 : data?.price },
+    ])
+  ) as T;
+}
+
+export function variantsToPaise<T extends Record<string, any>>(variants: T | null | undefined): T | null | undefined {
+  if (!variants) return variants;
+  return Object.fromEntries(
+    Object.entries(variants).map(([size, data]) => [
+      size,
+      { ...data, price: Math.round((parseFloat(data?.price) || 0) * 100), stock: parseInt(data?.stock) || 0 },
+    ])
+  ) as T;
+}

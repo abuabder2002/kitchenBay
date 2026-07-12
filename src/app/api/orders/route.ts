@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
 
       if (item.size && dbProduct.variants && (dbProduct.variants as Record<string, any>)[item.size]) {
         const variant = (dbProduct.variants as Record<string, any>)[item.size];
-        basePrice = variant.price || (dbProduct.price / 100);
+        basePrice = variant.price ? variant.price / 100 : (dbProduct.price / 100); // variant.price stored in paise
         availableStock = variant.stock || 0;
       }
 

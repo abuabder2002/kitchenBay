@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { variantsToPaise, variantsToRupees } from '@/lib/pricing';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -110,6 +111,7 @@ export async function GET(req: Request) {
         shippingMethod: true,
         isActive: true,
         video: true,
+        sizeCategory: true,
       }
     });
 
@@ -142,14 +144,14 @@ export async function GET(req: Request) {
         length: null,
         diameter: null,
         weight: null,
-        sizeCategory: null,
+        sizeCategory: p.sizeCategory || null,
         tags: [],
         image: p.image,
         subImages: [], // OMIT to prevent 4.5MB Vercel limit
         rating: p.rating,
         reviewCount: p.reviewCount,
         featured: p.featured,
-        variants: null,
+        variants: null, // OMIT — variant images are base64 data URLs, same 4.5MB risk as subImages
         attributes: null,
         isFromDb: true,
         brand: p.brand || undefined,
@@ -202,7 +204,7 @@ export async function POST(req: Request) {
         rating: data.rating || 0,
         reviewCount: data.reviewCount || 0,
         featured: data.featured || false,
-        variants: data.variants ? data.variants : undefined,
+        variants: data.variants ? variantsToPaise(data.variants) : undefined,
         attributes: data.attributes ? data.attributes : undefined,
         brand: data.brand || null,
         shippingFee: data.shippingFee !== undefined && data.shippingFee !== null ? Math.round(parseFloat(data.shippingFee) * 100) : null,
@@ -242,7 +244,7 @@ export async function POST(req: Request) {
       rating: newProduct.rating,
       reviewCount: newProduct.reviewCount,
       featured: newProduct.featured,
-      variants: newProduct.variants,
+      variants: variantsToRupees(newProduct.variants as Record<string, any> | null),
       attributes: newProduct.attributes,
       isFromDb: true,
       brand: newProduct.brand || undefined,

@@ -25,6 +25,7 @@ export default function AddProductPage() {
   });
   const [videoUploading, setVideoUploading] = useState(false);
   const [variants, setVariants] = useState<{ [size: string]: { weight: string, length: string, width: string, height: string, diameter: string, price: string, stock: string, image?: string } }>({});
+  const [customSizeInput, setCustomSizeInput] = useState('');
   const [attributes, setAttributes] = useState<{name: string, value: string}[]>([]);
   const [saved, setSaved] = useState(false);
 
@@ -165,15 +166,23 @@ export default function AddProductPage() {
     }));
   };
 
-  const toggleSize = (size: string) => {
+  const addCustomSize = () => {
+    const name = customSizeInput.trim();
+    if (!name) return;
+    if (variants[name]) { alert('That size already exists.'); return; }
+    setVariants(prev => {
+      const copy = { ...prev, [name]: { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '', image: '' } };
+      setForm(f => ({ ...f, sizeCategory: Object.keys(copy).join(', ') }));
+      return copy;
+    });
+    setCustomSizeInput('');
+  };
+
+  const removeVariant = (size: string) => {
     setVariants(prev => {
       const copy = { ...prev };
-      if (copy[size]) delete copy[size];
-      else copy[size] = { weight: '', length: '', width: '', height: '', diameter: '', price: '', stock: '', image: '' };
-      
-      // Update form.sizeCategory automatically to comma separated list for legacy field
-      const newSizes = Object.keys(copy).join(', ');
-      setForm(f => ({ ...f, sizeCategory: newSizes }));
+      delete copy[size];
+      setForm(f => ({ ...f, sizeCategory: Object.keys(copy).join(', ') }));
       return copy;
     });
   };
@@ -469,20 +478,39 @@ export default function AddProductPage() {
           <div className="mb-6">
             <label className="text-sm font-medium text-gray-700 block mb-2">Select Available Sizes</label>
             <div className="flex flex-wrap gap-2">
-              {['S', 'M', 'ML', 'L', 'XL', 'Standard', 'Custom'].map(sz => (
-                <button
+              {Object.keys(variants).map(sz => (
+                <span
                   key={sz}
-                  type="button"
-                  onClick={() => toggleSize(sz)}
-                  className={`px-4 py-2 border rounded-xl text-sm font-bold shadow-sm transition-colors ${
-                    variants[sz] 
-                      ? 'border-blue-600 bg-blue-600 text-white' 
-                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                  }`}
+                  className="flex items-center gap-1.5 pl-4 pr-2 py-2 border border-blue-600 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-sm"
                 >
                   {sz}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => removeVariant(sz)}
+                    className="hover:bg-blue-700 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${sz} size`}
+                  >
+                    <X size={14} />
+                  </button>
+                </span>
               ))}
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <input
+                type="text"
+                value={customSizeInput}
+                onChange={(e) => setCustomSizeInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomSize(); } }}
+                placeholder="Type a custom size name e.g. 2.5L, Family Pack"
+                className="flex-1 min-w-0 px-3 py-2 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
+              />
+              <button
+                type="button"
+                onClick={addCustomSize}
+                className="px-4 py-2 border border-blue-600 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-700 transition-colors shrink-0"
+              >
+                + Add Size
+              </button>
             </div>
           </div>
 
@@ -490,8 +518,15 @@ export default function AddProductPage() {
             <div className="space-y-6">
               {Object.entries(variants).map(([sz, data]) => (
                 <div key={sz} className="border border-blue-100 bg-blue-50/30 rounded-xl p-4">
-                  <h3 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
-                    Size: {sz}
+                  <h3 className="font-bold text-blue-800 mb-3 flex items-center justify-between gap-2">
+                    <span>Size: {sz}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeVariant(sz)}
+                      className="text-xs font-semibold text-red-600 hover:text-red-800 transition-colors"
+                    >
+                      Remove
+                    </button>
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <FormInput id={`weight-${sz}`} label="Weight (kg/g)" placeholder="e.g. 1.5" type="number" value={data.weight} onChange={(e) => updateVariant(sz, 'weight', e.target.value)} />

@@ -44,6 +44,7 @@ export async function GET(req: Request) {
         featured: true,
         brand: true,
         isActive: true,
+        sizeCategory: true,
       }
     });
 
@@ -76,7 +77,7 @@ export async function GET(req: Request) {
         length: null,
         diameter: null,
         weight: null,
-        sizeCategory: null,
+        sizeCategory: p.sizeCategory || null,
         tags: [],
         image: p.image,
         subImages: [],

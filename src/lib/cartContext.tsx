@@ -207,14 +207,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const liveProduct = products.find(p => p.id === item.product.id);
       if (!liveProduct) return item; // Skip if product not found in live data
       
-      const availableStock = getItemStock(liveProduct, item.size);
+      // liveProduct comes from the product-list endpoint, which omits `variants`
+      // for bandwidth reasons — preserve the cart item's own variants (fetched
+      // from the product detail page or /api/cart) instead of wiping them out.
+      const mergedProduct = { ...item.product, ...liveProduct, variants: liveProduct.variants ?? item.product.variants };
+      const availableStock = getItemStock(mergedProduct, item.size);
       if (availableStock <= 0) {
         needsUpdate = true;
         return null;
       }
       if (item.quantity > availableStock) {
         needsUpdate = true;
-        return { ...item, quantity: availableStock, product: liveProduct };
+        return { ...item, quantity: availableStock, product: mergedProduct };
       }
       return item;
     }).filter((i): i is CartItem => i !== null);

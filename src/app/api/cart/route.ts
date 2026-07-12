@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbUser } from '@/lib/serverAuth';
 import { prisma } from '@/lib/prisma';
+import { variantsToRupees } from '@/lib/pricing';
 
 async function getCartItemsWithProducts(cartItems: any[]) {
   if (!cartItems || cartItems.length === 0) return [];
@@ -26,6 +27,8 @@ async function getCartItemsWithProducts(cartItems: any[]) {
       featured: true,
       brand: true,
       isActive: true,
+      variants: true,
+      sizeCategory: true,
     }
   });
 
@@ -55,14 +58,14 @@ async function getCartItemsWithProducts(cartItems: any[]) {
       length: null,
       diameter: null,
       weight: null,
-      sizeCategory: null,
+      sizeCategory: p.sizeCategory || null,
       tags: [],
       image: p.image,
       subImages: [],
       rating: p.rating,
       reviewCount: p.reviewCount,
       featured: p.featured,
-      variants: null,
+      variants: variantsToRupees(p.variants as Record<string, any> | null),
       attributes: null,
       isFromDb: true,
     });

@@ -35,10 +35,15 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
   const { isAdmin } = useAuth();
   const router = useRouter();
   const [added, setAdded] = useState(false);
+  const requiresSize = !!product.sizeCategory?.trim();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (requiresSize) {
+      router.push(`/products/${product.id}`);
+      return;
+    }
     addToCart(product);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -47,6 +52,10 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
   const handleBuyNow = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (requiresSize) {
+      router.push(`/products/${product.id}`);
+      return;
+    }
     addToCart(product, undefined, true);
     router.push('/checkout');
   };
@@ -123,7 +132,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
             onClick={handleAddToCart}
             className="w-full flex items-center justify-center gap-2 font-semibold rounded-full py-2 text-xs shadow-lg transition-colors" style={{backgroundColor: 'var(--color-brand-blue-light)', color: 'var(--color-brand-blue-text)', border: '1px solid var(--color-brand-blue-mid)'}}
           >
-            <ShoppingCart size={14} /> Quick Add
+            <ShoppingCart size={14} /> {requiresSize ? 'Select Size' : 'Quick Add'}
           </button>
         </div>
       </div>
@@ -193,9 +202,9 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
             onMouseEnter={e => { if (!added && product.stock > 0) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-mid)'; }}
             onMouseLeave={e => { if (!added && product.stock > 0) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-light)'; }}
           >
-            {added ? <><Check size={12} /> Added!</> : 'Add to Cart'}
+            {added ? <><Check size={12} /> Added!</> : requiresSize ? 'Select Size' : 'Add to Cart'}
           </button>
-          <button 
+          <button
             onClick={handleBuyNow}
             disabled={product.stock <= 0}
             className={`w-full flex items-center justify-center gap-1 font-bold rounded-full py-2 text-xs transition-all duration-200 active:scale-95 ${
@@ -205,7 +214,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
             onMouseEnter={e => { if (product.stock > 0) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-accent)'; }}
             onMouseLeave={e => { if (product.stock > 0) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-brand-blue-text)'; }}
           >
-            Buy Now
+            {requiresSize ? 'Select Size' : 'Buy Now'}
           </button>
         </div>
       </div>
