@@ -21,12 +21,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return products.map((product) => {
       const images: string[] = [];
-      if (product.image) {
-        // If image is a full URL, use it directly; otherwise prepend site URL
-        const imgUrl = product.image.startsWith('http')
-          ? product.image
-          : `${SITE_URL}${product.image}`;
-        images.push(imgUrl);
+      // Only include real hosted URLs — base64 data: URLs are not valid
+      // image sitemap entries and get rejected by Google as malformed.
+      if (product.image?.startsWith('http')) {
+        images.push(product.image);
       }
 
       return {

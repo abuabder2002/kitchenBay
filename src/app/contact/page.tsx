@@ -163,15 +163,33 @@ export default function ContactPage() {
                     <MapPin className="text-brand-accent" size={22} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-brand-text mb-1">Our Location</h3>
+                    <h3 className="font-bold text-brand-text mb-1">Salem Store</h3>
                     <p className="text-brand-muted leading-relaxed">
-                      Kitchenbay The Home Needs (salem)<br />
+                      Kitchenbay The Home Needs (Salem)<br />
                       19/A, Line Street<br />
                       Attur, Salem (DT)<br />
-                      Tamil Nadu - 636102
+                      Tamil Nadu - 636102<br />
+                      +91 7502777766
                     </p>
                   </div>
                 </div>
+                <div className="flex items-start gap-5">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                    <MapPin className="text-brand-accent" size={22} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-brand-text mb-1">Chennai Store</h3>
+                    <p className="text-brand-muted leading-relaxed">
+                      Kitchenbay The Homeneeds (Chennai)<br />
+                      KitchenBay Craft Cluster<br />
+                      Chennai, Tamil Nadu - 600001<br />
+                      +91 7010189976
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-brand-muted leading-relaxed pl-[68px] -mt-4">
+                  We also deliver to Madurai, Vellore, Tiruchirappalli (Trichy), Coimbatore and across Tamil Nadu.
+                </p>
               </div>
             </div>
           </div>

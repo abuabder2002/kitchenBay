@@ -17,7 +17,9 @@ import {
   VERIFICATION,
   BUSINESS,
   SOCIAL_URLS,
+  TARGET_KEYWORDS,
 } from '@/lib/seoConfig';
+import { localBusinessSchemas } from '@/lib/schemas';
 import AnalyticsScripts from '@/components/seo/AnalyticsScripts';
 
 const playfair = Playfair_Display({
@@ -42,13 +44,7 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
-  keywords: [
-    'kitchenware', 'cookware', 'stainless steel utensils', 'kitchen accessories',
-    'kitchen storage', 'home kitchen products', 'kitchen essentials', 'KitchenBay',
-    'Indian kitchenware', 'premium kitchen products', 'Tamil Nadu kitchenware',
-    'kitchen shopping online', 'cast iron cookware', 'brass cookware',
-    'copper cookware', 'soapstone cookware', 'handcrafted kitchenware',
-  ],
+  keywords: [...TARGET_KEYWORDS],
   authors: [{ name: SITE_NAME, url: SITE_URL }],
   creator: SITE_NAME,
   publisher: SITE_NAME,
@@ -169,6 +165,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const storeSchemas = localBusinessSchemas();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -186,9 +184,19 @@ export default function RootLayout({
             __html: JSON.stringify(websiteJsonLd).replace(/</g, '\\u003c'),
           }}
         />
+        {/* LocalBusiness Schema — one per physical store (Salem, Chennai) */}
+        {storeSchemas.map((schema) => (
+          <script
+            key={schema['@id']}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(schema).replace(/</g, '\\u003c'),
+            }}
+          />
+        ))}
         {/* Geo metadata for local SEO */}
         <meta name="geo.region" content="IN-TN" />
-        <meta name="geo.placename" content="Attur, Salem, Tamil Nadu" />
+        <meta name="geo.placename" content="Salem, Chennai, Madurai, Vellore, Trichy, Tamil Nadu" />
         <meta
           name="geo.position"
           content={`${BUSINESS.geo.latitude};${BUSINESS.geo.longitude}`}

@@ -18,6 +18,8 @@ export const SITE_SHORT_DESCRIPTION =
   'Premium handcrafted kitchenware, cookware & home décor from India. Shop cast iron, brass, copper, soapstone cookware & kitchen accessories at KitchenBay.';
 
 // ─── BUSINESS / NAP (Name, Address, Phone) ──────────────────
+// Primary/registered location (Salem). Used as the default for
+// Organization schema and site-wide contact info.
 export const BUSINESS = {
   name: SITE_LEGAL_NAME,
   alternateName: SITE_NAME,
@@ -42,6 +44,50 @@ export const BUSINESS = {
   areaServed: 'IN',
   currency: 'INR',
 } as const;
+
+// ─── STORE LOCATIONS (for LocalBusiness schema, one per branch) ─
+export const STORES = [
+  {
+    key: 'salem',
+    name: 'Kitchenbay The Home Needs (Salem)',
+    address: {
+      streetAddress: '19/A, Line Street',
+      addressLocality: 'Attur',
+      addressRegion: 'Tamil Nadu',
+      postalCode: '636102',
+      addressCountry: 'IN',
+    },
+    geo: { latitude: 11.5962, longitude: 78.6025 },
+    phone: '+91 7502777766',
+  },
+  {
+    key: 'chennai',
+    name: 'Kitchenbay The Homeneeds (Chennai)',
+    address: {
+      streetAddress: 'KitchenBay Craft Cluster',
+      addressLocality: 'Chennai',
+      addressRegion: 'Tamil Nadu',
+      postalCode: '600001',
+      addressCountry: 'IN',
+    },
+    geo: { latitude: 13.0827, longitude: 80.2707 },
+    phone: '+91 7010189976',
+  },
+] as const;
+
+// ─── SERVICE AREAS (cities we deliver to, for local SEO copy) ──
+// KitchenBay has physical stores only in Salem and Chennai (see
+// STORES above). These are delivery/service-area cities, not
+// branch locations — used for areaServed schema + on-page copy,
+// never as fake LocalBusiness listings.
+export const SERVICE_AREAS = [
+  'Chennai',
+  'Salem',
+  'Madurai',
+  'Vellore',
+  'Tiruchirappalli (Trichy)',
+  'Coimbatore',
+] as const;
 
 // ─── SOCIAL PROFILES ────────────────────────────────────────
 export const SOCIAL = {
@@ -83,6 +129,14 @@ export const TARGET_KEYWORDS = [
   'copper cookware',
   'soapstone cookware',
   'handcrafted kitchenware',
+  // Local / city-targeted (Chennai, Salem, Madurai, Vellore, Trichy)
+  'kitchenware shop in Chennai',
+  'kitchenware store in Salem',
+  'cookware shop in Madurai',
+  'kitchen accessories Vellore',
+  'kitchenware store in Trichy',
+  'buy cookware online Tamil Nadu',
+  'kitchen items near me Tamil Nadu',
 ] as const;
 
 // ─── ANALYTICS PLACEHOLDERS ─────────────────────────────────

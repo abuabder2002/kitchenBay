@@ -10,6 +10,8 @@ import {
   SITE_DESCRIPTION,
   BUSINESS,
   SOCIAL_URLS,
+  STORES,
+  SERVICE_AREAS,
 } from './seoConfig';
 
 // ─── Organization ───────────────────────────────────────────
@@ -31,32 +33,44 @@ export function organizationSchema() {
   };
 }
 
-// ─── LocalBusiness ──────────────────────────────────────────
-export function localBusinessSchema() {
-  return {
+// ─── LocalBusiness (one schema per physical store) ───────────
+// Emits a LocalBusiness listing for each real store in STORES
+// (Salem, Chennai). `areaServed` lists the cities we deliver to
+// (Chennai, Salem, Madurai, Vellore, Trichy, Coimbatore) so the
+// listing is discoverable for "near me" / city searches without
+// claiming a fake branch in cities we only ship to.
+export function localBusinessSchemas() {
+  return STORES.map((store) => ({
     '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    '@id': `${SITE_URL}/#localbusiness`,
-    name: BUSINESS.name,
+    '@type': 'Store',
+    '@id': `${SITE_URL}/#localbusiness-${store.key}`,
+    name: store.name,
     alternateName: BUSINESS.alternateName,
-    url: SITE_URL,
+    url: `${SITE_URL}/store-locator`,
     image: `${SITE_URL}/favicon.ico`,
     email: BUSINESS.email,
-    telephone: BUSINESS.phone,
+    telephone: store.phone,
     priceRange: BUSINESS.priceRange,
     openingHours: BUSINESS.openingHours,
-    address: postalAddressSchema(),
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: store.address.streetAddress,
+      addressLocality: store.address.addressLocality,
+      addressRegion: store.address.addressRegion,
+      postalCode: store.address.postalCode,
+      addressCountry: store.address.addressCountry,
+    },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: BUSINESS.geo.latitude,
-      longitude: BUSINESS.geo.longitude,
+      latitude: store.geo.latitude,
+      longitude: store.geo.longitude,
     },
     sameAs: SOCIAL_URLS,
-    areaServed: {
-      '@type': 'Country',
-      name: 'India',
-    },
-  };
+    areaServed: SERVICE_AREAS.map((city) => ({
+      '@type': 'City',
+      name: city,
+    })),
+  }));
 }
 
 // ─── WebSite + SearchAction ─────────────────────────────────

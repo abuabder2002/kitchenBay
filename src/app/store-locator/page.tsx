@@ -19,7 +19,7 @@ export default function StoreLocatorPage() {
     {
       id: 2,
       name: "Kitchenbay The Homeneeds (Chennai)",
-      address: "Kitchenbay The Homeneeds, Chennai, Tamil Nadu",
+      address: "KitchenBay Craft Cluster, Chennai, Tamil Nadu 600001",
       phone: "+91 7010189976",
       hours: "Store timing 9:30 to 9:30",
       mapsLink: "https://maps.app.goo.gl/7Z3v7MhxSBLs1Jj49",

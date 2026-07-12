@@ -99,7 +99,8 @@ const homeFaqs = [
   { question: "What makes KitchenBay's cast iron cookware special?", answer: "Our cast iron cookware is pre-seasoned naturally without any chemical coatings. It is handcrafted by traditional artisans from Tamil Nadu, ensuring excellent heat retention, durability, and iron-fortified food." },
   { question: "Do you deliver all over India?", answer: "Yes, KitchenBay delivers to over 20,000+ pincodes across India with standard delivery taking 5-7 business days." },
   { question: "Are your brass and copper utensils safe for daily use?", answer: "Absolutely. Our brass and copper utensils are made from pure, food-grade materials and are safe for traditional cooking and water storage when cared for properly." },
-  { question: "What is your return policy?", answer: "We offer a hassle-free 48-hour return policy in case of any transit damage or manufacturing defects. Just contact our support team." }
+  { question: "What is your return policy?", answer: "We offer a hassle-free 48-hour return policy in case of any transit damage or manufacturing defects. Just contact our support team." },
+  { question: "Do you have stores in Chennai, Salem, Madurai, Vellore, or Trichy?", answer: "We have physical retail stores in Salem and Chennai — find directions on our Store Locator page. For Madurai, Vellore, Tiruchirappalli (Trichy), Coimbatore, and other Tamil Nadu cities, we deliver our full catalog of handcrafted kitchenware and cookware straight to your door." }
 ];
 
 export default function HomePage() {
@@ -764,6 +765,31 @@ export default function HomePage() {
                 { name: 'Hand-hammered Copper Jug', link: '/products?category=dining' },
               ].map((item, i) => (
                 <Link key={i} href={item.link} className="text-sm text-gray-600 bg-gray-100 hover:bg-[--color-brand-accent] hover:text-white px-4 py-2 rounded-full transition-colors border border-gray-200 shadow-sm">
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── SERVICE AREAS (Local SEO — Tamil Nadu cities) ─────────────── */}
+        <section className="border-t border-[--color-brand-border] bg-[#F8F9FA] py-12">
+          <div className="max-w-[1600px] mx-auto px-4">
+            <h2 className="text-lg font-bold text-gray-900 mb-4 font-[family-name:var(--font-heading)] uppercase tracking-widest">Serving Kitchens Across Tamil Nadu</h2>
+            <p className="text-[13px] text-gray-600 leading-relaxed max-w-3xl mb-6">
+              KitchenBay has retail stores in <Link href="/store-locator" className="font-semibold text-[--color-brand-accent] hover:underline">Salem and Chennai</Link>, and we deliver our handcrafted cookware, kitchenware, and traditional home décor across Tamil Nadu — including Madurai, Vellore, Tiruchirappalli (Trichy), and Coimbatore. Wherever you are, shop online and get authentic brass, copper, cast iron, and stainless steel kitchen essentials delivered to your door.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {[
+                { name: 'Kitchenware in Chennai', link: '/products?category=kitchenware' },
+                { name: 'Kitchenware in Salem', link: '/products?category=kitchenware' },
+                { name: 'Cookware in Madurai', link: '/products?category=kitchenware' },
+                { name: 'Kitchen Accessories in Vellore', link: '/products' },
+                { name: 'Cookware in Trichy', link: '/products?category=kitchenware' },
+                { name: 'Kitchenware in Coimbatore', link: '/products' },
+                { name: 'Find a Store Near You', link: '/store-locator' },
+              ].map((item, i) => (
+                <Link key={i} href={item.link} className="text-sm text-gray-600 bg-white hover:bg-[--color-brand-accent] hover:text-white px-4 py-2 rounded-full transition-colors border border-gray-200 shadow-sm">
                   {item.name}
                 </Link>
               ))}
