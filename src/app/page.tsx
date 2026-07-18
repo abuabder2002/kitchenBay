@@ -333,10 +333,13 @@ export default function HomePage() {
                 ], mainHeroBanner)} label="Edit Main Banner" />}
                 {mainHeroBanner.map((banner, idx) => (
                   <Link key={idx} href={banner.link || '/products'} className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentMainSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-                    <img
+                    <Image
                       src={banner.image || "/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg"}
                       alt={banner.title || "Collection for Everyday Cooking"}
-                      className={`absolute inset-0 w-full h-full object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentMainSlide ? 'scale-105' : 'scale-100'}`}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 66vw"
+                      priority={idx === 0}
+                      className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentMainSlide ? 'scale-105' : 'scale-100'}`}
                     />
                     <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/10" />
                     <div className="absolute inset-0 z-0 flex flex-col justify-center items-center text-center p-6 sm:p-8 lg:p-12 pointer-events-none">
@@ -375,10 +378,12 @@ export default function HomePage() {
                     className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                       }`}
                   >
-                    <img
+                    <Image
                       src={slide.image || '/images/marketing/everyday_cooking.jpg'}
                       alt={slide.title || 'Slide Image'}
-                      className={`absolute inset-0 w-full h-full object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentSlide ? 'scale-105' : 'scale-100'
+                      fill
+                      sizes="(max-width: 1024px) 0px, 33vw"
+                      className={`object-contain object-center transition-transform duration-[4000ms] ease-out ${idx === currentSlide ? 'scale-105' : 'scale-100'
                         }`}
                     />
                     <div className="absolute inset-0 flex flex-col items-center justify-end p-8 text-center pb-12">
@@ -426,7 +431,7 @@ export default function HomePage() {
                   <Link key={idx} href={cat.href} className="flex flex-col items-center gap-1.5 text-center cursor-pointer group">
                     <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[--color-brand-accent] p-[2px] shadow-sm active:scale-95 transition-transform duration-300 bg-white">
                       <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-50">
-                        <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
+                        <Image src={cat.img} alt={cat.name} fill sizes="64px" className="object-cover" />
                       </div>
                     </div>
                     <span className="text-[11px] font-extrabold text-[--color-brand-text] tracking-tight group-hover:text-[--color-brand-accent] transition-colors">{cat.name}</span>
@@ -481,10 +486,12 @@ export default function HomePage() {
               <ScrollReveal key={idx} direction="up" duration={800} delay={idx * 150} className="w-full">
                 <Link href={`/products?category=${cat.name.toLowerCase()}`} className="group flex flex-col items-center cursor-pointer">
                   <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm mb-6 shadow-sm">
-                    <img
+                    <Image
                       src={cat.img || '/images/marketing/everyday_cooking.jpg'}
                       alt={cat.name || 'Category Image'}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover group-hover:scale-110 transition-transform duration-1000"
                     />
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                   </div>
@@ -525,10 +532,12 @@ export default function HomePage() {
                 return (
                   <ScrollReveal key={idx} direction={idx === 0 ? 'left' : idx === 2 ? 'right' : 'up'} duration={800} delay={idx * 150} className="w-full">
                     <Link href={banner.link || '/products'} className="relative w-full aspect-[2.5/1] md:aspect-[2/1] overflow-hidden group/banner rounded-sm block bg-slate-100">
-                      <img
+                      <Image
                         src={banner.image || '/images/marketing/everyday_cooking.jpg'}
                         alt={banner.title || 'Banner Image'}
-                        className="absolute inset-0 w-full h-full object-cover object-center group-hover/banner:scale-105 transition-transform duration-700"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover object-center group-hover/banner:scale-105 transition-transform duration-700"
                       />
                       <div className="absolute inset-0 bg-transparent" />
                       <div className="absolute top-0 left-0 h-full flex flex-col justify-center p-6 md:p-8 max-w-[80%] items-start">
@@ -559,7 +568,7 @@ export default function HomePage() {
               {activeMaterials.map((mat, idx) => (
                 <ScrollReveal key={idx} direction="up" duration={600} delay={idx * 100} className="w-full">
                   <Link href={mat.link || `/products?material=${mat.name}`} className="group relative w-full h-[400px] overflow-hidden rounded-sm cursor-pointer block">
-                    <img src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <Image src={mat.img || '/images/marketing/everyday_cooking.jpg'} alt={mat.name || 'Material Image'} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500" />
                     <div className="absolute bottom-6 left-6 pr-6 flex flex-col items-start gap-1 z-10">
                       <h3 className="text-white text-2xl font-bold font-[family-name:var(--font-heading)] drop-shadow-lg mb-1">{mat.name}</h3>
@@ -620,10 +629,12 @@ export default function HomePage() {
                 </Link>
               </ScrollReveal>
               <ScrollReveal direction="right" duration={900} className="flex-1 relative w-full aspect-square max-w-lg mx-auto lg:max-w-none">
-                <img
+                <Image
                   src={activeHeritage[0]?.image || '/artisan_kitchenware.png'}
                   alt="Traditional Indian handcrafted kitchenware"
-                  className="absolute inset-0 w-full h-full object-cover rounded-t-full shadow-2xl"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover rounded-t-full shadow-2xl"
                 />
               </ScrollReveal>
             </div>

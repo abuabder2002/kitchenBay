@@ -16,10 +16,24 @@ export async function GET(req: Request) {
   const page = parseInt(searchParams.get('page') || '1') || 1;
   const limit = parseInt(searchParams.get('limit') || '100') || 100;
   const skip = (page - 1) * limit;
+  const brandsOnly = searchParams.get('brandsOnly')?.trim() === 'true';
 
   console.log(`[GET /api/products] search="${search}", category="${categoryParam}", subcategory="${subcategoryParam}", page=${page}, limit=${limit}`);
 
   try {
+    if (brandsOnly) {
+      const distinctBrands = await prisma.product.findMany({
+        where: { brand: { not: null } },
+        select: { brand: true },
+        distinct: ['brand'],
+      });
+      const response = NextResponse.json(
+        Array.from(new Set(distinctBrands.map(b => b.brand).filter(Boolean)))
+      );
+      response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=1800');
+      return response;
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereClause: any = {};
 

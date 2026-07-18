@@ -98,12 +98,11 @@ function ProductsContent() {
 
   // Load unique brands list once to populate filter sidebar
   useEffect(() => {
-    fetch('/api/products?limit=500', { cache: 'no-store' })
+    fetch('/api/products?brandsOnly=true')
       .then(res => res.ok ? res.json() : [])
       .then((data: any) => {
         if (Array.isArray(data)) {
-          const list = data.map((p: any) => p.brand).filter(Boolean);
-          setBrands(Array.from(new Set(list)) as string[]);
+          setBrands(data as string[]);
         }
       })
       .catch(() => {});
