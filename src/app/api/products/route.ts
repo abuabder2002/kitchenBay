@@ -100,8 +100,11 @@ export async function GET(req: Request) {
       orderClause = { reviewCount: 'desc' };
     }
 
+    // Both queries hit the same DB; run them concurrently so we pay the
+    // network round-trip once instead of twice.
     // Select only columns needed for the list view to reduce bandwidth usage
-    const dbProducts = await prisma.product.findMany({
+    const [dbProducts, totalCount] = await Promise.all([
+      prisma.product.findMany({
       where: whereClause,
       orderBy: orderClause,
       skip,
@@ -127,9 +130,9 @@ export async function GET(req: Request) {
         video: true,
         sizeCategory: true,
       }
-    });
-
-    const totalCount = await prisma.product.count({ where: whereClause });
+      }),
+      prisma.product.count({ where: whereClause }),
+    ]);
 
     console.log(`[GET /api/products] page=${page} limit=${limit} → ${dbProducts.length} results (total: ${totalCount})`);
 
@@ -177,7 +180,9 @@ export async function GET(req: Request) {
 
     const response = NextResponse.json(formattedProducts);
     response.headers.set('X-Total-Count', totalCount.toString());
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
+    // Serve stale for a day while revalidating in the background, so a cache
+    // miss is rare and a slow origin fetch never blocks a shopper.
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
     return response;
   } catch (error) {
     console.error('Error fetching products:', error);
