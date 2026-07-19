@@ -1,50 +1,52 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-accent: #556B2F;          /* Dark Olive Green */
-  --color-brand-accent-hover: #4A5D23;    
-  --color-brand-accent-yellow: #C19A6B;  /* Muted Gold/Camel */
-  --color-brand-accent-yellow-hover: #A08055; 
-  --color-brand-bg: #F7F2E8;              /* Cream */
-  --color-brand-card: #F0EAD6;            /* Warm Beige/Parchment */
-  --color-brand-text: #4A3B32;            /* Deep Brown */
-  --color-brand-muted: #8C7B6D;           /* Muted Brown */
-  --color-brand-border: #E6DBC4;          /* Soft Beige */
-  --color-brand-success: #10B981;
-  --color-brand-top-bar: #3E322A;         /* Darkest Brown */
+  --color-brand-accent: #85171C;          /* Deep Maroon — primary */
+  --color-brand-accent-hover: #6F1317;    /* Darker maroon — hover */
+  --color-brand-accent-yellow: #D0A967;   /* Gold — accent */
+  --color-brand-accent-yellow-hover: #B8925A;
+  --color-brand-bg: #FFFFFF;              /* White */
+  --color-brand-card: #F6F6F6;            /* Light grey — cards/tints */
+  --color-brand-text: #231F20;            /* Charcoal */
+  --color-brand-muted: #A2A2A2;           /* Grey — secondary text */
+  --color-brand-border: #E5E5E5;          /* Light grey border */
+  --color-brand-success: #2E7D32;         /* Green — in stock */
+  --color-brand-top-bar: #231F20;         /* Charcoal top bar */
 
-  /* Light Blue Accent Palette */
-  --color-brand-blue-lightest: #EFF6FF;   /* Nearly white blue — backgrounds */
-  --color-brand-blue-light: #E6F2FF;      /* Soft blue — badges, section tints */
-  --color-brand-blue-mid: #BFDBFE;        /* Soft blue — borders, dividers */
-  --color-brand-blue-icon: #93C5FD;       /* Icon hover rings */
-  --color-brand-blue-text: #3B82F6;       /* Badge text, labels */
+  /* Accent Palette — maroon-tinted neutrals for badges, cards, buttons.
+     Names kept for compatibility with existing components. */
+  --color-brand-blue-lightest: #FDF8F8;   /* Nearly white — backgrounds */
+  --color-brand-blue-light: #FAEFEF;      /* Soft maroon tint — badges, tints */
+  --color-brand-blue-mid: #E8D4D5;        /* Muted rose — borders, dividers */
+  --color-brand-blue-icon: #C9959A;       /* Icon hover rings */
+  --color-brand-blue-text: #85171C;       /* Badge text, labels — maroon */
   
-  /* Override Tailwind's default blues to match our earthy brand */
-  --color-blue-50: #F7F2E8;
-  --color-blue-100: #F0EAD6;
-  --color-blue-200: #E6DBC4;
-  --color-blue-300: #D2C4A7;
-  --color-blue-400: #B8A886;
-  --color-blue-500: #9E8C66;
-  --color-blue-600: #556B2F; /* Accent Olive Green */
-  --color-blue-700: #4A5D23; 
-  --color-blue-800: #3E4D1D;
-  --color-blue-900: #4A3B32; /* Deep Brown */
-  --color-blue-950: #3E322A;
+  /* Override Tailwind's default blues to match our maroon brand */
+  --color-blue-50: #FDF8F8;
+  --color-blue-100: #FAEFEF;
+  --color-blue-200: #E8D4D5;
+  --color-blue-300: #D4AFB2;
+  --color-blue-400: #C08A8E;
+  --color-blue-500: #A54A50;
+  --color-blue-600: #85171C; /* Accent Maroon */
+  --color-blue-700: #6F1317;
+  --color-blue-800: #5A0F13;
+  --color-blue-900: #231F20; /* Charcoal */
+  --color-blue-950: #171415;
 
   /* Override Tailwind's default yellows to match our brand gold */
-  --color-yellow-50: #FCFBF8;
-  --color-yellow-100: #F7F2E8;
-  --color-yellow-200: #EBDCBB;
-  --color-yellow-300: #DFB87A;
-  --color-yellow-400: #C19A6B;
-  --color-yellow-500: #C19A6B;
-  --color-yellow-600: #A08055;
-  --color-yellow-700: #806040;
+  --color-yellow-50: #FDFBF6;
+  --color-yellow-100: #F9F2E4;
+  --color-yellow-200: #EFDFBC;
+  --color-yellow-300: #E0C289;
+  --color-yellow-400: #D0A967;
+  --color-yellow-500: #D0A967;
+  --color-yellow-600: #B8925A;
+  --color-yellow-700: #96754A;
 
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
+  --font-accent: var(--font-accent);
 }
 
 @layer base {

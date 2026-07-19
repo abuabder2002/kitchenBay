@@ -111,13 +111,13 @@ function FeaturedVideoCard({ video }: { video: TraditionVideo }) {
         style={{ background: 'linear-gradient(to top, rgba(20,14,10,0.88) 0%, transparent 100%)' }}
       >
         {/* Gold accent line */}
-        <div className="w-10 h-[2px] mb-3" style={{ background: 'linear-gradient(90deg,#C19A6B,transparent)' }} />
+        <div className="w-10 h-[2px] mb-3" style={{ background: 'linear-gradient(90deg,#D0A967,transparent)' }} />
         <p className="text-white font-bold text-base md:text-xl leading-snug" style={{ fontFamily: 'var(--font-heading)' }}>
           {video.title}
         </p>
         {video.link && (
           <span className="mt-2 inline-block text-xs font-semibold uppercase tracking-widest"
-            style={{ color: '#C19A6B', borderBottom: '1px solid rgba(193,154,107,0.4)', paddingBottom: '2px' }}>
+            style={{ color: '#D0A967', borderBottom: '1px solid rgba(193,154,107,0.4)', paddingBottom: '2px' }}>
             View Product →
           </span>
         )}
@@ -138,8 +138,8 @@ function FeaturedVideoCard({ video }: { video: TraditionVideo }) {
           onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.45)')}
         >
           {muted
-            ? <VolumeX size={15} color="#C19A6B" />
-            : <Volume2 size={15} color="#C19A6B" />}
+            ? <VolumeX size={15} color="#D0A967" />
+            : <Volume2 size={15} color="#D0A967" />}
         </button>
       )}
     </div>
@@ -221,7 +221,7 @@ function SupportingVideoCard({ video, delay = 0 }: { video: TraditionVideo; dela
               transition: 'transform 0.35s ease, background 0.35s ease',
             }}
           >
-            <Play size={22} fill="#C19A6B" color="#C19A6B" style={{ marginLeft: 3 }} />
+            <Play size={22} fill="#D0A967" color="#D0A967" style={{ marginLeft: 3 }} />
           </div>
         </div>
       )}
@@ -231,7 +231,7 @@ function SupportingVideoCard({ video, delay = 0 }: { video: TraditionVideo; dela
         className="absolute bottom-0 left-0 right-0 z-20 px-4 py-4"
         style={{ background: 'linear-gradient(to top, rgba(20,14,10,0.85) 0%, transparent 100%)' }}
       >
-        <div className="w-7 h-[1.5px] mb-2" style={{ background: '#C19A6B' }} />
+        <div className="w-7 h-[1.5px] mb-2" style={{ background: '#D0A967' }} />
         <p className="text-white font-semibold text-sm leading-snug" style={{ fontFamily: 'var(--font-heading)' }}>
           {video.title}
         </p>
@@ -318,14 +318,14 @@ export default function TraditionVideoSection() {
             className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-5"
             style={{
               fontFamily: 'var(--font-heading)',
-              color: '#3E322A',
+              color: '#231F20',
             }}
           >
             Stories Behind Every<br className="hidden sm:block" />
-            <span style={{ color: '#C19A6B' }}> Tradition</span>
+            <span style={{ color: '#D0A967' }}> Tradition</span>
           </h2>
 
-          <p className="text-base md:text-lg max-w-2xl mx-auto leading-relaxed" style={{ color: '#8C7B6D' }}>
+          <p className="text-base md:text-lg max-w-2xl mx-auto leading-relaxed" style={{ color: '#A2A2A2' }}>
             From ancient Kitchenbay workshops to your kitchen — witness the craft, passion and heritage
             that make every KitchenBay piece extraordinary.
           </p>
@@ -380,7 +380,7 @@ export default function TraditionVideoSection() {
           <div className="mt-14 text-center">
             <div className="flex items-center justify-center gap-3">
               <div className="h-[1px] flex-1 max-w-[80px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(193,154,107,0.55))' }} />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.25em]" style={{ color: '#C19A6B' }}>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.25em]" style={{ color: '#D0A967' }}>
                 Handcrafted with Heritage
               </span>
               <div className="h-[1px] flex-1 max-w-[80px]" style={{ background: 'linear-gradient(90deg, rgba(193,154,107,0.55), transparent)' }} />

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Playfair_Display, Nunito_Sans } from 'next/font/google';
+import { Inter, Roboto } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/cartContext';
 import { WishlistProvider } from '@/lib/wishlistContext';
@@ -22,17 +22,26 @@ import {
 import { localBusinessSchemas } from '@/lib/schemas';
 import AnalyticsScripts from '@/components/seo/AnalyticsScripts';
 
-const playfair = Playfair_Display({
-  weight: ['400', '500', '600', '700', '800', '900'],
+// Matches the reference site's typography: Inter as the primary
+// typeface (headings + body), Roboto as the secondary accent face.
+const inter = Inter({
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
   subsets: ['latin'],
   variable: '--font-heading',
   display: 'swap',
 });
 
-const nunitoSans = Nunito_Sans({
-  weight: ['300', '400', '600', '700'],
+const interBody = Inter({
+  weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-body',
+  display: 'swap',
+});
+
+const roboto = Roboto({
+  weight: ['300', '400', '500', '700'],
+  subsets: ['latin'],
+  variable: '--font-accent',
   display: 'swap',
 });
 
@@ -206,7 +215,7 @@ export default function RootLayout({
           content={`${BUSINESS.geo.latitude}, ${BUSINESS.geo.longitude}`}
         />
       </head>
-      <body className={`${playfair.variable} ${nunitoSans.variable} font-[family-name:var(--font-body)] bg-[--color-brand-bg] text-[--color-brand-text] antialiased selection:bg-[--color-brand-accent] selection:text-white`}>
+      <body className={`${inter.variable} ${interBody.variable} ${roboto.variable} font-[family-name:var(--font-body)] bg-[--color-brand-bg] text-[--color-brand-text] antialiased selection:bg-[--color-brand-accent] selection:text-white`}>
         <NextAuthProvider>
           <AuthProvider>
             <ProductsProvider>

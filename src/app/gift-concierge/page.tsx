@@ -212,20 +212,20 @@ export default function GiftConciergePage() {
   }, []);
 
   const perfectFor = [
-    { title: 'Weddings', value: 'wedding', icon: <Heart size={28} className="text-[#C19A6B]" /> },
-    { title: 'Housewarmings', value: 'housewarming', icon: <Smile size={28} className="text-[#C19A6B]" /> },
-    { title: 'Corporate Events', value: 'corporate', icon: <Briefcase size={28} className="text-[#C19A6B]" /> },
-    { title: 'Festivals', value: 'festival', icon: <Sparkles size={28} className="text-[#C19A6B]" /> },
-    { title: 'Return Gifting', value: 'return', icon: <Gift size={28} className="text-[#C19A6B]" /> }
+    { title: 'Weddings', value: 'wedding', icon: <Heart size={28} className="text-[#D0A967]" /> },
+    { title: 'Housewarmings', value: 'housewarming', icon: <Smile size={28} className="text-[#D0A967]" /> },
+    { title: 'Corporate Events', value: 'corporate', icon: <Briefcase size={28} className="text-[#D0A967]" /> },
+    { title: 'Festivals', value: 'festival', icon: <Sparkles size={28} className="text-[#D0A967]" /> },
+    { title: 'Return Gifting', value: 'return', icon: <Gift size={28} className="text-[#D0A967]" /> }
   ];
 
   const trustCards = [
-    { title: 'Handpicked Premium Gifts', desc: 'Sourced from the finest local copper and brass artisans.', icon: <Award size={32} className="text-[#556B2F]" /> },
-    { title: 'Personalized Recommendations', desc: 'Every suggestion is hand-chosen by our curation experts.', icon: <Sparkles size={32} className="text-[#556B2F]" /> },
-    { title: 'Secure Ordering', desc: 'Enterprise-grade payment gateway for absolute transaction safety.', icon: <ShieldCheck size={32} className="text-[#556B2F]" /> },
-    { title: 'Gift Wrapping Available', desc: 'Luxury packaging featuring silk wraps and handcrafted wood boxes.', icon: <Gift size={32} className="text-[#556B2F]" /> },
-    { title: 'Expert Gift Consultants', desc: 'Direct access to your dedicated gifting consultant at any time.', icon: <Headset size={32} className="text-[#556B2F]" /> },
-    { title: 'Fast Delivery', desc: 'Priority express handling and shipping across major regions.', icon: <PackageCheck size={32} className="text-[#556B2F]" /> }
+    { title: 'Handpicked Premium Gifts', desc: 'Sourced from the finest local copper and brass artisans.', icon: <Award size={32} className="text-[#85171C]" /> },
+    { title: 'Personalized Recommendations', desc: 'Every suggestion is hand-chosen by our curation experts.', icon: <Sparkles size={32} className="text-[#85171C]" /> },
+    { title: 'Secure Ordering', desc: 'Enterprise-grade payment gateway for absolute transaction safety.', icon: <ShieldCheck size={32} className="text-[#85171C]" /> },
+    { title: 'Gift Wrapping Available', desc: 'Luxury packaging featuring silk wraps and handcrafted wood boxes.', icon: <Gift size={32} className="text-[#85171C]" /> },
+    { title: 'Expert Gift Consultants', desc: 'Direct access to your dedicated gifting consultant at any time.', icon: <Headset size={32} className="text-[#85171C]" /> },
+    { title: 'Fast Delivery', desc: 'Priority express handling and shipping across major regions.', icon: <PackageCheck size={32} className="text-[#85171C]" /> }
   ];
 
   const journeySteps = [
@@ -446,7 +446,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F2E8] font-sans relative text-[--color-brand-text]">
+    <div className="min-h-screen bg-[#FAFAFA] font-sans relative text-[--color-brand-text]">
       <Navbar />
 
       {/* GPU Accelerated Keyframe Styles */}
@@ -522,21 +522,21 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
 
       <main>
         {/* PHASE 2 - LUXURY HERO SECTION */}
-        <section className="relative bg-[#F7F2E8] py-20 md:py-32 overflow-hidden border-b border-[#E6DBC4]">
+        <section className="relative bg-[#FAFAFA] py-20 md:py-32 overflow-hidden border-b border-[#E5E5E5]">
           {/* Subtle backgrounds */}
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#C19A6B]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#556B2F]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#D0A967]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#85171C]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 relative">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
               
               {/* Hero Left Content */}
               <div className="lg:col-span-7 text-left animate-fade-up">
-                <span className="inline-block text-[#C19A6B] text-[11px] font-bold tracking-[0.25em] uppercase mb-5 px-3 py-1.5 bg-[#C19A6B]/10 rounded-md">
+                <span className="inline-block text-[#D0A967] text-[11px] font-bold tracking-[0.25em] uppercase mb-5 px-3 py-1.5 bg-[#D0A967]/10 rounded-md">
                   KitchenBay Premium Services
                 </span>
                 
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#4A3B32] mb-6 leading-[1.15] tracking-tight">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#231F20] mb-6 leading-[1.15] tracking-tight">
                   Find the Perfect Gift <br />Without the Stress
                 </h1>
                 
@@ -549,7 +549,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                   <a 
                     id="hero-cta-btn"
                     href="#concierge-form" 
-                    className="w-full sm:w-auto text-center px-8 py-4 bg-[var(--color-brand-accent)] hover:bg-[var(--color-brand-accent-hover)] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 tracking-wider uppercase text-xs focus:ring-4 focus:ring-[#556B2F]/20 outline-none"
+                    className="w-full sm:w-auto text-center px-8 py-4 bg-[var(--color-brand-accent)] hover:bg-[var(--color-brand-accent-hover)] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 tracking-wider uppercase text-xs focus:ring-4 focus:ring-[#85171C]/20 outline-none"
                   >
                     Request Gift Curation
                   </a>
@@ -557,7 +557,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                     href="https://wa.me/917502777766" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="w-full sm:w-auto text-center px-8 py-4 bg-white text-[#4A3B32] border border-[--color-brand-border] font-bold rounded-xl hover:bg-[#F0EAD6]/30 transition-all duration-300 tracking-wider uppercase text-xs flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto text-center px-8 py-4 bg-white text-[#231F20] border border-[--color-brand-border] font-bold rounded-xl hover:bg-[#F6F6F6]/30 transition-all duration-300 tracking-wider uppercase text-xs flex items-center justify-center gap-2"
                   >
                     <MessageCircle size={16} className="text-[#25D366]" />
                     WhatsApp Expert
@@ -567,13 +567,13 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                 {/* Hero Badges */}
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-[--color-brand-border] pt-6 text-sm text-[--color-brand-muted]">
                   <div className="flex items-center gap-1.5">
-                    <Star size={16} className="text-[#C19A6B] fill-[#C19A6B]" />
+                    <Star size={16} className="text-[#D0A967] fill-[#D0A967]" />
                     <span className="font-semibold text-[--color-brand-text]">4.9/5 Rating</span>
                     <span>by 1,500+ buyers</span>
                   </div>
                   <span className="hidden sm:inline text-[--color-brand-border]">•</span>
                   <div className="flex items-center gap-1.5">
-                    <Award size={16} className="text-[#556B2F]" />
+                    <Award size={16} className="text-[#85171C]" />
                     <span>100% Handcrafted Indian Artistry</span>
                   </div>
                 </div>
@@ -592,13 +592,13 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"></div>
                   <div className="absolute bottom-6 left-6 right-6 text-white text-left">
-                    <span className="text-[10px] font-bold tracking-widest text-[#C19A6B] uppercase mb-1 block">The Art of Giving</span>
+                    <span className="text-[10px] font-bold tracking-widest text-[#D0A967] uppercase mb-1 block">The Art of Giving</span>
                     <h3 className="text-xl font-serif font-bold">Heritage Packaging</h3>
                     <p className="text-xs text-white/80 font-light mt-0.5">Handcrafted boxes paired with authentic Indian textiles.</p>
                   </div>
                 </div>
                 {/* Decorative floating badge */}
-                <div className="absolute -bottom-4 -left-4 bg-[#F0EAD6] border border-[#E6DBC4] p-4 rounded-2xl shadow-xl flex items-center gap-3">
+                <div className="absolute -bottom-4 -left-4 bg-[#F6F6F6] border border-[#E5E5E5] p-4 rounded-2xl shadow-xl flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-[var(--color-brand-accent)] flex items-center justify-center text-white">
                     <Sparkles size={20} />
                   </div>
@@ -625,7 +625,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
               const Icon = [Smile, Gift, Briefcase, Star][idx % 4];
               return (
                 <div key={stat.id || idx} className="first:border-none px-2 py-3 flex flex-col items-center">
-                  <Icon size={24} className="text-[#C19A6B] mb-2" />
+                  <Icon size={24} className="text-[#D0A967] mb-2" />
                   <h4 className="text-2xl sm:text-3xl font-bold font-serif text-[--color-brand-text]">{stat.value}</h4>
                   <p className="text-[10px] sm:text-xs font-semibold tracking-wider text-[--color-brand-muted] uppercase mt-0.5">{stat.label}</p>
                 </div>
@@ -638,9 +638,9 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
         <section className="py-20 bg-white border-b border-[--color-brand-border]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <span className="text-[#C19A6B] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Seamless Process</span>
+              <span className="text-[#D0A967] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Seamless Process</span>
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-[--color-brand-text]">How It Works</h2>
-              <div className="w-16 h-0.5 bg-[#C19A6B] mx-auto mt-4"></div>
+              <div className="w-16 h-0.5 bg-[#D0A967] mx-auto mt-4"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
@@ -649,22 +649,22 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                 return (
                   <div 
                     key={idx} 
-                    className="bg-[#F7F2E8] border border-[--color-brand-border] p-8 rounded-2xl relative shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between h-full"
+                    className="bg-[#FAFAFA] border border-[--color-brand-border] p-8 rounded-2xl relative shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between h-full"
                   >
                     <div>
                       {/* Step Number Badge */}
-                      <span className="absolute top-4 right-6 text-5xl font-serif font-bold text-[#C19A6B]/15 select-none transition-colors group-hover:text-[#C19A6B]/35">
+                      <span className="absolute top-4 right-6 text-5xl font-serif font-bold text-[#D0A967]/15 select-none transition-colors group-hover:text-[#D0A967]/35">
                         {step.num}
                       </span>
                       {/* Icon */}
-                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md mb-6 border border-[--color-brand-border] text-[#556B2F] group-hover:bg-[#556B2F] group-hover:text-white transition-all duration-300">
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md mb-6 border border-[--color-brand-border] text-[#85171C] group-hover:bg-[#85171C] group-hover:text-white transition-all duration-300">
                         <Icon size={22} />
                       </div>
                       <h3 className="text-lg font-serif font-bold text-[--color-brand-text] mb-3">{step.title}</h3>
                       <p className="text-sm text-[--color-brand-muted] leading-relaxed">{step.desc}</p>
                     </div>
                     {/* Visual bottom indicator */}
-                    <div className="w-8 h-1 bg-transparent group-hover:bg-[#C19A6B] mt-6 transition-all duration-300 rounded-full"></div>
+                    <div className="w-8 h-1 bg-transparent group-hover:bg-[#D0A967] mt-6 transition-all duration-300 rounded-full"></div>
                   </div>
                 );
               })}
@@ -673,7 +673,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
         </section>
 
         {/* PHASE 8 - PREMIUM UI (COLLECTIONS REDESIGN) */}
-        <section id="collections" className="py-20 bg-[#F7F2E8] relative">
+        <section id="collections" className="py-20 bg-[#FAFAFA] relative">
           {isEditMode && <EditButton onClick={() => handleEditClick('categories', 'Gifting Collections', [
             { key: 'title', label: 'Title' },
             { key: 'desc', label: 'Description' },
@@ -683,9 +683,9 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
           
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <span className="text-[#C19A6B] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Masterfully Crafted</span>
+              <span className="text-[#D0A967] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Masterfully Crafted</span>
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-[--color-brand-text]">Curated Gifting Collections</h2>
-              <div className="w-16 h-0.5 bg-[#C19A6B] mx-auto mt-4"></div>
+              <div className="w-16 h-0.5 bg-[#D0A967] mx-auto mt-4"></div>
             </div>
 
             {isLoadingContent ? (
@@ -727,14 +727,14 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                     </div>
                     <div className="p-6 text-center flex-1 flex flex-col justify-between border-t border-[--color-brand-border]/30">
                       <div>
-                        <h3 className="text-xl font-serif font-bold text-[--color-brand-text] mb-2 group-hover:text-[#556B2F] transition-colors">
+                        <h3 className="text-xl font-serif font-bold text-[--color-brand-text] mb-2 group-hover:text-[#85171C] transition-colors">
                           {cat.title}
                         </h3>
                         <p className="text-sm text-[--color-brand-muted] leading-relaxed">
                           {cat.desc}
                         </p>
                       </div>
-                      <span className="text-xs text-[#556B2F] font-bold uppercase tracking-wider mt-4 inline-flex items-center justify-center gap-1">
+                      <span className="text-xs text-[#85171C] font-bold uppercase tracking-wider mt-4 inline-flex items-center justify-center gap-1">
                         Select Option <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                       </span>
                     </div>
@@ -757,12 +757,12 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
               <div>
-                <span className="text-[#C19A6B] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Premium Gifting</span>
+                <span className="text-[#D0A967] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Premium Gifting</span>
                 <h2 className="text-3xl md:text-4xl font-serif font-bold text-[--color-brand-text]">Signature Gift Hampers</h2>
               </div>
               <button 
                 onClick={() => handleHamperEnquiry('Signature Gift Hampers')}
-                className="inline-flex items-center gap-1.5 text-xs text-[#556B2F] hover:text-[#4A5D23] font-bold uppercase tracking-wider hover:underline"
+                className="inline-flex items-center gap-1.5 text-xs text-[#85171C] hover:text-[#6F1317] font-bold uppercase tracking-wider hover:underline"
               >
                 Customize a Hamper <ChevronRight size={16} />
               </button>
@@ -786,7 +786,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {hampers.map((hamper, idx) => (
-                  <div key={idx} className="bg-[#F7F2E8] rounded-2xl border border-[--color-brand-border] overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+                  <div key={idx} className="bg-[#FAFAFA] rounded-2xl border border-[--color-brand-border] overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col h-full">
                     <div className="relative h-56 bg-gray-100 overflow-hidden">
                       <img 
                         src={hamper.img} 
@@ -805,7 +805,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                       </div>
                       <button 
                         onClick={() => handleHamperEnquiry(hamper.title)}
-                        className="w-full py-2.5 bg-white border border-[--color-brand-border] text-[#556B2F] hover:bg-[#556B2F] hover:text-white transition-all font-bold text-xs uppercase tracking-wider rounded-xl shadow-sm"
+                        className="w-full py-2.5 bg-white border border-[--color-brand-border] text-[#85171C] hover:bg-[#85171C] hover:text-white transition-all font-bold text-xs uppercase tracking-wider rounded-xl shadow-sm"
                       >
                         Enquire Now
                       </button>
@@ -818,12 +818,12 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
         </section>
 
         {/* SECTION - WHO IS THIS PERFECT FOR? */}
-        <section className="py-20 bg-[#F7F2E8]">
+        <section className="py-20 bg-[#FAFAFA]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <span className="text-[#C19A6B] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Occasion Directory</span>
+              <span className="text-[#D0A967] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Occasion Directory</span>
               <h2 className="text-3xl font-serif font-bold text-[--color-brand-text]">Who Is This Perfect For?</h2>
-              <div className="w-16 h-0.5 bg-[#C19A6B] mx-auto mt-4"></div>
+              <div className="w-16 h-0.5 bg-[#D0A967] mx-auto mt-4"></div>
             </div>
             
             <div className="flex flex-wrap justify-center gap-6">
@@ -835,9 +835,9 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                     const formEl = document.getElementById('concierge-form');
                     if (formEl) formEl.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="flex flex-col items-center justify-center p-6 bg-white rounded-2xl border border-[--color-brand-border] w-40 sm:w-44 hover:-translate-y-1.5 hover:shadow-md transition-all duration-300 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C19A6B]"
+                  className="flex flex-col items-center justify-center p-6 bg-white rounded-2xl border border-[--color-brand-border] w-40 sm:w-44 hover:-translate-y-1.5 hover:shadow-md transition-all duration-300 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0A967]"
                 >
-                  <div className="w-12 h-12 bg-[#F7F2E8] group-hover:bg-[#556B2F] group-hover:text-white rounded-full flex items-center justify-center mb-4 transition-all duration-300 text-[#556B2F] shadow-inner">
+                  <div className="w-12 h-12 bg-[#FAFAFA] group-hover:bg-[#85171C] group-hover:text-white rounded-full flex items-center justify-center mb-4 transition-all duration-300 text-[#85171C] shadow-inner">
                     {item.icon}
                   </div>
                   <h4 className="font-serif font-bold text-sm text-[--color-brand-text] text-center">{item.title}</h4>
@@ -852,16 +852,16 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
           <div ref={stepRef} className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center scroll-mt-28">
             
             <div className="mb-12">
-              <span className="text-[#C19A6B] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Bespeak Consultation</span>
+              <span className="text-[#D0A967] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Bespeak Consultation</span>
               <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[--color-brand-text] mb-3">Begin Your Gifting Inquiry</h2>
               <p className="text-sm text-[--color-brand-muted] max-w-lg mx-auto">
                 Share details with our curators to receive a tailored digital catalog of handcrafted Indian heritage gifts.
               </p>
-              <div className="w-16 h-0.5 bg-[#C19A6B] mx-auto mt-4"></div>
+              <div className="w-16 h-0.5 bg-[#D0A967] mx-auto mt-4"></div>
             </div>
 
             {/* FORM CARD */}
-            <div className="bg-[#F7F2E8] border border-[--color-brand-border] rounded-3xl p-6 sm:p-10 md:p-12 shadow-xl relative overflow-hidden text-left">
+            <div className="bg-[#FAFAFA] border border-[--color-brand-border] rounded-3xl p-6 sm:p-10 md:p-12 shadow-xl relative overflow-hidden text-left">
               
               {/* Progress Indicator */}
               <div className="mb-10" aria-label="Form Progress">
@@ -869,9 +869,9 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                   <span>Step {step} of 3</span>
                   <span>{step === 1 ? 'Occasion & Recipient' : step === 2 ? 'Details & Budget' : 'Contact & Submission'}</span>
                 </div>
-                <div className="w-full bg-[#E6DBC4] h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-[#E5E5E5] h-1.5 rounded-full overflow-hidden">
                   <div 
-                    className="bg-[#556B2F] h-full transition-all duration-500 rounded-full"
+                    className="bg-[#85171C] h-full transition-all duration-500 rounded-full"
                     style={{ width: `${(step / 3) * 100}%` }}
                   ></div>
                 </div>
@@ -880,7 +880,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
               {isSubmitted ? (
                 /* Success Screen */
                 <div className="py-8 flex flex-col items-center text-center animate-fade-up">
-                  <div className="w-20 h-20 bg-[#556B2F] rounded-full flex items-center justify-center text-white mb-6 shadow-lg shadow-[#556B2F]/20 animate-bounce">
+                  <div className="w-20 h-20 bg-[#85171C] rounded-full flex items-center justify-center text-white mb-6 shadow-lg shadow-[#85171C]/20 animate-bounce">
                     <CheckCircle2 size={40} />
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[--color-brand-text] mb-3">Inquiry Submitted Successfully</h3>
@@ -905,7 +905,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                         preferredContact: 'WHATSAPP'
                       });
                     }}
-                    className="px-8 py-3 bg-[#556B2F] hover:bg-[#4A5D23] text-white font-bold rounded-xl text-xs uppercase tracking-widest shadow-md transition-colors"
+                    className="px-8 py-3 bg-[#85171C] hover:bg-[#6F1317] text-white font-bold rounded-xl text-xs uppercase tracking-widest shadow-md transition-colors"
                   >
                     Submit Another Inquiry
                   </button>
@@ -940,10 +940,10 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                               type="button"
                               key={opt.value}
                               onClick={() => handleSelectCard('recipient', opt.value)}
-                              className={`p-4 rounded-xl border text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C19A6B] ${
+                              className={`p-4 rounded-xl border text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0A967] ${
                                 formData.recipient === opt.value
-                                  ? 'border-[#556B2F] bg-[#556B2F]/5 ring-2 ring-[#556B2F]/10'
-                                  : 'border-[#E6DBC4] bg-white hover:border-[#C19A6B]'
+                                  ? 'border-[#85171C] bg-[#85171C]/5 ring-2 ring-[#85171C]/10'
+                                  : 'border-[#E5E5E5] bg-white hover:border-[#D0A967]'
                               }`}
                             >
                               <p className="text-sm font-bold text-[--color-brand-text]">{opt.title}</p>
@@ -977,10 +977,10 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                               type="button"
                               key={opt.value}
                               onClick={() => handleSelectCard('occasion', opt.value)}
-                              className={`p-4 rounded-xl border text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C19A6B] ${
+                              className={`p-4 rounded-xl border text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0A967] ${
                                 formData.occasion === opt.value
-                                  ? 'border-[#556B2F] bg-[#556B2F]/5 ring-2 ring-[#556B2F]/10'
-                                  : 'border-[#E6DBC4] bg-white hover:border-[#C19A6B]'
+                                  ? 'border-[#85171C] bg-[#85171C]/5 ring-2 ring-[#85171C]/10'
+                                  : 'border-[#E5E5E5] bg-white hover:border-[#D0A967]'
                               }`}
                             >
                               <p className="text-sm font-bold text-[--color-brand-text]">{opt.title}</p>
@@ -1019,10 +1019,10 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                               type="button"
                               key={opt.value}
                               onClick={() => handleSelectCard('budget', opt.value)}
-                              className={`p-4 rounded-xl border text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C19A6B] ${
+                              className={`p-4 rounded-xl border text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0A967] ${
                                 formData.budget === opt.value
-                                  ? 'border-[#556B2F] bg-[#556B2F]/5 ring-2 ring-[#556B2F]/10'
-                                  : 'border-[#E6DBC4] bg-white hover:border-[#C19A6B]'
+                                  ? 'border-[#85171C] bg-[#85171C]/5 ring-2 ring-[#85171C]/10'
+                                  : 'border-[#E5E5E5] bg-white hover:border-[#D0A967]'
                               }`}
                             >
                               <p className="text-sm font-bold text-[--color-brand-text]">{opt.title}</p>
@@ -1143,8 +1143,8 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                                 onClick={() => setFormData({ ...formData, preferredContact: opt.value as any })}
                                 className={`py-3 px-2 rounded-xl text-xs font-bold text-center border focus:outline-none transition-all ${
                                   formData.preferredContact === opt.value
-                                    ? 'border-[#556B2F] bg-[#556B2F]/5 text-[#556B2F]'
-                                    : 'border-[#E6DBC4] bg-white hover:border-[#C19A6B]'
+                                    ? 'border-[#85171C] bg-[#85171C]/5 text-[#85171C]'
+                                    : 'border-[#E5E5E5] bg-white hover:border-[#D0A967]'
                                 }`}
                               >
                                 {opt.label}
@@ -1156,13 +1156,13 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
 
                       <div className="pt-4 border-t border-[--color-brand-border]/60 flex items-center justify-between text-xs text-[--color-brand-muted] gap-3">
                         <span className="flex items-center gap-1">
-                          <ShieldCheck size={14} className="text-[#556B2F]" /> No obligations
+                          <ShieldCheck size={14} className="text-[#85171C]" /> No obligations
                         </span>
                         <span className="flex items-center gap-1">
-                          <Check size={14} className="text-[#556B2F]" /> Free digital catalog
+                          <Check size={14} className="text-[#85171C]" /> Free digital catalog
                         </span>
                         <span className="flex items-center gap-1">
-                          <CheckCircle2 size={14} className="text-[#556B2F]" /> Secure processing
+                          <CheckCircle2 size={14} className="text-[#85171C]" /> Secure processing
                         </span>
                       </div>
 
@@ -1175,7 +1175,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                       <button
                         type="button"
                         onClick={handleBack}
-                        className="px-6 py-3 bg-white border border-[--color-brand-border] hover:bg-[#F0EAD6]/30 text-[--color-brand-text] font-bold text-xs uppercase tracking-wider rounded-xl transition-colors outline-none"
+                        className="px-6 py-3 bg-white border border-[--color-brand-border] hover:bg-[#F6F6F6]/30 text-[--color-brand-text] font-bold text-xs uppercase tracking-wider rounded-xl transition-colors outline-none"
                       >
                         Back
                       </button>
@@ -1216,12 +1216,12 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
         </section>
 
         {/* PHASE 5 - TRUST SECTION */}
-        <section className="py-20 bg-[#F7F2E8] border-b border-[--color-brand-border]">
+        <section className="py-20 bg-[#FAFAFA] border-b border-[--color-brand-border]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <span className="text-[#C19A6B] text-xs font-bold tracking-[0.2em] uppercase block mb-3">KitchenBay Standards</span>
+              <span className="text-[#D0A967] text-xs font-bold tracking-[0.2em] uppercase block mb-3">KitchenBay Standards</span>
               <h2 className="text-3xl font-serif font-bold text-[--color-brand-text]">Our Gifting Guarantees</h2>
-              <div className="w-16 h-0.5 bg-[#C19A6B] mx-auto mt-4"></div>
+              <div className="w-16 h-0.5 bg-[#D0A967] mx-auto mt-4"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -1230,7 +1230,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                   key={idx} 
                   className="bg-white p-8 rounded-2xl border border-[--color-brand-border] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex items-start gap-5 group"
                 >
-                  <div className="p-3 bg-[#F7F2E8] rounded-xl text-[#556B2F] shrink-0 transition-colors group-hover:bg-[#556B2F] group-hover:text-white">
+                  <div className="p-3 bg-[#FAFAFA] rounded-xl text-[#85171C] shrink-0 transition-colors group-hover:bg-[#85171C] group-hover:text-white">
                     {trust.icon}
                   </div>
                   <div>
@@ -1249,12 +1249,12 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               
               {/* Left Score Card */}
-              <div className="lg:col-span-4 bg-[#F7F2E8] border border-[--color-brand-border] p-8 rounded-3xl text-center shadow-inner">
-                <span className="text-[10px] font-bold tracking-widest text-[#C19A6B] uppercase mb-1 block">Customer Index</span>
+              <div className="lg:col-span-4 bg-[#FAFAFA] border border-[--color-brand-border] p-8 rounded-3xl text-center shadow-inner">
+                <span className="text-[10px] font-bold tracking-widest text-[#D0A967] uppercase mb-1 block">Customer Index</span>
                 <p className="text-5xl font-serif font-bold text-[--color-brand-text] mb-2">4.9/5</p>
-                <div className="flex justify-center gap-1 mb-4 text-[#C19A6B]">
+                <div className="flex justify-center gap-1 mb-4 text-[#D0A967]">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} size={20} className="fill-[#C19A6B]" />
+                    <Star key={s} size={20} className="fill-[#D0A967]" />
                   ))}
                 </div>
                 <p className="text-sm font-semibold text-[--color-brand-text]">92.7% Satisfaction Rate</p>
@@ -1275,7 +1275,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
               {/* Right Testimonials */}
               <div className="lg:col-span-8 space-y-6 text-left">
                 <div className="mb-6">
-                  <span className="text-[#C19A6B] text-xs font-bold tracking-[0.2em] uppercase block mb-1">Real Reviews</span>
+                  <span className="text-[#D0A967] text-xs font-bold tracking-[0.2em] uppercase block mb-1">Real Reviews</span>
                   <h3 className="text-2xl font-serif font-bold text-[--color-brand-text]">What Our Patrons Say</h3>
                 </div>
 
@@ -1292,10 +1292,10 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                       quote: 'Choosing return gifts for 200 wedding guests was stress-free. The concierge helped us select beautiful traditional brass diyas, wrapped them in pure silk, and delivered directly to the venue.'
                     }
                   ].map((review, i) => (
-                    <div key={i} className="bg-[#F7F2E8]/40 border border-[--color-brand-border] p-6 rounded-2xl relative">
-                      <div className="flex gap-0.5 text-[#C19A6B] mb-3">
+                    <div key={i} className="bg-[#FAFAFA]/40 border border-[--color-brand-border] p-6 rounded-2xl relative">
+                      <div className="flex gap-0.5 text-[#D0A967] mb-3">
                         {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} size={14} className="fill-[#C19A6B]" />
+                          <Star key={s} size={14} className="fill-[#D0A967]" />
                         ))}
                       </div>
                       <p className="text-xs text-[--color-brand-muted] italic leading-relaxed mb-4">
@@ -1321,7 +1321,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
               
               {/* Left Content */}
               <div className="text-left">
-                <span className="text-[#C19A6B] text-xs font-bold tracking-[0.2em] uppercase mb-4 block">The Presentation</span>
+                <span className="text-[#D0A967] text-xs font-bold tracking-[0.2em] uppercase mb-4 block">The Presentation</span>
                 <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-6 leading-tight">
                   Premium Packaging <br />Options
                 </h2>
@@ -1347,7 +1347,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                 
                 <a 
                   href="#concierge-form" 
-                  className="inline-block px-6 py-3.5 bg-white text-[var(--color-brand-top-bar)] hover:bg-[#F7F2E8] font-bold rounded-xl transition-all uppercase tracking-wider text-xs shadow-md"
+                  className="inline-block px-6 py-3.5 bg-white text-[var(--color-brand-top-bar)] hover:bg-[#FAFAFA] font-bold rounded-xl transition-all uppercase tracking-wider text-xs shadow-md"
                 >
                   Request Packaging Info
                 </a>
@@ -1397,9 +1397,9 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
         <section className="py-20 bg-white border-b border-[--color-brand-border]">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <span className="text-[#C19A6B] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Common Questions</span>
+              <span className="text-[#D0A967] text-xs font-bold tracking-[0.2em] uppercase block mb-3">Common Questions</span>
               <h2 className="text-3xl font-serif font-bold text-[--color-brand-text]">Frequently Asked Questions</h2>
-              <div className="w-16 h-0.5 bg-[#C19A6B] mx-auto mt-4"></div>
+              <div className="w-16 h-0.5 bg-[#D0A967] mx-auto mt-4"></div>
             </div>
 
             <div className="space-y-4">
@@ -1419,7 +1419,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                         }
                       }}
                       aria-expanded={isOpen}
-                      className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C19A6B] bg-[var(--color-brand-bg)] hover:brightness-95 transition-colors"
+                      className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0A967] bg-[var(--color-brand-bg)] hover:brightness-95 transition-colors"
                     >
                       <span className="font-serif font-bold text-sm sm:text-base text-[--color-brand-text]">
                         {faq.q}

@@ -298,7 +298,7 @@ export default function Navbar() {
 
                 {/* Minimal Dropdown Menu */}
                 {activeMenu === cat.name && cat.id !== 'gifting' && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-[#F7F2E8] shadow-2xl border border-[--color-brand-border] py-3 min-w-[280px] z-50 rounded-sm animate-in fade-in zoom-in-95 duration-200">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-[#FAFAFA] shadow-2xl border border-[--color-brand-border] py-3 min-w-[280px] z-50 rounded-sm animate-in fade-in zoom-in-95 duration-200">
                     <ul className="flex flex-col">
                       {dynamicSubcategories
                         .filter(sub => sub.category === cat.id)
@@ -510,7 +510,7 @@ export default function Navbar() {
             <Link
               key={cat.id}
               href={cat.href}
-              className="text-[11px] font-extrabold uppercase tracking-widest text-[--color-brand-text] hover:text-[--color-brand-accent] flex items-center gap-1.5 whitespace-nowrap bg-[#F7F2E8] px-4 py-2 rounded-full border border-[#E6DBC4]/60 shadow-sm transition-colors"
+              className="text-[11px] font-extrabold uppercase tracking-widest text-[--color-brand-text] hover:text-[--color-brand-accent] flex items-center gap-1.5 whitespace-nowrap bg-[#FAFAFA] px-4 py-2 rounded-full border border-[#E5E5E5]/60 shadow-sm transition-colors"
             >
               {cat.name}
               {cat.id === 'gifting' && (

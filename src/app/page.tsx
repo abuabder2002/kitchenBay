@@ -297,6 +297,10 @@ export default function HomePage() {
     return homeProducts.slice(8, 12);
   }, [homeProducts, manualNewArrivals]);
 
+  // Always the most recently uploaded products (API returns createdAt desc) —
+  // unaffected by CMS curation, so it truly reflects what was just added.
+  const recentlyAdded = useMemo(() => homeProducts.slice(0, 8), [homeProducts]);
+
   const recommendedProducts = useMemo(() => {
     if (manualRecommended.length > 0) {
       const validProducts = manualRecommended.map(m => homeProducts.find(p => `/products/${p.id}` === m.productId)).filter(Boolean) as any[];
@@ -470,6 +474,28 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* -- RECENTLY ADDED ------------------------------------------------ */}
+        {recentlyAdded.length > 0 && (
+          <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-[--color-brand-card]/30 relative group">
+            <div className="flex items-end justify-between mb-16">
+              <div>
+                <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Fresh In Stock</span>
+                <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Recently Added</h2>
+              </div>
+              <Link href="/products?sortBy=default" className="border-b border-[--color-brand-text] pb-1 text-sm font-bold text-[--color-brand-text] uppercase tracking-widest hover:text-[--color-brand-accent] hover:border-[--color-brand-accent] transition-colors hidden md:block">
+                Shop All
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 sm:gap-x-8 gap-y-6 sm:gap-y-12">
+              {recentlyAdded.map((product, idx) => (
+                <ScrollReveal key={`recent-${product.id}`} direction="up" duration={600} delay={idx * 100} className="w-full">
+                  <ProductCard product={product} />
+                </ScrollReveal>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* -- CATEGORY SHOWCASE ------------------------------------------- */}
         <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('categories', 'Categories', [
@@ -506,7 +532,7 @@ export default function HomePage() {
 
 
         {/* -- FULL WIDTH PROMO BAR ---------------------------------------- */}
-        <section className="bg-[#E8F5E9] text-black py-4 relative">
+        <section className="bg-[#F9F2E4] text-black py-4 relative">
           <div className="max-w-[1600px] mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
               <span className="text-xl sm:text-2xl italic font-[family-name:var(--font-heading)] font-medium">Now Serving:</span>
@@ -691,12 +717,12 @@ export default function HomePage() {
             { key: 'productImg', label: 'Product Image', type: 'image' }
           ], activeTestimonials)} label="Edit Testimonials" />}
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_2.5fr] gap-8 overflow-hidden">
-            <ScrollReveal direction="left" duration={800} className="bg-[#F8F9FE] rounded-sm p-12 flex flex-col justify-center relative overflow-hidden border border-[#EBEFFA] w-full">
+            <ScrollReveal direction="left" duration={800} className="bg-[#FDF8F8] rounded-sm p-12 flex flex-col justify-center relative overflow-hidden border border-[#E8D4D5] w-full">
               <Quote size={120} className="absolute top-[-20px] left-[-20px] text-blue-50 opacity-50" />
-              <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[#1E3A8A] mb-4 relative z-10 leading-tight">
+              <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[#85171C] mb-4 relative z-10 leading-tight">
                 See Why<br />They Love Us
               </h2>
-              <p className="text-sm font-semibold uppercase tracking-widest text-[#475569] relative z-10">Trusted By Over 500+ Happy Customers</p>
+              <p className="text-sm font-semibold uppercase tracking-widest text-[#6B6B6B] relative z-10">Trusted By Over 500+ Happy Customers</p>
               <Quote size={120} className="absolute bottom-[-20px] right-[-20px] text-blue-50 opacity-50 rotate-180" />
             </ScrollReveal>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -744,14 +770,14 @@ export default function HomePage() {
         <section className="border-t border-[--color-brand-border] bg-white py-12 mt-16">
           <div className="max-w-[1400px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-10 divide-y md:divide-y-0 md:divide-x divide-[--color-brand-border]">
             <div className="flex items-center gap-5 flex-1 justify-center w-full">
-              <Truck size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
+              <Truck size={42} className="text-[#85171C] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
                 <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">500+</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Happy Deliveries</p>
               </div>
             </div>
             <div className="flex items-center gap-5 flex-1 justify-center w-full pt-10 md:pt-0">
-              <RotateCcw size={42} className="text-[#3B82F6] shrink-0" strokeWidth={1.5} />
+              <RotateCcw size={42} className="text-[#85171C] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
                 <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">48-Hour Easy Return Policy</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Return Policy</p>
@@ -862,7 +888,7 @@ export default function HomePage() {
             >
               <X size={24} />
             </button>
-            <div className="relative h-48 w-full bg-[#E8F5E9]">
+            <div className="relative h-48 w-full bg-[#F9F2E4]">
               <Image src="/images/home/WhatsApp Image 2026-05-31 at 11.37.08 AM.jpeg" alt="Welcome Offer" fill sizes="(max-width: 480px) 100vw, 448px" className="object-cover opacity-80 mix-blend-multiply" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
                 <h3 className="text-3xl font-bold text-white font-[family-name:var(--font-heading)]">Welcome to KitchenBay!</h3>
