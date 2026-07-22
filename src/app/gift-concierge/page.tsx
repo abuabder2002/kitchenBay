@@ -220,12 +220,12 @@ export default function GiftConciergePage() {
   ];
 
   const trustCards = [
-    { title: 'Handpicked Premium Gifts', desc: 'Sourced from the finest local copper and brass artisans.', icon: <Award size={32} className="text-[#85171C]" /> },
-    { title: 'Personalized Recommendations', desc: 'Every suggestion is hand-chosen by our curation experts.', icon: <Sparkles size={32} className="text-[#85171C]" /> },
-    { title: 'Secure Ordering', desc: 'Enterprise-grade payment gateway for absolute transaction safety.', icon: <ShieldCheck size={32} className="text-[#85171C]" /> },
-    { title: 'Gift Wrapping Available', desc: 'Luxury packaging featuring silk wraps and handcrafted wood boxes.', icon: <Gift size={32} className="text-[#85171C]" /> },
-    { title: 'Expert Gift Consultants', desc: 'Direct access to your dedicated gifting consultant at any time.', icon: <Headset size={32} className="text-[#85171C]" /> },
-    { title: 'Fast Delivery', desc: 'Priority express handling and shipping across major regions.', icon: <PackageCheck size={32} className="text-[#85171C]" /> }
+    { title: 'Handpicked Premium Gifts', desc: 'Sourced from the finest local copper and brass artisans.', icon: <Award size={32} className="text-[#0333B9]" /> },
+    { title: 'Personalized Recommendations', desc: 'Every suggestion is hand-chosen by our curation experts.', icon: <Sparkles size={32} className="text-[#0333B9]" /> },
+    { title: 'Secure Ordering', desc: 'Enterprise-grade payment gateway for absolute transaction safety.', icon: <ShieldCheck size={32} className="text-[#0333B9]" /> },
+    { title: 'Gift Wrapping Available', desc: 'Luxury packaging featuring silk wraps and handcrafted wood boxes.', icon: <Gift size={32} className="text-[#0333B9]" /> },
+    { title: 'Expert Gift Consultants', desc: 'Direct access to your dedicated gifting consultant at any time.', icon: <Headset size={32} className="text-[#0333B9]" /> },
+    { title: 'Fast Delivery', desc: 'Priority express handling and shipping across major regions.', icon: <PackageCheck size={32} className="text-[#0333B9]" /> }
   ];
 
   const journeySteps = [
@@ -525,7 +525,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
         <section className="relative bg-[#FAFAFA] py-20 md:py-32 overflow-hidden border-b border-[#E5E5E5]">
           {/* Subtle backgrounds */}
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#D0A967]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#85171C]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#0333B9]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 relative">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
@@ -549,7 +549,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                   <a 
                     id="hero-cta-btn"
                     href="#concierge-form" 
-                    className="w-full sm:w-auto text-center px-8 py-4 bg-[var(--color-brand-accent)] hover:bg-[var(--color-brand-accent-hover)] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 tracking-wider uppercase text-xs focus:ring-4 focus:ring-[#85171C]/20 outline-none"
+                    className="w-full sm:w-auto text-center px-8 py-4 bg-[var(--color-brand-accent)] hover:bg-[var(--color-brand-accent-hover)] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 tracking-wider uppercase text-xs focus:ring-4 focus:ring-[#0333B9]/20 outline-none"
                   >
                     Request Gift Curation
                   </a>
@@ -573,7 +573,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                   </div>
                   <span className="hidden sm:inline text-[--color-brand-border]">•</span>
                   <div className="flex items-center gap-1.5">
-                    <Award size={16} className="text-[#85171C]" />
+                    <Award size={16} className="text-[#0333B9]" />
                     <span>100% Handcrafted Indian Artistry</span>
                   </div>
                 </div>
@@ -657,7 +657,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                         {step.num}
                       </span>
                       {/* Icon */}
-                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md mb-6 border border-[--color-brand-border] text-[#85171C] group-hover:bg-[#85171C] group-hover:text-white transition-all duration-300">
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md mb-6 border border-[--color-brand-border] text-[#0333B9] group-hover:bg-[#0333B9] group-hover:text-white transition-all duration-300">
                         <Icon size={22} />
                       </div>
                       <h3 className="text-lg font-serif font-bold text-[--color-brand-text] mb-3">{step.title}</h3>
@@ -727,14 +727,14 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                     </div>
                     <div className="p-6 text-center flex-1 flex flex-col justify-between border-t border-[--color-brand-border]/30">
                       <div>
-                        <h3 className="text-xl font-serif font-bold text-[--color-brand-text] mb-2 group-hover:text-[#85171C] transition-colors">
+                        <h3 className="text-xl font-serif font-bold text-[--color-brand-text] mb-2 group-hover:text-[#0333B9] transition-colors">
                           {cat.title}
                         </h3>
                         <p className="text-sm text-[--color-brand-muted] leading-relaxed">
                           {cat.desc}
                         </p>
                       </div>
-                      <span className="text-xs text-[#85171C] font-bold uppercase tracking-wider mt-4 inline-flex items-center justify-center gap-1">
+                      <span className="text-xs text-[#0333B9] font-bold uppercase tracking-wider mt-4 inline-flex items-center justify-center gap-1">
                         Select Option <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                       </span>
                     </div>
@@ -762,7 +762,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
               </div>
               <button 
                 onClick={() => handleHamperEnquiry('Signature Gift Hampers')}
-                className="inline-flex items-center gap-1.5 text-xs text-[#85171C] hover:text-[#6F1317] font-bold uppercase tracking-wider hover:underline"
+                className="inline-flex items-center gap-1.5 text-xs text-[#0333B9] hover:text-[#02278A] font-bold uppercase tracking-wider hover:underline"
               >
                 Customize a Hamper <ChevronRight size={16} />
               </button>
@@ -805,7 +805,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                       </div>
                       <button 
                         onClick={() => handleHamperEnquiry(hamper.title)}
-                        className="w-full py-2.5 bg-white border border-[--color-brand-border] text-[#85171C] hover:bg-[#85171C] hover:text-white transition-all font-bold text-xs uppercase tracking-wider rounded-xl shadow-sm"
+                        className="w-full py-2.5 bg-white border border-[--color-brand-border] text-[#0333B9] hover:bg-[#0333B9] hover:text-white transition-all font-bold text-xs uppercase tracking-wider rounded-xl shadow-sm"
                       >
                         Enquire Now
                       </button>
@@ -837,7 +837,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                   }}
                   className="flex flex-col items-center justify-center p-6 bg-white rounded-2xl border border-[--color-brand-border] w-40 sm:w-44 hover:-translate-y-1.5 hover:shadow-md transition-all duration-300 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0A967]"
                 >
-                  <div className="w-12 h-12 bg-[#FAFAFA] group-hover:bg-[#85171C] group-hover:text-white rounded-full flex items-center justify-center mb-4 transition-all duration-300 text-[#85171C] shadow-inner">
+                  <div className="w-12 h-12 bg-[#FAFAFA] group-hover:bg-[#0333B9] group-hover:text-white rounded-full flex items-center justify-center mb-4 transition-all duration-300 text-[#0333B9] shadow-inner">
                     {item.icon}
                   </div>
                   <h4 className="font-serif font-bold text-sm text-[--color-brand-text] text-center">{item.title}</h4>
@@ -871,7 +871,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                 </div>
                 <div className="w-full bg-[#E5E5E5] h-1.5 rounded-full overflow-hidden">
                   <div 
-                    className="bg-[#85171C] h-full transition-all duration-500 rounded-full"
+                    className="bg-[#0333B9] h-full transition-all duration-500 rounded-full"
                     style={{ width: `${(step / 3) * 100}%` }}
                   ></div>
                 </div>
@@ -880,7 +880,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
               {isSubmitted ? (
                 /* Success Screen */
                 <div className="py-8 flex flex-col items-center text-center animate-fade-up">
-                  <div className="w-20 h-20 bg-[#85171C] rounded-full flex items-center justify-center text-white mb-6 shadow-lg shadow-[#85171C]/20 animate-bounce">
+                  <div className="w-20 h-20 bg-[#0333B9] rounded-full flex items-center justify-center text-white mb-6 shadow-lg shadow-[#0333B9]/20 animate-bounce">
                     <CheckCircle2 size={40} />
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[--color-brand-text] mb-3">Inquiry Submitted Successfully</h3>
@@ -905,7 +905,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                         preferredContact: 'WHATSAPP'
                       });
                     }}
-                    className="px-8 py-3 bg-[#85171C] hover:bg-[#6F1317] text-white font-bold rounded-xl text-xs uppercase tracking-widest shadow-md transition-colors"
+                    className="px-8 py-3 bg-[#0333B9] hover:bg-[#02278A] text-white font-bold rounded-xl text-xs uppercase tracking-widest shadow-md transition-colors"
                   >
                     Submit Another Inquiry
                   </button>
@@ -942,7 +942,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                               onClick={() => handleSelectCard('recipient', opt.value)}
                               className={`p-4 rounded-xl border text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0A967] ${
                                 formData.recipient === opt.value
-                                  ? 'border-[#85171C] bg-[#85171C]/5 ring-2 ring-[#85171C]/10'
+                                  ? 'border-[#0333B9] bg-[#0333B9]/5 ring-2 ring-[#0333B9]/10'
                                   : 'border-[#E5E5E5] bg-white hover:border-[#D0A967]'
                               }`}
                             >
@@ -979,7 +979,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                               onClick={() => handleSelectCard('occasion', opt.value)}
                               className={`p-4 rounded-xl border text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0A967] ${
                                 formData.occasion === opt.value
-                                  ? 'border-[#85171C] bg-[#85171C]/5 ring-2 ring-[#85171C]/10'
+                                  ? 'border-[#0333B9] bg-[#0333B9]/5 ring-2 ring-[#0333B9]/10'
                                   : 'border-[#E5E5E5] bg-white hover:border-[#D0A967]'
                               }`}
                             >
@@ -1021,7 +1021,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                               onClick={() => handleSelectCard('budget', opt.value)}
                               className={`p-4 rounded-xl border text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0A967] ${
                                 formData.budget === opt.value
-                                  ? 'border-[#85171C] bg-[#85171C]/5 ring-2 ring-[#85171C]/10'
+                                  ? 'border-[#0333B9] bg-[#0333B9]/5 ring-2 ring-[#0333B9]/10'
                                   : 'border-[#E5E5E5] bg-white hover:border-[#D0A967]'
                               }`}
                             >
@@ -1143,7 +1143,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                                 onClick={() => setFormData({ ...formData, preferredContact: opt.value as any })}
                                 className={`py-3 px-2 rounded-xl text-xs font-bold text-center border focus:outline-none transition-all ${
                                   formData.preferredContact === opt.value
-                                    ? 'border-[#85171C] bg-[#85171C]/5 text-[#85171C]'
+                                    ? 'border-[#0333B9] bg-[#0333B9]/5 text-[#0333B9]'
                                     : 'border-[#E5E5E5] bg-white hover:border-[#D0A967]'
                                 }`}
                               >
@@ -1156,13 +1156,13 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
 
                       <div className="pt-4 border-t border-[--color-brand-border]/60 flex items-center justify-between text-xs text-[--color-brand-muted] gap-3">
                         <span className="flex items-center gap-1">
-                          <ShieldCheck size={14} className="text-[#85171C]" /> No obligations
+                          <ShieldCheck size={14} className="text-[#0333B9]" /> No obligations
                         </span>
                         <span className="flex items-center gap-1">
-                          <Check size={14} className="text-[#85171C]" /> Free digital catalog
+                          <Check size={14} className="text-[#0333B9]" /> Free digital catalog
                         </span>
                         <span className="flex items-center gap-1">
-                          <CheckCircle2 size={14} className="text-[#85171C]" /> Secure processing
+                          <CheckCircle2 size={14} className="text-[#0333B9]" /> Secure processing
                         </span>
                       </div>
 
@@ -1230,7 +1230,7 @@ Submitted on: ${new Date().toLocaleString('en-IN')}
                   key={idx} 
                   className="bg-white p-8 rounded-2xl border border-[--color-brand-border] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex items-start gap-5 group"
                 >
-                  <div className="p-3 bg-[#FAFAFA] rounded-xl text-[#85171C] shrink-0 transition-colors group-hover:bg-[#85171C] group-hover:text-white">
+                  <div className="p-3 bg-[#FAFAFA] rounded-xl text-[#0333B9] shrink-0 transition-colors group-hover:bg-[#0333B9] group-hover:text-white">
                     {trust.icon}
                   </div>
                   <div>

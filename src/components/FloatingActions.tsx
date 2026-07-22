@@ -64,7 +64,7 @@ function ScrollToTopButton() {
           cy={size / 2}
           r={radius}
           fill="transparent"
-          stroke="#85171C"
+          stroke="#0333B9"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -73,7 +73,7 @@ function ScrollToTopButton() {
         />
       </svg>
       {/* Inner icon */}
-      <div className="relative z-10 w-9 h-9 bg-[#231F20] group-hover:bg-[#85171C] rounded-full flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-110">
+      <div className="relative z-10 w-9 h-9 bg-[#231F20] group-hover:bg-[#0333B9] rounded-full flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-110">
         <ArrowUp size={18} className="text-white group-hover:-translate-y-0.5 transition-transform duration-300" />
       </div>
     </button>
@@ -152,7 +152,7 @@ export function StickyOfferRibbon() {
         show ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
       }`}
     >
-      <div className="bg-gradient-to-r from-[#231F20] via-[#85171C] to-[#231F20] text-white flex items-center justify-center gap-3 py-2.5 px-4 text-xs sm:text-sm font-bold tracking-wide relative overflow-hidden">
+      <div className="bg-gradient-to-r from-[#231F20] via-[#0333B9] to-[#231F20] text-white flex items-center justify-center gap-3 py-2.5 px-4 text-xs sm:text-sm font-bold tracking-wide relative overflow-hidden">
         {/* shimmer effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_ease-in-out_infinite]" />
         <span className="bg-[#D0A967] text-[#231F20] text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest shrink-0">

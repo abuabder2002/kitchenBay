@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-accent: #85171C;          /* Deep Maroon — primary */
-  --color-brand-accent-hover: #6F1317;    /* Darker maroon — hover */
+  --color-brand-accent: #0333B9;          /* Logo Blue — primary */
+  --color-brand-accent-hover: #02278A;    /* Darker logo blue — hover */
   --color-brand-accent-yellow: #D0A967;   /* Gold — accent */
   --color-brand-accent-yellow-hover: #B8925A;
   --color-brand-bg: #FFFFFF;              /* White */
@@ -13,26 +13,26 @@
   --color-brand-success: #2E7D32;         /* Green — in stock */
   --color-brand-top-bar: #231F20;         /* Charcoal top bar */
 
-  /* Accent Palette — maroon-tinted neutrals for badges, cards, buttons.
+  /* Accent Palette — logo-blue-tinted neutrals for badges, cards, buttons.
      Names kept for compatibility with existing components. */
-  --color-brand-blue-lightest: #FDF8F8;   /* Nearly white — backgrounds */
-  --color-brand-blue-light: #FAEFEF;      /* Soft maroon tint — badges, tints */
-  --color-brand-blue-mid: #E8D4D5;        /* Muted rose — borders, dividers */
-  --color-brand-blue-icon: #C9959A;       /* Icon hover rings */
-  --color-brand-blue-text: #85171C;       /* Badge text, labels — maroon */
-  
-  /* Override Tailwind's default blues to match our maroon brand */
-  --color-blue-50: #FDF8F8;
-  --color-blue-100: #FAEFEF;
-  --color-blue-200: #E8D4D5;
-  --color-blue-300: #D4AFB2;
-  --color-blue-400: #C08A8E;
-  --color-blue-500: #A54A50;
-  --color-blue-600: #85171C; /* Accent Maroon */
-  --color-blue-700: #6F1317;
-  --color-blue-800: #5A0F13;
-  --color-blue-900: #231F20; /* Charcoal */
-  --color-blue-950: #171415;
+  --color-brand-blue-lightest: #F5F7FF;   /* Nearly white — backgrounds */
+  --color-brand-blue-light: #E8ECFF;      /* Soft blue tint — badges, tints */
+  --color-brand-blue-mid: #C7D0F5;        /* Muted blue — borders, dividers */
+  --color-brand-blue-icon: #6B7FD1;       /* Icon hover rings */
+  --color-brand-blue-text: #0333B9;       /* Badge text, labels — logo blue */
+
+  /* Override Tailwind's default blues to match our logo-blue brand */
+  --color-blue-50: #F5F7FF;
+  --color-blue-100: #E8ECFF;
+  --color-blue-200: #C7D0F5;
+  --color-blue-300: #9FADE8;
+  --color-blue-400: #6B7FD1;
+  --color-blue-500: #3450C7;
+  --color-blue-600: #0333B9; /* Accent Logo Blue */
+  --color-blue-700: #02278A;
+  --color-blue-800: #021D66;
+  --color-blue-900: #0A1550; /* Deep Navy */
+  --color-blue-950: #060B30;
 
   /* Override Tailwind's default yellows to match our brand gold */
   --color-yellow-50: #FDFBF6;

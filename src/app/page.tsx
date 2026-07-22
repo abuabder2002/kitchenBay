@@ -38,6 +38,15 @@ const defaultMaterials = [
   { name: 'Soapstone', desc: 'Slow cooking for perfect flavor', img: '/images/home/material_soapstone.png', link: '' }
 ];
 
+const defaultExploreCollections = [
+  { name: 'Cast Iron', img: '/images/home/material_cast_iron.png', link: '/products?material=Cast%20Iron' },
+  { name: 'Pure Brass', img: '/images/home/material_pure_brass.png', link: '/products?material=Pure%20Brass' },
+  { name: 'Copper', img: '/images/home/material_copper.png', link: '/products?material=Copper' },
+  { name: 'Soapstone', img: '/images/home/material_soapstone.png', link: '/products?material=Soapstone' },
+  { name: 'Dining', img: '/images/home/modern_luxury_dining_card.png', link: '/products?category=dining' },
+  { name: 'Décor', img: '/images/home/modern_luxury_decor_card.png', link: '/products?category=decor' },
+];
+
 const defaultJournalEntries = [
   { title: 'The Lost Art of Hand-Hammered Cookware', category: 'Craftsmanship', img: '/artisan_hammering_copper.png' },
   { title: 'Why Traditional Brass Adds Positive Energy', category: 'Heritage', img: '/artisan_crafting_brass.png' },
@@ -144,6 +153,7 @@ export default function HomePage() {
   const [promoSlides, setPromoSlides] = useState(defaultPromoSlides);
   const [categories, setCategories] = useState(defaultCategories);
   const [materials, setMaterials] = useState(defaultMaterials);
+  const [exploreCollections, setExploreCollections] = useState(defaultExploreCollections);
   const [journalEntries, setJournalEntries] = useState(defaultJournalEntries);
   const [testimonials, setTestimonials] = useState(defaultTestimonials);
   const [heritage, setHeritage] = useState(defaultHeritage);
@@ -176,6 +186,7 @@ export default function HomePage() {
             setPromoSlides(getParsed('promoSlides', defaultPromoSlides));
             setCategories(getParsed('categories', defaultCategories));
             setMaterials(getParsed('materials', defaultMaterials));
+            setExploreCollections(getParsed('exploreCollections', defaultExploreCollections));
             setJournalEntries(getParsed('journalEntries', defaultJournalEntries));
             setTestimonials(getParsed('testimonials', defaultTestimonials));
             setHeritage(getParsed('heritage', defaultHeritage));
@@ -313,6 +324,7 @@ export default function HomePage() {
   const activeSecondaryBanners = secondaryBanners && secondaryBanners.length > 0 ? secondaryBanners : defaultSecondaryBanners;
   const activeCategories = categories && categories.length > 0 ? categories : defaultCategories;
   const activeMaterials = materials && materials.length > 0 ? materials : defaultMaterials;
+  const activeExploreCollections = exploreCollections && exploreCollections.length > 0 ? exploreCollections : defaultExploreCollections;
   const activeJournalEntries = journalEntries && journalEntries.length > 0 ? journalEntries : defaultJournalEntries;
   const activeTestimonials = testimonials && testimonials.length > 0 ? testimonials : defaultTestimonials;
   const activeHeritage = heritage && heritage.length > 0 ? heritage : defaultHeritage;
@@ -420,22 +432,20 @@ export default function HomePage() {
 
         {/* -- MOBILE QUICK CATEGORY STORIES (Instagram-style Stories) ---------------- */}
         {mounted && (
-          <section className="block md:hidden bg-white py-6 border-b border-gray-100 overflow-x-auto scrollbar-hide">
+          <section className="block md:hidden bg-white py-6 border-b border-gray-100 overflow-x-auto scrollbar-hide relative">
+            {isEditMode && <EditButton onClick={() => handleEditClick('exploreCollections', 'Explore Collections', [
+              { key: 'name', label: 'Name' },
+              { key: 'img', label: 'Image', type: 'image' },
+              { key: 'link', label: 'Link URL', type: 'product-link' }
+            ], activeExploreCollections)} label="Edit Explore Collections" />}
             <div className="max-w-[1600px] mx-auto">
               <span className="text-[10px] font-extrabold tracking-[0.2em] uppercase text-[--color-brand-muted] block mb-4 px-4">Explore Collections</span>
               <div className="flex gap-5 px-4 min-w-max justify-start overflow-x-auto scrollbar-hide pb-2">
-                {[
-                  { name: 'Cast Iron', img: '/images/home/material_cast_iron.png', href: '/products?material=Cast%20Iron' },
-                  { name: 'Pure Brass', img: '/images/home/material_pure_brass.png', href: '/products?material=Pure%20Brass' },
-                  { name: 'Copper', img: '/images/home/material_copper.png', href: '/products?material=Copper' },
-                  { name: 'Soapstone', img: '/images/home/material_soapstone.png', href: '/products?material=Soapstone' },
-                  { name: 'Dining', img: '/images/home/modern_luxury_dining_card.png', href: '/products?category=dining' },
-                  { name: 'Décor', img: '/images/home/modern_luxury_decor_card.png', href: '/products?category=decor' },
-                ].map((cat, idx) => (
-                  <Link key={idx} href={cat.href} className="flex flex-col items-center gap-1.5 text-center cursor-pointer group">
+                {activeExploreCollections.map((cat, idx) => (
+                  <Link key={idx} href={cat.link || '/products'} className="flex flex-col items-center gap-1.5 text-center cursor-pointer group">
                     <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[--color-brand-accent] p-[2px] shadow-sm active:scale-95 transition-transform duration-300 bg-white">
                       <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-50">
-                        <Image src={cat.img} alt={cat.name} fill sizes="64px" className="object-cover" />
+                        <Image src={cat.img || '/images/marketing/everyday_cooking.jpg'} alt={cat.name || 'Collection'} fill sizes="64px" className="object-cover" />
                       </div>
                     </div>
                     <span className="text-[11px] font-extrabold text-[--color-brand-text] tracking-tight group-hover:text-[--color-brand-accent] transition-colors">{cat.name}</span>
@@ -447,11 +457,11 @@ export default function HomePage() {
         )}
 
         {/* -- BESTSELLERS ------------------------------------------------- */}
-        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
+        <section className="py-10 md:py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('bestsellers', 'Bestsellers', [
             { key: 'productId', label: 'Select Product', type: 'product-link' }
           ], manualBestsellers)} label="Edit Bestsellers" />}
-          <div className="flex items-end justify-between mb-16">
+          <div className="flex items-end justify-between mb-8 md:mb-16">
             <div>
               <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Most Loved</span>
               <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Bestsellers</h2>
@@ -476,8 +486,8 @@ export default function HomePage() {
 
         {/* -- RECENTLY ADDED ------------------------------------------------ */}
         {recentlyAdded.length > 0 && (
-          <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-[--color-brand-card]/30 relative group">
-            <div className="flex items-end justify-between mb-16">
+          <section className="py-10 md:py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-[--color-brand-card]/30 relative group">
+            <div className="flex items-end justify-between mb-8 md:mb-16">
               <div>
                 <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Fresh In Stock</span>
                 <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Recently Added</h2>
@@ -497,13 +507,13 @@ export default function HomePage() {
         )}
 
         {/* -- CATEGORY SHOWCASE ------------------------------------------- */}
-        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
+        <section className="py-10 md:py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('categories', 'Categories', [
             { key: 'name', label: 'Name' },
             { key: 'sub', label: 'Subtitle' },
             { key: 'img', label: 'Image', type: 'image' }
           ], activeCategories)} label="Edit Categories" />}
-          <div className="text-center mb-16">
+          <div className="text-center mb-8 md:mb-16">
             <span className="text-[--color-brand-accent] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Curated Categories</span>
             <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">Discover Our Collections</h2>
           </div>
@@ -511,13 +521,13 @@ export default function HomePage() {
             {activeCategories.map((cat, idx) => (
               <ScrollReveal key={idx} direction="up" duration={800} delay={idx * 150} className="w-full">
                 <Link href={`/products?category=${cat.name.toLowerCase()}`} className="group flex flex-col items-center cursor-pointer">
-                  <div className="relative w-full aspect-[3/4] overflow-hidden rounded-sm mb-6 shadow-sm">
-                    <Image
+                  <div className="relative w-full overflow-hidden rounded-sm mb-6 shadow-sm">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={cat.img || '/images/marketing/everyday_cooking.jpg'}
                       alt={cat.name || 'Category Image'}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      className="object-cover group-hover:scale-110 transition-transform duration-1000"
+                      loading="lazy"
+                      className="block w-full h-auto"
                     />
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
                   </div>
@@ -578,7 +588,7 @@ export default function HomePage() {
         </section>
 
         {/* -- TRADITIONAL MATERIALS SHOWCASE ------------------------------ */}
-        <section className="bg-white py-24 relative group">
+        <section className="bg-white py-10 md:py-24 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('materials', 'Materials', [
             { key: 'name', label: 'Name' },
             { key: 'desc', label: 'Description' },
@@ -586,7 +596,7 @@ export default function HomePage() {
             { key: 'link', label: 'Link URL', type: 'product-link' }
           ], activeMaterials)} label="Edit Materials" />}
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
+            <div className="text-center mb-8 md:mb-16">
               <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">The Essence of Earth</h2>
               <p className="text-[--color-brand-muted] mt-4 max-w-2xl mx-auto">Explore our range categorized by the timeless, natural materials that form their foundation.</p>
             </div>
@@ -609,11 +619,11 @@ export default function HomePage() {
 
         {/* -- NEW ARRIVALS ------------------------------------------------ */}
         {newArrivals.length >= 4 && (
-          <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-[--color-brand-card]/30 relative group">
+          <section className="py-10 md:py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 bg-[--color-brand-card]/30 relative group">
             {isEditMode && <EditButton onClick={() => handleEditClick('newArrivals', 'New Arrivals', [
               { key: 'productId', label: 'Select Product', type: 'product-link' }
             ], manualNewArrivals)} label="Edit New Arrivals" />}
-            <div className="flex items-end justify-between mb-16">
+            <div className="flex items-end justify-between mb-8 md:mb-16">
               <div>
                 <span className="text-[--color-brand-muted] text-sm font-bold tracking-[0.2em] uppercase mb-4 block">Just In</span>
                 <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] text-[--color-brand-text]">New Arrivals</h2>
@@ -630,7 +640,7 @@ export default function HomePage() {
         )}
 
         {/* -- Kitchenbay STORY SECTION --------------------------------------- */}
-        <section className="bg-[--color-brand-top-bar] text-[--color-brand-bg] py-24 relative group">
+        <section className="bg-[--color-brand-top-bar] text-[--color-brand-bg] py-10 md:py-24 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('heritage', 'Our Heritage', [
             { key: 'title', label: 'Title' },
             { key: 'paragraph1', label: 'Paragraph 1', type: 'textarea' },
@@ -708,7 +718,7 @@ export default function HomePage() {
         </section>
 
         {/* -- CUSTOMER TESTIMONIALS --------------------------------------- */}
-        <section className="py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
+        <section className="py-10 md:py-24 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative group">
           {isEditMode && <EditButton onClick={() => handleEditClick('testimonials', 'Testimonials', [
             { key: 'name', label: 'Name' },
             { key: 'text', label: 'Review Text' },
@@ -717,9 +727,9 @@ export default function HomePage() {
             { key: 'productImg', label: 'Product Image', type: 'image' }
           ], activeTestimonials)} label="Edit Testimonials" />}
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_2.5fr] gap-8 overflow-hidden">
-            <ScrollReveal direction="left" duration={800} className="bg-[#FDF8F8] rounded-sm p-12 flex flex-col justify-center relative overflow-hidden border border-[#E8D4D5] w-full">
+            <ScrollReveal direction="left" duration={800} className="bg-[#F5F7FF] rounded-sm p-12 flex flex-col justify-center relative overflow-hidden border border-[#C7D0F5] w-full">
               <Quote size={120} className="absolute top-[-20px] left-[-20px] text-blue-50 opacity-50" />
-              <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[#85171C] mb-4 relative z-10 leading-tight">
+              <h2 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-heading)] text-[#0333B9] mb-4 relative z-10 leading-tight">
                 See Why<br />They Love Us
               </h2>
               <p className="text-sm font-semibold uppercase tracking-widest text-[#6B6B6B] relative z-10">Trusted By Over 500+ Happy Customers</p>
@@ -770,14 +780,14 @@ export default function HomePage() {
         <section className="border-t border-[--color-brand-border] bg-white py-12 mt-16">
           <div className="max-w-[1400px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-10 divide-y md:divide-y-0 md:divide-x divide-[--color-brand-border]">
             <div className="flex items-center gap-5 flex-1 justify-center w-full">
-              <Truck size={42} className="text-[#85171C] shrink-0" strokeWidth={1.5} />
+              <Truck size={42} className="text-[#0333B9] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
                 <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">500+</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Happy Deliveries</p>
               </div>
             </div>
             <div className="flex items-center gap-5 flex-1 justify-center w-full pt-10 md:pt-0">
-              <RotateCcw size={42} className="text-[#85171C] shrink-0" strokeWidth={1.5} />
+              <RotateCcw size={42} className="text-[#0333B9] shrink-0" strokeWidth={1.5} />
               <div className="text-left">
                 <h4 className="font-extrabold text-[15px] text-gray-900 leading-tight">48-Hour Easy Return Policy</h4>
                 <p className="text-[13px] text-gray-600 font-semibold mt-0.5">Return Policy</p>
