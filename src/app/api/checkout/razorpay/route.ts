@@ -47,6 +47,9 @@ export async function POST(req: NextRequest) {
 
     // ── Calculate subtotal from DB product prices (authoritative) ─
     let subtotalRupees = 0;
+    // GST computed per product line at its own gstPercent, on the pre-coupon base.
+    // Scaled for coupon discount below once the total discount ratio is known.
+    let grossGstRupees = 0;
     const orderItems: { productId: string; quantity: number; price: number; basePrice: number; size?: string }[] = [];
     const productShippingFees: number[] = [];
 
@@ -72,7 +75,9 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      subtotalRupees += basePrice * item.quantity;
+      const lineSubtotal = basePrice * item.quantity;
+      subtotalRupees += lineSubtotal;
+      grossGstRupees += lineSubtotal * ((dbProduct.gstPercent ?? 5) / 100);
       productShippingFees.push(getDbProductShippingFee(dbProduct));
 
       orderItems.push({
@@ -106,11 +111,18 @@ export async function POST(req: NextRequest) {
       : SHIPPING_FEE_RUPEES;
 
     // ── Canonical pricing via shared utility ────────────────
+    const couponDiscountRupees = discountAmount / 100;   // paise → rupees
+    // Scale gross (pre-coupon) GST down to the coupon-discounted taxable base.
+    const couponTaxable = Math.max(0, subtotalRupees - couponDiscountRupees);
+    const couponScale = subtotalRupees > 0 ? couponTaxable / subtotalRupees : 0;
+    const gstAmountOverride = grossGstRupees * couponScale;
+
     const pricing = calcCheckoutPricing(subtotalRupees, {
       isFirstOrder,
-      couponDiscountRupees: discountAmount / 100,   // paise → rupees
+      couponDiscountRupees,
       paymentMethod,
       shippingFeeRupees,
+      gstAmountOverride,
     });
 
     // ── Save shipping address ───────────────────────────────

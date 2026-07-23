@@ -498,7 +498,7 @@ export default function ProductDetailPage() {
                       <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{product.discount}% off</span>
                     )}
                   </div>
-                  <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-1">GST (5%) Added & shipping at checkout</p>
+                  <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-1">GST ({product.gstPercent ?? 5}%) Added & shipping at checkout</p>
 
 
                 </div>

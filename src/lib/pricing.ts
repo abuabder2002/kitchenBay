@@ -62,7 +62,7 @@ export function getProductShippingFee(product: any): number {
 export interface CartTotals {
   subtotal: number;       // Σ(basePrice × qty) — no GST
   taxableAmount: number;  // subtotal − coupon discount (GST applied here)
-  gstAmount: number;      // taxableAmount × 5%  (full precision)
+  gstAmount: number;      // Σ(itemTaxable × product gstPercent) (full precision)
   cgstAmount: number;     // gstAmount / 2
   sgstAmount: number;     // gstAmount / 2
   shippingFee: number;    // ₹99, or ₹0 (free above threshold)
@@ -106,8 +106,17 @@ export function calcCartTotals(
   // 4. Taxable amount = subtotal − coupon discount (GST base)
   const taxableAmount = subtotal - discountAmountRupees;
 
-  // 5. GST at full precision — no intermediate rounding
-  const gstAmount  = taxableAmount * GST_RATE;
+  // 5. GST at full precision — per-product rate (falls back to 5%).
+  //    Coupon discount is spread proportionally across items so each item's
+  //    taxable share is taxed at its own gstPercent.
+  const discountRatio = subtotal > 0 ? discountAmountRupees / subtotal : 0;
+  let gstAmount = 0;
+  for (const item of items) {
+    const itemSubtotal = getItemBasePrice(item.product, item.size) * item.quantity;
+    const itemTaxable = itemSubtotal * (1 - discountRatio);
+    const rate = (item.product.gstPercent ?? GST_RATE * 100) / 100;
+    gstAmount += itemTaxable * rate;
+  }
   const cgstAmount = gstAmount / 2;
   const sgstAmount = gstAmount / 2;
 

@@ -122,6 +122,7 @@ export async function POST(req: NextRequest) {
     const productMap = new Map(dbProducts.map(p => [p.id, p]));
 
     let subtotalRupees = 0;
+    let grossGstRupees = 0; // per-product GST on pre-coupon base
     const dbOrderItems = [];
     const productShippingFees: number[] = [];
 
@@ -144,7 +145,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: `Not enough stock for ${dbProduct.name}` }, { status: 400 });
       }
 
-      subtotalRupees += basePrice * item.quantity;
+      const lineSubtotal = basePrice * item.quantity;
+      subtotalRupees += lineSubtotal;
+      grossGstRupees += lineSubtotal * ((dbProduct.gstPercent ?? 5) / 100);
       productShippingFees.push(getDbProductShippingFee(dbProduct));
 
       dbOrderItems.push({
@@ -177,11 +180,17 @@ export async function POST(req: NextRequest) {
       : SHIPPING_FEE_RUPEES;
 
     // ── Canonical pricing via shared utility ────────────────
+    const couponDiscountRupees = discountAmount / 100;   // paise → rupees
+    const couponTaxable = Math.max(0, subtotalRupees - couponDiscountRupees);
+    const couponScale = subtotalRupees > 0 ? couponTaxable / subtotalRupees : 0;
+    const gstAmountOverride = grossGstRupees * couponScale;
+
     const pricing = calcCheckoutPricing(subtotalRupees, {
       isFirstOrder,
-      couponDiscountRupees: discountAmount / 100,   // paise → rupees
+      couponDiscountRupees,
       paymentMethod: isCod ? 'COD' : 'RAZORPAY',
       shippingFeeRupees,
+      gstAmountOverride,
     });
 
     // ── Enforce COD limit ───────────────────────────────────

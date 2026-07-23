@@ -78,6 +78,9 @@ export function calcCheckoutPricing(
     isFirstOrder?: boolean;
     paymentMethod?: string;
     freeShipping?: boolean;
+    /** Pre-computed GST in Rupees (per-product rates). When provided, overrides
+     *  the flat GST_RATE. Should already reflect the post-discount taxable base. */
+    gstAmountOverride?: number;
   } = {}
 ): CheckoutPricingResult {
   const {
@@ -85,6 +88,7 @@ export function calcCheckoutPricing(
     isFirstOrder = false,
     paymentMethod = 'COD',
     freeShipping = false,
+    gstAmountOverride,
   } = opts;
 
   // Shipping: explicit override → free-shipping coupon → fallback default
@@ -103,8 +107,17 @@ export function calcCheckoutPricing(
   const allPreGstDiscounts = couponDiscountRupees + firstOrderDiscount;
   const taxableAmount = Math.max(0, subtotal - allPreGstDiscounts);
 
-  // GST — full precision, NO intermediate rounding
-  const gstAmount  = taxableAmount * GST_RATE;
+  // GST — full precision, NO intermediate rounding.
+  // Per-product override (scaled for the first-order discount) wins over flat rate.
+  let gstAmount: number;
+  if (gstAmountOverride !== undefined) {
+    // Override reflects coupon-discounted base; scale further for first-order discount.
+    const couponTaxable = Math.max(0, subtotal - couponDiscountRupees);
+    const scale = couponTaxable > 0 ? taxableAmount / couponTaxable : 0;
+    gstAmount = gstAmountOverride * scale;
+  } else {
+    gstAmount = taxableAmount * GST_RATE;
+  }
   const cgstAmount = gstAmount / 2;
   const sgstAmount = gstAmount / 2;
 
@@ -150,7 +163,8 @@ export function calcCheckoutPricingFromCoupon(
   shippingFeeRupees: number,
   appliedCoupon: { discountAmount: number; type: string } | null | undefined,
   isFirstOrder: boolean,
-  paymentMethod: string
+  paymentMethod: string,
+  gstAmountOverride?: number
 ): CheckoutPricingResult {
   const freeShipping  = appliedCoupon?.type === 'FREE_SHIPPING';
   // discountAmount in cart context is stored in PAISE → convert
@@ -164,6 +178,7 @@ export function calcCheckoutPricingFromCoupon(
     isFirstOrder,
     paymentMethod,
     freeShipping,
+    gstAmountOverride,
   });
 }
 

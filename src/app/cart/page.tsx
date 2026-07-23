@@ -21,6 +21,9 @@ export default function CartPage() {
   const formatPrice = (price: number) =>
     'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(price);
 
+  const gstRates = Array.from(new Set(items.map(i => i.product.gstPercent ?? 5)));
+  const gstLabel = gstRates.length === 1 ? `GST (${gstRates[0]}%)` : 'GST';
+
   if (items.length === 0) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -168,7 +171,7 @@ export default function CartPage() {
                   <span>Total</span>
                   <span className="text-xl text-blue-700">{formatPrice(subtotal - discountAmount)}</span>
                 </div>
-                <p className="text-xs text-gray-400">+ GST (5%) &amp; shipping added at checkout</p>
+                <p className="text-xs text-gray-400">+ {gstLabel} &amp; shipping added at checkout</p>
               </div>
 
               <button

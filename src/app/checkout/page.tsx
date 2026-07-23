@@ -129,6 +129,7 @@ export default function CheckoutPage() {
     appliedCoupon,
     isFirstOrder,
     paymentMethod,
+    gstAmount, // per-product GST from cart context (respects each product's gstPercent)
   );
   const firstOrderDiscount  = checkoutTotals.firstOrderDiscount;
   const gstAmountCheckout   = checkoutTotals.gstAmount;
@@ -137,6 +138,10 @@ export default function CheckoutPage() {
   const netBankingDiscount  = checkoutTotals.netBankingDiscount;
   const totalSavings        = checkoutTotals.totalSavings;
   const payableTotal        = checkoutTotals.payableTotal;
+
+  // GST label: show the single rate when all items share it, else generic "GST".
+  const gstRates = Array.from(new Set(items.map(i => i.product.gstPercent ?? 5)));
+  const gstLabel = gstRates.length === 1 ? `GST ${gstRates[0]}%` : 'GST';
 
   useEffect(() => {
     // Temporarily removed the > 5999 force-switch to Razorpay since Razorpay is down
@@ -934,7 +939,7 @@ export default function CheckoutPage() {
                     </div>
                   )}
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>GST 5%{(discountAmount > 0 || firstOrderDiscount > 0) ? ' (on taxable amount)' : ''}</span>
+                    <span>{gstLabel}{(discountAmount > 0 || firstOrderDiscount > 0) ? ' (on taxable amount)' : ''}</span>
                     <span className="font-semibold text-gray-800">{formatPrice(gstAmountCheckout)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
