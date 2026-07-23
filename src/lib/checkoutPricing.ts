@@ -128,10 +128,12 @@ export function calcCheckoutPricing(
   const totalSavings =
     couponDiscountRupees + firstOrderDiscount + netBankingDiscount;
 
-  const payableTotal = Math.max(
+  // Final payable amount is rounded to the nearest whole Rupee so what the
+  // customer sees is exactly what gets charged (no stray paise on the bill).
+  const payableTotal = Math.round(Math.max(
     0,
     taxableAmount + gstAmount + shippingFeeRupees - netBankingDiscount
-  );
+  ));
 
   return {
     subtotal,
