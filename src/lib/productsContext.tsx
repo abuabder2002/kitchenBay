@@ -155,4 +155,3 @@ export function useProducts() {
   if (!context) throw new Error('useProducts must be used within a ProductsProvider');
   return context;
 }
-

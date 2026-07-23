@@ -362,3 +362,18 @@ export function variantsToPaise<T extends Record<string, any>>(variants: T | nul
     ])
   ) as T;
 }
+
+/**
+ * Same as variantsToRupees but strips the per-size `image` (base64 data URL) —
+ * used for list endpoints where full images would blow past payload limits.
+ * Keeps price/stock so cards can still switch price & availability per size.
+ */
+export function variantsToRupeesLite(variants: Record<string, any> | null | undefined): Record<string, { price: number; stock: number }> | null {
+  if (!variants) return null;
+  return Object.fromEntries(
+    Object.entries(variants).map(([size, data]) => [
+      size,
+      { price: typeof data?.price === 'number' ? data.price / 100 : data?.price, stock: data?.stock ?? 0 },
+    ])
+  );
+}

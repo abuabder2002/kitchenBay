@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { variantsToPaise, variantsToRupees } from '@/lib/pricing';
+import { variantsToPaise, variantsToRupees, variantsToRupeesLite } from '@/lib/pricing';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -129,6 +129,7 @@ export async function GET(req: Request) {
         isActive: true,
         video: true,
         sizeCategory: true,
+        variants: true,
       }
       }),
       prisma.product.count({ where: whereClause }),
@@ -168,7 +169,8 @@ export async function GET(req: Request) {
         rating: p.rating,
         reviewCount: p.reviewCount,
         featured: p.featured,
-        variants: null, // OMIT — variant images are base64 data URLs, same 4.5MB risk as subImages
+        // Price/stock only — per-size images are base64 data URLs, same 4.5MB risk as subImages, so they're stripped here
+        variants: variantsToRupeesLite(p.variants as Record<string, any> | null),
         attributes: null,
         isFromDb: true,
         brand: p.brand || undefined,
