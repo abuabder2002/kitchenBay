@@ -174,7 +174,7 @@ export async function GET(req: Request) {
         attributes: null,
         isFromDb: true,
         brand: p.brand || undefined,
-        shippingFee: p.shippingFee ? p.shippingFee / 100 : undefined,
+        shippingFee: p.shippingFee !== null && p.shippingFee !== undefined ? p.shippingFee / 100 : undefined,
         shippingMethod: p.shippingMethod || undefined,
         video: p.video || undefined,
       };
@@ -269,7 +269,7 @@ export async function POST(req: Request) {
       attributes: newProduct.attributes,
       isFromDb: true,
       brand: newProduct.brand || undefined,
-      shippingFee: newProduct.shippingFee ? newProduct.shippingFee / 100 : undefined,
+      shippingFee: newProduct.shippingFee !== null && newProduct.shippingFee !== undefined ? newProduct.shippingFee / 100 : undefined,
       shippingMethod: newProduct.shippingMethod || undefined,
       video: newProduct.video || undefined,
     });
