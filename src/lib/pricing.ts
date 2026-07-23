@@ -26,6 +26,7 @@ import { Product, CartItem } from './mockData';
 export const GST_RATE            = 0.05;          // 5%
 export const SHIPPING_FEE_RUPEES = 99;            // Default fallback when product has no fee
 export const SHIPPING_FEE_PAISE  = SHIPPING_FEE_RUPEES * 100;
+export const FREE_SHIPPING_THRESHOLD_RUPEES = 2000; // Orders at/above this subtotal ship free
 export const COD_LIMIT_RUPEES    = 5999;          // COD not allowed above this
 
 // ── Helper: Get the effective base price for a cart item ───────
@@ -84,9 +85,9 @@ export function calcCartTotals(
   //    Product-specific fees are used. The highest fee among cart items wins
   //    (one consolidated shipping charge). Falls back to SHIPPING_FEE_RUPEES (₹99)
   //    if a product has no shippingFee configured.
-  //    NOTE: No automatic free-shipping threshold — shipping is product-configured only.
+  //    Free once the cart subtotal reaches FREE_SHIPPING_THRESHOLD_RUPEES (₹2000).
   let shippingFee = 0;
-  if (items.length > 0) {
+  if (items.length > 0 && subtotal < FREE_SHIPPING_THRESHOLD_RUPEES) {
     const productFees = items.map(item => getProductShippingFee(item.product));
     shippingFee = Math.max(...productFees);
   }

@@ -26,13 +26,15 @@
  *   Shipping is product-specific. The caller is responsible for
  *   computing the correct shippingFeeRupees from the cart items
  *   (max of product fees, fallback to SHIPPING_FEE_RUPEES = ₹99).
- *   There is NO automatic free-shipping threshold.
+ *   Shipping is automatically waived once subtotal reaches
+ *   FREE_SHIPPING_THRESHOLD_RUPEES (₹2000).
  */
 
 // ── Constants ─────────────────────────────────────────────────
-export const GST_RATE            = 0.05;  // 5%
-export const SHIPPING_FEE_RUPEES = 99;    // Default fallback when product has no fee configured
-export const COD_LIMIT_RUPEES    = 5999;  // COD blocked above this
+export const GST_RATE                     = 0.05;  // 5%
+export const SHIPPING_FEE_RUPEES          = 99;    // Default fallback when product has no fee configured
+export const FREE_SHIPPING_THRESHOLD_RUPEES = 2000; // Orders at/above this subtotal ship free
+export const COD_LIMIT_RUPEES             = 5999;  // COD blocked above this
 
 // ── Result type ───────────────────────────────────────────────
 export interface CheckoutPricingResult {
@@ -91,10 +93,9 @@ export function calcCheckoutPricing(
     gstAmountOverride,
   } = opts;
 
-  // Shipping: explicit override → free-shipping coupon → fallback default
-  // NOTE: No automatic free-shipping threshold. Shipping is product-configured.
+  // Shipping: free-shipping coupon → ₹2000+ order → explicit override → fallback default
   const shippingFeeRupees =
-    freeShipping
+    freeShipping || subtotal >= FREE_SHIPPING_THRESHOLD_RUPEES
       ? 0
       : opts.shippingFeeRupees !== undefined
       ? opts.shippingFeeRupees
