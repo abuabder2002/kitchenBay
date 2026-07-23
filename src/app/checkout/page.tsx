@@ -247,6 +247,7 @@ export default function CheckoutPage() {
           name: form.fullName,
           email: form.email,
           contact: form.phone,
+          ...(paymentMethod === 'NETBANKING' ? { method: 'netbanking' } : { method: 'upi' }),
         },
         theme: { color: '#2563EB' },
         handler: async (response: any) => {
@@ -783,14 +784,14 @@ export default function CheckoutPage() {
                   {/* Net Banking */}
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('RAZORPAY')}
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'RAZORPAY'
+                    onClick={() => setPaymentMethod('NETBANKING')}
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'NETBANKING'
                       ? 'border-blue-600 bg-blue-50/50'
                       : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                   >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'RAZORPAY' ? 'border-blue-600' : 'border-gray-300'}`}>
-                      {paymentMethod === 'RAZORPAY' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'NETBANKING' ? 'border-blue-600' : 'border-gray-300'}`}>
+                      {paymentMethod === 'NETBANKING' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-950 flex items-center gap-1.5">
