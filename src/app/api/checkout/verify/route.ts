@@ -64,6 +64,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    if (order.userId !== user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
     const updated = await prisma.order.update({
       where: { id: order.id },
       data: { paymentStatus: 'PAID', status: 'PROCESSING' },
