@@ -68,7 +68,7 @@ const fmtTime = (s: number) =>
 // CHECKOUT PAGE
 // ════════════════════════════════════════════════════════════
 export default function CheckoutPage() {
-  const { items, subtotal, taxableAmount, gstAmount, cgstAmount, sgstAmount, shippingFee, discountAmount, total, clearCart, appliedCoupon } = useCart();
+  const { items, subtotal, taxableAmount, gstAmount, cgstAmount, sgstAmount, shippingFee, discountAmount, total, clearCart, removeItem, appliedCoupon } = useCart();
   const { currentUser } = useAuth();
   const router = useRouter();
 
@@ -877,7 +877,7 @@ export default function CheckoutPage() {
                     const itemFinalPrice = basePrice + itemGst;
 
                     return (
-                      <div key={`${product.id}-${size || idx}`} className="flex items-center gap-3">
+                      <div key={`${product.id}-${size || idx}`} className="flex items-center gap-3 group/item">
                         <img
                           src={product.image}
                           alt={product.name}
@@ -892,6 +892,14 @@ export default function CheckoutPage() {
                         <p className="text-xs font-bold text-gray-900 shrink-0">
                           {formatPrice(basePrice * quantity)}
                         </p>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(product.id, size || undefined)}
+                          className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                          title="Remove item"
+                        >
+                          <X size={14} />
+                        </button>
                       </div>
                     );
                   })}
