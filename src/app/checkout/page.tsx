@@ -761,32 +761,44 @@ export default function CheckoutPage() {
                   {/* Razorpay */}
                   <button
                     type="button"
-                    disabled={true}
-                    className="flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left opacity-50 cursor-not-allowed bg-gray-50 border-gray-200"
+                    onClick={() => setPaymentMethod('RAZORPAY')}
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'RAZORPAY'
+                      ? 'border-blue-600 bg-blue-50/50'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
                   >
-                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 border-gray-300">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'RAZORPAY' ? 'border-blue-600' : 'border-gray-300'}`}>
+                      {paymentMethod === 'RAZORPAY' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-950 flex items-center gap-1.5">
                         Razorpay Secure <ShieldCheck size={14} className="text-blue-600" />
                       </p>
-                      <p className="text-xs text-red-500 mt-1 font-semibold">Online payment will be available soon (Under Review)</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Pay securely via UPI, Cards, Wallets & Net Banking
+                      </p>
                     </div>
                   </button>
 
                   {/* Net Banking */}
                   <button
                     type="button"
-                    disabled={true}
-                    className="flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left opacity-50 cursor-not-allowed bg-gray-50 border-gray-200"
+                    onClick={() => setPaymentMethod('RAZORPAY')}
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'RAZORPAY'
+                      ? 'border-blue-600 bg-blue-50/50'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
                   >
-                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 border-gray-300">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'RAZORPAY' ? 'border-blue-600' : 'border-gray-300'}`}>
+                      {paymentMethod === 'RAZORPAY' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-950 flex items-center gap-1.5">
                         Net Banking <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest bg-green-100 text-green-700 rounded-full leading-none whitespace-nowrap">2% OFF</span>
                       </p>
-                      <p className="text-xs text-red-500 mt-1 font-semibold">Online payment will be available soon (Under Review)</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Pay directly from your bank account
+                      </p>
                     </div>
                   </button>
 
