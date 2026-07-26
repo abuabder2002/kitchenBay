@@ -1,20 +1,12 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable @next/next/no-img-element */
-
 
 import { useState, useEffect, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FormInput from '@/components/FormInput';
+import PromoCodeInput from '@/components/PromoCodeInput';
 import { useCart } from '@/lib/cartContext';
 import { useAuth } from '@/lib/authContext';
-import { getItemStock } from '@/lib/pricing';
-import { calcCheckoutPricingFromCoupon } from '@/lib/checkoutPricing';
-import PromoCodeInput from '@/components/PromoCodeInput';
-
 import {
   Check,
   CreditCard,
@@ -34,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
+import { calcCheckoutPricingFromCoupon } from '@/lib/checkoutPricing';
 
 type PaymentMethod = 'RAZORPAY' | 'COD' | 'NETBANKING';
 
@@ -59,6 +52,14 @@ const formatPrice = (p: number) =>
     currency: 'INR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
+  }).format(p);
+
+const formatINR = (p: number) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(p);
 
 const fmtTime = (s: number) =>
@@ -121,15 +122,13 @@ export default function CheckoutPage() {
   }, [currentUser]);
 
   // ── Correct GST calculation via standalone pricing engine ──────────────────
-  // Uses calcCheckoutPricingFromCoupon from checkoutPricing.ts (zero external imports)
-  // so Turbopack can always bundle it for the client without mockData dependency.
   const checkoutTotals = calcCheckoutPricingFromCoupon(
     subtotal,
     shippingFee,
     appliedCoupon,
     isFirstOrder,
     paymentMethod,
-    gstAmount, // per-product GST from cart context (respects each product's gstPercent)
+    gstAmount,
   );
   const firstOrderDiscount  = checkoutTotals.firstOrderDiscount;
   const gstAmountCheckout   = checkoutTotals.gstAmount;
@@ -139,12 +138,10 @@ export default function CheckoutPage() {
   const totalSavings        = checkoutTotals.totalSavings;
   const payableTotal        = checkoutTotals.payableTotal;
 
-  // GST label: show the single rate when all items share it, else generic "GST".
   const gstRates = Array.from(new Set(items.map(i => i.product.gstPercent ?? 5)));
   const gstLabel = gstRates.length === 1 ? `GST ${gstRates[0]}%` : 'GST';
 
   useEffect(() => {
-    // Temporarily removed the > 5999 force-switch to Razorpay since Razorpay is down
   }, [payableTotal, paymentMethod]);
 
   useEffect(() => {
@@ -171,7 +168,6 @@ export default function CheckoutPage() {
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
-  // ── Prefill from Clerk user ───────────────────────────────
   useEffect(() => {
     if (currentUser) {
       setForm((prev) => ({
@@ -189,11 +185,6 @@ export default function CheckoutPage() {
     setErrorMsg(null);
   };
 
-  // ── Stock Validation ──────────────────────────────────────
-  const outOfStockItems = items.filter(
-    (item) => getItemStock(item.product, item.size) < item.quantity
-  );
-
   // ════════════════════════════════════════════════════════════
   // RAZORPAY PAYMENT
   // ════════════════════════════════════════════════════════════
@@ -206,11 +197,9 @@ export default function CheckoutPage() {
     }
 
     try {
-      // Start countdown
       setCountdown(TIMER_SECONDS);
       setTimerActive(true);
 
-      // 1. Create order on backend
       const res = await fetch('/api/checkout/razorpay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -218,10 +207,8 @@ export default function CheckoutPage() {
           items: items.map((item) => ({
             productId: item.product.id,
             quantity: item.quantity,
-            ...(item.size ? { size: item.size } : {})
+            size: item.size || "",
           })),
-          shippingAmount: shippingFee,
-          paymentMethod: paymentMethod,
           address: {
             street: form.address,
             city: form.city,
@@ -229,7 +216,8 @@ export default function CheckoutPage() {
             zip: form.pincode,
           },
           couponCode: appliedCoupon?.code,
-          discountAmount: discountAmount * 100, // sending in paise
+          isFirstOrder,
+          paymentMethod,
         }),
       });
 
@@ -240,24 +228,21 @@ export default function CheckoutPage() {
 
       const { keyId, amount, currency, razorpayOrderId, dbOrderId } = data;
 
-      // 2. Open Razorpay modal
       const options = {
         key: keyId,
         amount,
         currency,
         name: 'Kitchenbay',
-        description: 'The Home Needs',
+        description: 'Authentic Indian Handicrafts',
         order_id: razorpayOrderId,
         prefill: {
           name: form.fullName,
           email: form.email,
           contact: form.phone,
-          ...(paymentMethod === 'NETBANKING' ? { method: 'netbanking' } : { method: 'upi' }),
         },
         theme: { color: '#2563EB' },
         handler: async (response: any) => {
           try {
-            // 3. Verify payment
             const verifyRes = await fetch('/api/checkout/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -273,18 +258,16 @@ export default function CheckoutPage() {
               throw new Error(verifyData.error || 'Payment verification failed');
             }
 
-            // 4. Success!
             stopTimer();
             setTransactionId(response.razorpay_payment_id);
             setOrderedItems([...items]);
             setOrderedAddress({ ...form });
-            setOrderedMethod(paymentMethod === 'NETBANKING' ? 'Net Banking' : 'Razorpay (UPI / Card / Netbanking)');
+            setOrderedMethod('Razorpay (UPI / Card / Netbanking)');
             setOrderedTotal(payableTotal);
             setPlacedOrderId(verifyData.orderId);
             clearCart();
             setOrdered(true);
 
-            // Show SweetAlert
             Swal.fire({
               title: 'Order Placed!',
               text: 'Your order has been successfully placed.',
@@ -292,28 +275,23 @@ export default function CheckoutPage() {
               confirmButtonColor: '#2563EB'
             });
 
-            // Send Email Notification
-            try {
-              await fetch('/api/send-email', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  order: {
-                    id: verifyData.orderId,
-                    customer: form.fullName,
-                    email: form.email,
-                    items: items,
-                    subtotal: subtotal.toFixed(2),
-                    cgstAmount: cgstAmountCheckout.toFixed(2),
-                    sgstAmount: sgstAmountCheckout.toFixed(2),
-                    total: payableTotal.toFixed(2)
-                  },
-                  status: 'processing'
-                })
-              });
-            } catch (emailErr) {
-              console.error('Failed to send order email:', emailErr);
-            }
+            fetch('/api/send-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                order: {
+                  id: verifyData.orderId,
+                  customer: form.fullName,
+                  email: form.email,
+                  items: items,
+                  subtotal,
+                  cgstAmount: cgstAmountCheckout,
+                  sgstAmount: sgstAmountCheckout,
+                  total: payableTotal
+                },
+                status: 'processing'
+              })
+            }).catch(console.error);
           } catch (err: any) {
             stopTimer();
             setPaymentFailed(true);
@@ -358,15 +336,12 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           totalAmount: payableTotal,
-          subtotalAmount: subtotal,
-          gstAmount: gstAmountCheckout,
-          shippingAmount: shippingFee,
           paymentStatus: 'COD_PENDING',
           items: items.map((item) => ({
             productId: item.product.id,
             quantity: item.quantity,
+            price: item.product.finalPrice,
             size: item.size || "",
-            price: item.product.price // Backend expects basePrice now, but frontend sends item price for reference
           })),
           address: {
             street: form.address,
@@ -375,7 +350,7 @@ export default function CheckoutPage() {
             zip: form.pincode,
           },
           couponCode: appliedCoupon?.code,
-          discountAmount: discountAmount * 100, // sending in paise
+          isFirstOrder,
         }),
       });
 
@@ -390,7 +365,6 @@ export default function CheckoutPage() {
       clearCart();
       setOrdered(true);
 
-      // Show SweetAlert
       Swal.fire({
         title: 'Order Placed!',
         text: 'Your order has been successfully placed.',
@@ -398,28 +372,23 @@ export default function CheckoutPage() {
         confirmButtonColor: '#2563EB'
       });
 
-      // Send Email Notification
-      try {
-        await fetch('/api/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            order: {
-              id: data.id,
-              customer: form.fullName,
-              email: form.email,
-              items: items,
-              subtotal,
-              cgstAmount: cgstAmountCheckout,
-              sgstAmount: sgstAmountCheckout,
-              total: payableTotal
-            },
-            status: 'processing'
-          })
-        });
-      } catch (emailErr) {
-        console.error('Failed to send order email:', emailErr);
-      }
+      fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order: {
+            id: data.id,
+            customer: form.fullName,
+            email: form.email,
+            items: items,
+            subtotal,
+            cgstAmount: cgstAmountCheckout,
+            sgstAmount: sgstAmountCheckout,
+            total: payableTotal
+          },
+          status: 'processing'
+        })
+      }).catch(console.error);
     } catch (err: any) {
       setErrorMsg(err.message || 'Error placing COD order.');
     } finally {
@@ -427,18 +396,11 @@ export default function CheckoutPage() {
     }
   };
 
-  // ── Form submit ───────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
     setPaymentFailed(false);
-
-    if (outOfStockItems.length > 0) {
-      setErrorMsg('Some items in your cart are no longer available in the requested quantity.');
-      setLoading(false);
-      return;
-    }
 
     if (paymentMethod === 'RAZORPAY' || paymentMethod === 'NETBANKING') {
       await handleRazorpayPayment();
@@ -447,9 +409,6 @@ export default function CheckoutPage() {
     }
   };
 
-  // ════════════════════════════════════════════════════════════
-  // EMPTY CART VIEW
-  // ════════════════════════════════════════════════════════════
   if (items.length === 0 && !ordered && !paymentFailed) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -472,36 +431,6 @@ export default function CheckoutPage() {
     );
   }
 
-  // ════════════════════════════════════════════════════════════
-  // OUT OF STOCK VIEW
-  // ════════════════════════════════════════════════════════════
-  if (outOfStockItems.length > 0 && !ordered && !paymentFailed) {
-    return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Navbar />
-        <main className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-lg mx-auto">
-          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-5">
-            <Package size={36} className="text-red-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Items Unavailable</h1>
-          <p className="text-gray-500 mb-6">
-            Some items in your cart have gone out of stock. Please return to the cart to review and update your quantities.
-          </p>
-          <button
-            onClick={() => router.push('/cart')}
-            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold rounded-xl text-sm transition-all shadow-lg"
-          >
-            Return to Cart
-          </button>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // ════════════════════════════════════════════════════════════
-  // PAYMENT FAILED VIEW
-  // ════════════════════════════════════════════════════════════
   if (paymentFailed) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -542,15 +471,11 @@ export default function CheckoutPage() {
     );
   }
 
-  // ════════════════════════════════════════════════════════════
-  // ORDER SUCCESS VIEW  (with items, address, transaction ID)
-  // ════════════════════════════════════════════════════════════
   if (ordered) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Navbar />
         <main className="flex-1 max-w-3xl mx-auto px-4 py-12 w-full">
-          {/* Success header */}
           <div className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 text-center mb-6">
             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
               <Check size={36} className="text-emerald-600" />
@@ -563,7 +488,6 @@ export default function CheckoutPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Transaction details */}
             <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
               <h2 className="text-xs font-bold text-blue-600 tracking-wide uppercase mb-4 flex items-center gap-1.5">
                 <ReceiptText size={14} /> Transaction Details
@@ -594,13 +518,12 @@ export default function CheckoutPage() {
                 <div className="border-t border-gray-100 pt-2 flex justify-between">
                   <span className="font-bold text-gray-900">Total</span>
                   <span className="font-bold text-blue-700 text-lg">
-                    {formatPrice(orderedTotal)}
+                    {formatINR(orderedTotal)}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Shipping address */}
             <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
               <h2 className="text-xs font-bold text-blue-600 tracking-wide uppercase mb-4 flex items-center gap-1.5">
                 <MapPin size={14} /> Shipping Address
@@ -611,21 +534,20 @@ export default function CheckoutPage() {
               <p className="text-sm text-gray-500 leading-relaxed mt-1">
                 {orderedAddress.address}
                 <br />
-                {orderedAddress.city}, {orderedAddress.state} – {orderedAddress.pincode}
+                {orderedAddress.city}, {orderedAddress.state} &ndash; {orderedAddress.pincode}
               </p>
               <p className="text-sm text-gray-500 mt-2">{orderedAddress.phone}</p>
             </div>
           </div>
 
-          {/* Ordered items */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm mt-5">
             <h2 className="text-xs font-bold text-blue-600 tracking-wide uppercase mb-4 flex items-center gap-1.5">
               <Package size={14} /> Ordered Items ({orderedItems.length})
             </h2>
             <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
-              {orderedItems.map(({ product, quantity }) => (
+              {orderedItems.map(({ product, quantity, size }) => (
                 <div
-                  key={product.id}
+                  key={`${product.id}-${size || ''}`}
                   className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
                 >
                   <img
@@ -637,19 +559,23 @@ export default function CheckoutPage() {
                     <p className="text-sm font-medium text-gray-800 line-clamp-1">
                       {product.name}
                     </p>
+                    {size && (
+                      <span className="text-xs font-bold text-blue-600 uppercase block mt-0.5">
+                        Size: {size}
+                      </span>
+                    )}
                     <p className="text-xs text-gray-400 mt-0.5">
-                      Qty: {quantity} × {formatPrice(product.price)}
+                      Qty: {quantity} &times; {formatINR(product.finalPrice)}
                     </p>
                   </div>
                   <p className="text-sm font-bold text-gray-900 shrink-0">
-                    {formatPrice(product.price * quantity)}
+                    {formatINR(product.finalPrice * quantity)}
                   </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Action buttons */}
           <div className="flex gap-3 mt-6">
             <button
               onClick={() => router.push(`/orders/${placedOrderId}`)}
@@ -670,14 +596,10 @@ export default function CheckoutPage() {
     );
   }
 
-  // ════════════════════════════════════════════════════════════
-  // CHECKOUT FORM
-  // ════════════════════════════════════════════════════════════
   return (
     <div className="min-h-screen flex flex-col bg-gray-50/50">
       <Navbar />
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
-        {/* Header + countdown */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8">
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
@@ -688,13 +610,13 @@ export default function CheckoutPage() {
             </p>
           </div>
 
-          {/* Countdown timer (visible when payment is processing) */}
           {timerActive && (
             <div
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-bold animate-pulse ${countdown <= 60
-                ? 'bg-red-50 border-red-200 text-red-700'
-                : 'bg-amber-50 border-amber-200 text-amber-700'
-                }`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-bold animate-pulse ${
+                countdown <= 60
+                  ? 'bg-red-50 border-red-200 text-red-700'
+                  : 'bg-amber-50 border-amber-200 text-amber-700'
+              }`}
             >
               <Timer size={16} />
               Complete payment in {fmtTime(countdown)}
@@ -702,7 +624,6 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        {/* Error banner */}
         {errorMsg && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 text-red-700 text-sm">
             <AlertCircle size={18} className="shrink-0 mt-0.5" />
@@ -715,9 +636,8 @@ export default function CheckoutPage() {
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* ── Left: Address + Payment ───────────────────── */}
+            {/* Left: Address + Payment */}
             <div className="lg:col-span-7 space-y-6">
-              {/* Shipping */}
               <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-5">
                   <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -754,7 +674,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Payment method */}
               <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-5">
                   <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -764,14 +683,14 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                  {/* Razorpay */}
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('RAZORPAY')}
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'RAZORPAY'
-                      ? 'border-blue-600 bg-blue-50/50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+                      paymentMethod === 'RAZORPAY'
+                        ? 'border-blue-600 bg-blue-50/50'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
                   >
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'RAZORPAY' ? 'border-blue-600' : 'border-gray-300'}`}>
                       {paymentMethod === 'RAZORPAY' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
@@ -780,51 +699,25 @@ export default function CheckoutPage() {
                       <p className="text-sm font-bold text-gray-950 flex items-center gap-1.5">
                         Razorpay Secure <ShieldCheck size={14} className="text-blue-600" />
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        Pay securely via UPI, Cards, Wallets & Net Banking
-                      </p>
+                      <p className="text-xs text-gray-400 mt-1">UPI (QR / App Links), Cards, Netbanking, Wallets</p>
                     </div>
                   </button>
 
-                  {/* Net Banking */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('NETBANKING')}
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'NETBANKING'
-                      ? 'border-blue-600 bg-blue-50/50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
-                  >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'NETBANKING' ? 'border-blue-600' : 'border-gray-300'}`}>
-                      {paymentMethod === 'NETBANKING' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-950 flex items-center gap-1.5">
-                        Net Banking <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest bg-green-100 text-green-700 rounded-full leading-none whitespace-nowrap">2% OFF</span>
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        Pay directly from your bank account
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* COD */}
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('COD')}
-                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${paymentMethod === 'COD'
-                      ? 'border-blue-600 bg-blue-50/50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+                      paymentMethod === 'COD'
+                        ? 'border-blue-600 bg-blue-50/50'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
                   >
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${paymentMethod === 'COD' ? 'border-blue-600' : 'border-gray-300'}`}>
                       {paymentMethod === 'COD' && <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-950">Cash on Delivery</p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        Pay with cash when your parcel is delivered at home.
-                      </p>
+                      <p className="text-xs text-gray-400 mt-1">Pay with cash when your parcel is delivered at home.</p>
                     </div>
                   </button>
                 </div>
@@ -867,48 +760,44 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* ── Right: Order Summary ─────────────────────── */}
+            {/* ── Right: Order Summary ───────────────────────────── */}
             <div className="lg:col-span-5">
               <div className="sticky top-24 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Order Summary</h2>
 
                 {/* Product list */}
                 <div className="space-y-3.5 mb-5 max-h-[260px] overflow-y-auto pr-1">
-                  {items.map(({ product, quantity, size }, idx) => {
-                    let basePrice = product.price;
-                    if (size && product.variants && (product.variants as any)[size]) {
-                      basePrice = (product.variants as any)[size].price || product.price;
-                    }
-                    const itemGst = Math.round(basePrice * product.gstPercent / 100);
-                    const itemFinalPrice = basePrice + itemGst;
-
-                    return (
-                      <div key={`${product.id}-${size || idx}`} className="flex items-center gap-3 group/item">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-12 h-12 object-cover rounded-xl bg-gray-50 border border-gray-100 shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-gray-800 line-clamp-1">{product.name}</p>
-                          <p className="text-[10px] text-gray-400 mt-0.5">
-                            Qty: {quantity} {size ? `• Size: ${size} ` : ''}&bull; {formatPrice(basePrice)}
-                          </p>
-                        </div>
-                        <p className="text-xs font-bold text-gray-900 shrink-0">
-                          {formatPrice(basePrice * quantity)}
+                  {items.map(({ product, quantity, size }) => (
+                    <div key={`${product.id}-${size || ''}`} className="flex items-center gap-3">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-12 h-12 object-cover rounded-xl bg-gray-50 border border-gray-100 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-gray-800 line-clamp-1">{product.name}</p>
+                        {size && (
+                          <span className="inline-block text-[10px] font-bold text-blue-600 uppercase">
+                            Size: {size}
+                          </span>
+                        )}
+                        <p className="text-[10px] text-gray-400 mt-0.5">
+                          Qty: {quantity} &bull; {formatINR(product.finalPrice)}
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => removeItem(product.id, size || undefined)}
-                          className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                          title="Remove item"
-                        >
-                          <X size={14} />
-                        </button>
                       </div>
-                    );
-                  })}
+                      <p className="text-xs font-bold text-gray-900 shrink-0">
+                        {formatINR(product.finalPrice * quantity)}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(product.id, size || undefined)}
+                        className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        title="Remove item"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Bill breakdown */}
@@ -916,51 +805,55 @@ export default function CheckoutPage() {
                   <div className="pb-3 border-b border-gray-100">
                     <PromoCodeInput />
                   </div>
+
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-semibold text-gray-800">{formatPrice(subtotal)}</span>
+                    <span className="text-gray-600">Subtotal:</span>
+                    <span className="font-semibold text-gray-800">{formatINR(subtotal)}</span>
                   </div>
+
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>GST ({gstLabel})</span>
-                    <span className="font-semibold text-gray-800">{formatPrice(gstAmountCheckout)}</span>
+                    <span>Shipping: Flat rate</span>
+                    <span className="font-semibold text-gray-800">{shippingFee > 0 ? formatINR(shippingFee) : 'FREE'}</span>
                   </div>
+
                   {firstOrderDiscount > 0 && (
                     <div className="flex justify-between text-sm text-emerald-600 font-semibold">
                       <span>First Order Discount</span>
-                      <span>-{formatPrice(firstOrderDiscount)}</span>
+                      <span>-{formatINR(firstOrderDiscount)}</span>
                     </div>
                   )}
+
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-sm text-emerald-600 font-semibold">
                       <span>Coupon ({appliedCoupon?.code})</span>
-                      <span>-{formatPrice(discountAmount)}</span>
+                      <span>-{formatINR(discountAmount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Shipping</span>
-                    <span className="font-semibold text-gray-800">{formatPrice(shippingFee)}</span>
-                  </div>
+
                   {netBankingDiscount > 0 && (
                     <div className="flex justify-between text-sm text-emerald-600 font-semibold">
                       <span>Net Banking Discount (2%)</span>
-                      <span>-{formatPrice(netBankingDiscount)}</span>
+                      <span>-{formatINR(netBankingDiscount)}</span>
                     </div>
                   )}
 
-
-
                   <div className="border-t border-gray-200 my-2" />
 
-                  <div className="pt-1 flex justify-between items-center">
-                    <span className="font-bold text-gray-900 text-sm">Grand Total</span>
-                    <span className="text-2xl font-black text-blue-700">{formatPrice(payableTotal)}</span>
+                  <div className="pt-1 flex justify-between items-start">
+                    <span className="font-bold text-gray-900 text-base">Total:</span>
+                    <div className="text-right">
+                      <span className="text-2xl font-black text-blue-700">{formatINR(payableTotal)}</span>
+                      <p className="text-xs text-gray-500 font-medium mt-1">
+                        (includes {formatINR(gstAmountCheckout)} Tax)
+                      </p>
+                    </div>
                   </div>
 
                   {/* Savings card */}
                   {totalSavings > 0 && (
                     <div className="mt-4 p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-center animate-bounce">
                       <p className="text-xs font-bold text-emerald-800">
-                        You Saved {formatPrice(totalSavings)} Today 🎉
+                        You Saved {formatINR(totalSavings)} Today 🎉
                       </p>
                     </div>
                   )}
@@ -980,7 +873,7 @@ export default function CheckoutPage() {
                   ) : (
                     <>
                       <Lock size={16} />
-                      Pay Securely &mdash; {formatPrice(payableTotal)}
+                      Pay Securely &mdash; {formatINR(payableTotal)}
                     </>
                   )}
                 </button>
