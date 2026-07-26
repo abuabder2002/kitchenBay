@@ -63,11 +63,11 @@ export default function CMSModal({ isOpen, onClose, onSaveSuccess, sectionId, se
         method: 'POST',
         body: formData
       });
-      const resData = await res.json();
-      if (resData.success) {
+      const resData = await res.json().catch(() => ({}));
+      if (res.ok && (resData.url || resData.success)) {
         handleChange(index, field, resData.url);
       } else {
-        throw new Error(resData.error);
+        throw new Error(resData.error || 'Upload failed');
       }
     } catch (error: any) {
       Swal.fire('Upload Failed', error.message, 'error');

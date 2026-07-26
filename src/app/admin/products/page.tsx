@@ -154,19 +154,26 @@ export default function AdminProductsPage() {
         body: formData,
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        throw new Error('Upload failed');
+        throw new Error(data.error || 'Upload failed');
       }
 
-      const data = await res.json();
       if (data.url) {
         setEditingProduct(prev => prev ? { ...prev, video: data.url } : null);
       } else if (data.error) {
         throw new Error(data.error);
       }
     } catch (error) {
-      console.error('Failed to upload video:', error);
-      alert(`Failed to upload video: ${(error as Error).message}`);
+      console.error('Failed to upload video via API, loading as local Data URL:', error);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setEditingProduct(prev => prev ? { ...prev, video: event.target!.result as string } : null);
+        }
+      };
+      reader.readAsDataURL(file);
     } finally {
       setEditVideoUploading(false);
     }
@@ -283,6 +290,16 @@ export default function AdminProductsPage() {
         ...prev, 
         attributes: (prev.attributes || []).map((attr, i) => i === idx ? { ...attr, [field]: val } : attr)
       };
+    });
+  };
+
+  const addEditPresetAttribute = (name: string, defaultValue = '') => {
+    setEditingProduct(prev => {
+      if (!prev) return null;
+      const attributes = prev.attributes || [];
+      const exists = attributes.some(a => a.name.toLowerCase().trim() === name.toLowerCase().trim());
+      if (exists) return prev;
+      return { ...prev, attributes: [...attributes, { name, value: defaultValue }] };
     });
   };
 
@@ -826,9 +843,45 @@ export default function AdminProductsPage() {
                   )}
                 </div>
 
-                {/* Dynamic Attributes */}
-                <div className="pt-2 mt-4 border-t border-gray-100">
-                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2"><Package size={16} className="text-blue-600"/> Custom Attributes</h3>
+                {/* Dynamic Attributes & Specifications */}
+                <div className="pt-3 mt-4 border-t border-gray-100">
+                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <Package size={16} className="text-blue-600"/> Specifications & Manufacturer Info
+                  </h3>
+                  <p className="text-xs text-gray-500 mb-3">Add custom specifications or click quick presets below to auto-add key fields.</p>
+
+                  <div className="mb-4 bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                    <p className="text-[11px] font-semibold text-blue-900 mb-2 uppercase tracking-wider">Click to Quick-Add Common Specifications & Details:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { name: 'Pack of', val: '1' },
+                        { name: 'Sales Package', val: '1 Unit' },
+                        { name: 'Color', val: '' },
+                        { name: 'Brand Color', val: '' },
+                        { name: 'Lid Included', val: 'Yes' },
+                        { name: 'Dishwasher Safe', val: 'Yes' },
+                        { name: 'Induction Bottom', val: 'Yes' },
+                        { name: 'Airtight', val: 'Yes' },
+                        { name: 'Oven and Broiler Safe', val: 'No' },
+                        { name: 'Shape', val: 'Round' },
+                        { name: 'Capacity', val: '1.5 L' },
+                        { name: 'Manufactured, Packed & Marketed By', val: 'KitchenBay Private Limited' },
+                        { name: 'Registered Address', val: 'KitchenBay Craft Cluster, Chennai, Tamil Nadu, 600001, India' },
+                        { name: 'Country of Origin', val: 'India' },
+                        { name: 'Customer Support Contact', val: 'support@kitchenbay.co' },
+                      ].map(preset => (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() => addEditPresetAttribute(preset.name, preset.val)}
+                          className="text-[11px] px-2 py-0.5 bg-white hover:bg-blue-600 hover:text-white text-blue-700 font-medium rounded-lg border border-blue-200 transition-colors shadow-sm cursor-pointer"
+                        >
+                          + {preset.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="space-y-3 mb-4">
                     {(editingProduct.attributes || []).map((attr, idx) => (
                       <div key={idx} className="flex items-center gap-3">
@@ -837,7 +890,7 @@ export default function AdminProductsPage() {
                           placeholder="e.g. Capacity (Liters)" 
                           value={attr.name} 
                           onChange={(e) => updateEditAttribute(idx, 'name', e.target.value)}
-                          className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200"
+                          className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-200 font-medium"
                         />
                         <input 
                           type="text" 
@@ -861,7 +914,7 @@ export default function AdminProductsPage() {
                     onClick={addEditAttribute}
                     className="text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
                   >
-                    + Add Attribute
+                    + Add Custom Field
                   </button>
                 </div>
 

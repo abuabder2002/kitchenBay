@@ -127,19 +127,26 @@ export default function AddProductPage() {
         body: formData,
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        throw new Error('Upload failed');
+        throw new Error(data.error || 'Upload failed');
       }
 
-      const data = await res.json();
       if (data.url) {
         setForm(prev => ({ ...prev, video: data.url }));
       } else if (data.error) {
         throw new Error(data.error);
       }
     } catch (error) {
-      console.error('Failed to upload video:', error);
-      alert(`Failed to upload video: ${(error as Error).message}`);
+      console.error('Failed to upload video via API, loading as local Data URL:', error);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setForm(prev => ({ ...prev, video: event.target!.result as string }));
+        }
+      };
+      reader.readAsDataURL(file);
     } finally {
       setVideoUploading(false);
     }
@@ -195,6 +202,13 @@ export default function AddProductPage() {
   const removeAttribute = (idx: number) => setAttributes(prev => prev.filter((_, i) => i !== idx));
   const updateAttribute = (idx: number, field: 'name' | 'value', val: string) => {
     setAttributes(prev => prev.map((attr, i) => i === idx ? { ...attr, [field]: val } : attr));
+  };
+  const addPresetAttribute = (name: string, defaultValue = '') => {
+    setAttributes(prev => {
+      const exists = prev.some(a => a.name.toLowerCase().trim() === name.toLowerCase().trim());
+      if (exists) return prev;
+      return [...prev, { name, value: defaultValue }];
+    });
   };
 
   const basePrice = parseFloat(form.price) || 0;
@@ -588,13 +602,45 @@ export default function AddProductPage() {
           )}
         </div>
 
-        {/* Dynamic Attributes */}
+        {/* Dynamic Attributes & Specifications */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Package size={18} className="text-blue-600" /> Custom Attributes
+          <h2 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <Package size={18} className="text-blue-600" /> Specifications & Manufacturer Info
           </h2>
-          <p className="text-xs text-gray-500 mb-4">Add custom key-value pairs like Capacity (Liters), Color, Finish, or Pattern.</p>
+          <p className="text-xs text-gray-500 mb-4">Add custom product specifications or click quick presets below to auto-add key fields.</p>
           
+          <div className="mb-5 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+            <p className="text-xs font-semibold text-blue-900 mb-2 uppercase tracking-wider">Click to Quick-Add Common Specifications & Details:</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { name: 'Pack of', val: '1' },
+                { name: 'Sales Package', val: '1 Unit' },
+                { name: 'Color', val: '' },
+                { name: 'Brand Color', val: '' },
+                { name: 'Lid Included', val: 'Yes' },
+                { name: 'Dishwasher Safe', val: 'Yes' },
+                { name: 'Induction Bottom', val: 'Yes' },
+                { name: 'Airtight', val: 'Yes' },
+                { name: 'Oven and Broiler Safe', val: 'No' },
+                { name: 'Shape', val: 'Round' },
+                { name: 'Capacity', val: '1.5 L' },
+                { name: 'Manufactured, Packed & Marketed By', val: 'KitchenBay Private Limited' },
+                { name: 'Registered Address', val: 'KitchenBay Craft Cluster, Chennai, Tamil Nadu, 600001, India' },
+                { name: 'Country of Origin', val: 'India' },
+                { name: 'Customer Support Contact', val: 'support@kitchenbay.co' },
+              ].map(preset => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => addPresetAttribute(preset.name, preset.val)}
+                  className="text-xs px-2.5 py-1 bg-white hover:bg-blue-600 hover:text-white text-blue-700 font-medium rounded-lg border border-blue-200 transition-colors shadow-sm cursor-pointer"
+                >
+                  + {preset.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-3 mb-4">
             {attributes.map((attr, idx) => (
               <div key={idx} className="flex items-center gap-3">
@@ -603,7 +649,7 @@ export default function AddProductPage() {
                   placeholder="e.g. Capacity (Liters)" 
                   value={attr.name} 
                   onChange={(e) => updateAttribute(idx, 'name', e.target.value)}
-                  className="flex-1 px-4 py-2 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200"
+                  className="flex-1 px-4 py-2 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-200 font-medium"
                 />
                 <input 
                   type="text" 
@@ -628,7 +674,7 @@ export default function AddProductPage() {
             onClick={addAttribute}
             className="text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-4 py-2 rounded-lg transition-colors"
           >
-            + Add Attribute
+            + Add Custom Field
           </button>
         </div>
 

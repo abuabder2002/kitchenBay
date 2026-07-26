@@ -111,9 +111,11 @@ export default function ProductDetailPage() {
     const standardKeys = [
       "pack of", "sales package", "brand", "model name", "model number", "color",
       "brand color", "lid included", "dishwasher safe", "lid material", "shape",
-      "capacity", "induction bottom", "airtight", "oven and broiler safe"
+      "capacity", "induction bottom", "airtight", "oven and broiler safe",
+      "manufactured, packed & marketed by", "manufactured by", "registered address",
+      "country of origin", "customer support contact", "customer support"
     ];
-    return product.attributes.filter((attr: any) => !standardKeys.includes(attr.name.toLowerCase()));
+    return product.attributes.filter((attr: any) => !standardKeys.includes(attr.name.toLowerCase().trim()));
   };
   const { products } = useProducts();
   const contextProduct = products.find((p: any) => p.id === id);
@@ -898,20 +900,52 @@ export default function ProductDetailPage() {
                       <div className="space-y-4 text-sm text-gray-700">
                         <div className="border-b border-gray-100 pb-3">
                           <p className="text-xs text-gray-400 font-medium">Manufactured, Packed & Marketed By</p>
-                          <p className="text-sm font-semibold text-gray-800 mt-0.5">KitchenBay Private Limited</p>
+                          <p className="text-sm font-semibold text-gray-800 mt-0.5">
+                            {getAttrValue("Manufactured, Packed & Marketed By", getAttrValue("Manufactured By", "KitchenBay Private Limited"))}
+                          </p>
                         </div>
                         <div className="border-b border-gray-100 pb-3">
                           <p className="text-xs text-gray-400 font-medium">Registered Address</p>
-                          <p className="text-sm font-semibold text-gray-800 mt-0.5">KitchenBay Craft Cluster, Chennai, Tamil Nadu, 600001, India</p>
+                          <p className="text-sm font-semibold text-gray-800 mt-0.5">
+                            {getAttrValue("Registered Address", "KitchenBay Craft Cluster, Chennai, Tamil Nadu, 600001, India")}
+                          </p>
                         </div>
                         <div className="border-b border-gray-100 pb-3">
                           <p className="text-xs text-gray-400 font-medium">Country of Origin</p>
-                          <p className="text-sm font-semibold text-gray-800 mt-0.5">India</p>
+                          <p className="text-sm font-semibold text-gray-800 mt-0.5">
+                            {getAttrValue("Country of Origin", "India")}
+                          </p>
                         </div>
                         <div className="border-b border-gray-100 pb-3">
                           <p className="text-xs text-gray-400 font-medium">Customer Support Contact</p>
-                          <p className="text-sm font-semibold text-gray-800 mt-0.5">support@kitchenbay.com</p>
+                          <p className="text-sm font-semibold text-gray-800 mt-0.5">
+                            {getAttrValue("Customer Support Contact", getAttrValue("Customer Support", "support@kitchenbay.co"))}
+                          </p>
                         </div>
+                        {/* Additional Manufacturer / Compliance Attributes */}
+                        {product?.attributes
+                          ?.filter((a: any) => {
+                            const n = a.name.toLowerCase().trim();
+                            return (
+                              n.includes('manufactur') ||
+                              n.includes('importer') ||
+                              n.includes('packer') ||
+                              n.includes('compliance') ||
+                              n.includes('fssai') ||
+                              n.includes('license') ||
+                              n.includes('origin')
+                            ) && ![
+                              "manufactured, packed & marketed by", "manufactured by",
+                              "registered address", "country of origin",
+                              "customer support contact", "customer support"
+                            ].includes(n);
+                          })
+                          .map((attr: any, idx: number) => (
+                            <div className="border-b border-gray-100 pb-3" key={idx}>
+                              <p className="text-xs text-gray-400 font-medium">{attr.name}</p>
+                              <p className="text-sm font-semibold text-gray-800 mt-0.5">{attr.value}</p>
+                            </div>
+                          ))}
                       </div>
                     </div>
                   </div>

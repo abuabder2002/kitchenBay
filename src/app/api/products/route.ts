@@ -171,7 +171,7 @@ export async function GET(req: Request) {
         featured: p.featured,
         // Price/stock only — per-size images are base64 data URLs, same 4.5MB risk as subImages, so they're stripped here
         variants: variantsToRupeesLite(p.variants as Record<string, any> | null),
-        attributes: null,
+        attributes: (p.attributes as any) || undefined,
         isFromDb: true,
         brand: p.brand || undefined,
         shippingFee: p.shippingFee !== null && p.shippingFee !== undefined ? p.shippingFee / 100 : undefined,
