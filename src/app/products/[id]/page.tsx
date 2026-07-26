@@ -449,7 +449,228 @@ export default function ProductDetailPage() {
                     </div>
                   ))}
                 </div>
-              )}
+              {/* ── Tabs Section: Specifications / Description / Manufacturer info ── */}
+              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-sm mt-8">
+                <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 font-[family-name:var(--font-heading)]">Product Specifications & Details</h2>
+                  <button
+                    onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                    className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
+                    aria-label="Toggle details"
+                  >
+                    {isDetailsOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  </button>
+                </div>
+
+                {isDetailsOpen && (
+                  <div className="space-y-6">
+                    <div className="flex flex-wrap gap-2 pb-4 border-b border-gray-100">
+                      {[
+                        { id: 'specifications', label: 'Specifications' },
+                        { id: 'description', label: 'Description' },
+                        { id: 'manufacturer', label: 'Manufacturer Info' }
+                      ].map(tab => {
+                        const isActive = activeTab === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl shadow-sm transition-all border ${isActive
+                                ? 'bg-[#1A1A1A] text-white border-transparent'
+                                : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
+                              }`}
+                          >
+                            {tab.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div>
+                      {activeTab === 'specifications' && (
+                        <div className="text-left space-y-8 font-sans">
+                          {/* In the Box */}
+                          <div className="space-y-3">
+                            <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider">In the Box</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+                              <div className="border-b border-gray-100 pb-2">
+                                <p className="text-xs text-gray-400 font-medium">Pack of</p>
+                                <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Pack of", "1")}</p>
+                              </div>
+                              <div className="border-b border-gray-100 pb-2">
+                                <p className="text-xs text-gray-400 font-medium">Sales Package</p>
+                                <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Sales Package", getAttrValue("Pack of", "1"))}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* General */}
+                          <div className="space-y-3 pt-2">
+                            <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider">General Specifications</h4>
+                            <div className="space-y-3">
+                              {/* Brand & Model */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Brand</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{product.brand || "KitchenBay"}</p>
+                                </div>
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Model Name</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{product.name}</p>
+                                </div>
+                              </div>
+
+                              {/* Grid for two columns attributes */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+                                {/* Model Number */}
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Model Number</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{product.sku || `KB_${product.id.slice(0, 8).toUpperCase()}`}</p>
+                                </div>
+
+                                {/* Color */}
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Color</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Color", getDefaultColor(product.material))}</p>
+                                </div>
+
+                                {/* Brand Color */}
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Brand Color</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Brand Color", getAttrValue("Color", getDefaultColor(product.material)))}</p>
+                                </div>
+
+                                {/* Lid Included */}
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Lid Included</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Lid Included", hasLid(product.name, product.category))}</p>
+                                </div>
+
+                                {/* Dishwasher Safe */}
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Dishwasher Safe</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Dishwasher Safe", isDishwasherSafe(product.material))}</p>
+                                </div>
+
+                                {/* Induction Bottom */}
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Induction Bottom</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Induction Bottom", isInductionBottom(product.name, product.material))}</p>
+                                </div>
+
+                                {/* Airtight */}
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Airtight</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Airtight", isAirtight(product.name, product.category))}</p>
+                                </div>
+
+                                {/* Oven and Broiler Safe */}
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Oven and Broiler Safe</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Oven and Broiler Safe", isOvenSafe(product.material))}</p>
+                                </div>
+
+                                {/* Shape */}
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Shape</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Shape", "Round")}</p>
+                                </div>
+
+                                {/* Capacity */}
+                                <div className="border-b border-gray-100 pb-2">
+                                  <p className="text-xs text-gray-400 font-medium">Capacity</p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Capacity", selectedSize || "Standard")}</p>
+                                </div>
+
+                                {/* Remaining Custom Attributes */}
+                                {getRemainingAttributes().map((attr: any, idx: number) => (
+                                  <div className="border-b border-gray-100 pb-2" key={idx}>
+                                    <p className="text-xs text-gray-400 font-medium">{attr.name}</p>
+                                    <p className="text-sm font-semibold text-gray-800 mt-0.5">{attr.value}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {activeTab === 'description' && (
+                        <div className="text-left space-y-3 text-sm text-gray-700 leading-relaxed font-sans">
+                          {product.description
+                            .split(/\n+/)
+                            .map((para: string) => para.trim())
+                            .filter((para: string) => para.length > 0)
+                            .map((para: string, i: number) => (
+                              <p key={i} className="mb-2">
+                                {para}
+                              </p>
+                            ))
+                          }
+                        </div>
+                      )}
+
+                      {activeTab === 'manufacturer' && (
+                        <div className="text-left space-y-6 font-sans">
+                          <div>
+                            <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider mb-3">Manufacturer Details</h4>
+                            <div className="space-y-3 text-sm text-gray-700">
+                              <div className="border-b border-gray-100 pb-2">
+                                <p className="text-xs text-gray-400 font-medium">Manufactured, Packed & Marketed By</p>
+                                <p className="text-sm font-semibold text-gray-800 mt-0.5">
+                                  {getAttrValue("Manufactured, Packed & Marketed By", getAttrValue("Manufactured By", "KitchenBay Private Limited"))}
+                                </p>
+                              </div>
+                              <div className="border-b border-gray-100 pb-2">
+                                <p className="text-xs text-gray-400 font-medium">Registered Address</p>
+                                <p className="text-sm font-semibold text-gray-800 mt-0.5">
+                                  {getAttrValue("Registered Address", "KitchenBay Craft Cluster, Chennai, Tamil Nadu, 600001, India")}
+                                </p>
+                              </div>
+                              <div className="border-b border-gray-100 pb-2">
+                                <p className="text-xs text-gray-400 font-medium">Country of Origin</p>
+                                <p className="text-sm font-semibold text-gray-800 mt-0.5">
+                                  {getAttrValue("Country of Origin", "India")}
+                                </p>
+                              </div>
+                              <div className="border-b border-gray-100 pb-2">
+                                <p className="text-xs text-gray-400 font-medium">Customer Support Contact</p>
+                                <p className="text-sm font-semibold text-gray-800 mt-0.5">
+                                  {getAttrValue("Customer Support Contact", getAttrValue("Customer Support", "support@kitchenbay.co"))}
+                                </p>
+                              </div>
+                              {/* Additional Manufacturer / Compliance Attributes */}
+                              {product?.attributes
+                                ?.filter((a: any) => {
+                                  const n = a.name.toLowerCase().trim();
+                                  return (
+                                    n.includes('manufactur') ||
+                                    n.includes('importer') ||
+                                    n.includes('packer') ||
+                                    n.includes('compliance') ||
+                                    n.includes('fssai') ||
+                                    n.includes('license') ||
+                                    n.includes('origin')
+                                  ) && ![
+                                    "manufactured, packed & marketed by", "manufactured by",
+                                    "registered address", "country of origin",
+                                    "customer support contact", "customer support"
+                                  ].includes(n);
+                                })
+                                .map((attr: any, idx: number) => (
+                                  <div className="border-b border-gray-100 pb-2" key={idx}>
+                                    <p className="text-xs text-gray-400 font-medium">{attr.name}</p>
+                                    <p className="text-sm font-semibold text-gray-800 mt-0.5">{attr.value}</p>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Right: Sticky Details */}
@@ -732,228 +953,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
-        {/* ── Tabs Section: Specifications / Description / Manufacturer info ── */}
-        <div className="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-[--color-brand-border] mt-16">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 font-[family-name:var(--font-heading)]">All details</h2>
-            <button
-              onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-              className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
-              aria-label="Toggle details"
-            >
-              {isDetailsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </button>
-          </div>
 
-          {isDetailsOpen && (
-            <div className="space-y-8">
-              <div className="flex flex-wrap gap-3 pb-5">
-                {[
-                  { id: 'specifications', label: 'Specifications' },
-                  { id: 'description', label: 'Description' },
-                  { id: 'manufacturer', label: 'Manufacturer info' }
-                ].map(tab => {
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`px-5 py-2 text-sm font-semibold rounded-md shadow-sm transition-all border ${isActive
-                          ? 'bg-[#1A1A1A] text-white border-transparent'
-                          : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
-                        }`}
-                    >
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div>
-                {activeTab === 'specifications' && (
-                  <div className="text-left space-y-10 font-sans max-w-3xl">
-                    {/* In the Box */}
-                    <div className="space-y-4">
-                      <h4 className="font-bold text-gray-900 text-[16px] uppercase tracking-wider">In the Box</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                        <div className="border-b border-gray-100 pb-3">
-                          <p className="text-[13px] text-gray-400 font-medium">Pack of</p>
-                          <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Pack of", "1")}</p>
-                        </div>
-                        <div className="border-b border-gray-100 pb-3">
-                          <p className="text-[13px] text-gray-400 font-medium">Sales Package</p>
-                          <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Sales Package", getAttrValue("Pack of", "1"))}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* General */}
-                    <div className="space-y-4 pt-4">
-                      <h4 className="font-bold text-gray-900 text-[16px] uppercase tracking-wider">General</h4>
-                      <div className="space-y-4">
-                        {/* Brand */}
-                        <div className="border-b border-gray-100 pb-3">
-                          <p className="text-[13px] text-gray-400 font-medium">Brand</p>
-                          <p className="text-[15px] font-semibold text-gray-800 mt-1">{product.brand || "KitchenBay"}</p>
-                        </div>
-
-                        {/* Model Name */}
-                        <div className="border-b border-gray-100 pb-3">
-                          <p className="text-[13px] text-gray-400 font-medium">Model Name</p>
-                          <p className="text-[15px] font-semibold text-gray-800 mt-1">{product.name}</p>
-                        </div>
-
-                        {/* Grid for two columns attributes */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                          {/* Model Number */}
-                          <div className="border-b border-gray-100 pb-3">
-                            <p className="text-[13px] text-gray-400 font-medium">Model Number</p>
-                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{product.sku || `KB_${product.id.slice(0, 8).toUpperCase()}`}</p>
-                          </div>
-
-                          {/* Color */}
-                          <div className="border-b border-gray-100 pb-3">
-                            <p className="text-[13px] text-gray-400 font-medium">Color</p>
-                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Color", getDefaultColor(product.material))}</p>
-                          </div>
-
-                          {/* Brand Color */}
-                          <div className="border-b border-gray-100 pb-3">
-                            <p className="text-[13px] text-gray-400 font-medium">Brand Color</p>
-                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Brand Color", getAttrValue("Color", getDefaultColor(product.material)))}</p>
-                          </div>
-
-                          {/* Lid Included */}
-                          <div className="border-b border-gray-100 pb-3">
-                            <p className="text-[13px] text-gray-400 font-medium">Lid Included</p>
-                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Lid Included", hasLid(product.name, product.category))}</p>
-                          </div>
-
-                          {/* Dishwasher Safe */}
-                          <div className="border-b border-gray-100 pb-3">
-                            <p className="text-[13px] text-gray-400 font-medium">Dishwasher Safe</p>
-                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Dishwasher Safe", isDishwasherSafe(product.material))}</p>
-                          </div>
-
-                          {/* Induction Bottom */}
-                          <div className="border-b border-gray-100 pb-3">
-                            <p className="text-[13px] text-gray-400 font-medium">Induction Bottom</p>
-                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Induction Bottom", isInductionBottom(product.name, product.material))}</p>
-                          </div>
-
-                          {/* Airtight */}
-                          <div className="border-b border-gray-100 pb-3">
-                            <p className="text-[13px] text-gray-400 font-medium">Airtight</p>
-                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Airtight", isAirtight(product.name, product.category))}</p>
-                          </div>
-
-                          {/* Oven and Broiler Safe */}
-                          <div className="border-b border-gray-100 pb-3">
-                            <p className="text-[13px] text-gray-400 font-medium">Oven and Broiler Safe</p>
-                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Oven and Broiler Safe", isOvenSafe(product.material))}</p>
-                          </div>
-
-                          {/* Shape */}
-                          <div className="border-b border-gray-100 pb-3">
-                            <p className="text-[13px] text-gray-400 font-medium">Shape</p>
-                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Shape", "Round")}</p>
-                          </div>
-
-                          {/* Capacity */}
-                          <div className="border-b border-gray-100 pb-3">
-                            <p className="text-[13px] text-gray-400 font-medium">Capacity</p>
-                            <p className="text-[15px] font-semibold text-gray-800 mt-1">{getAttrValue("Capacity", selectedSize || "Standard")}</p>
-                          </div>
-
-                          {/* Remaining Custom Attributes */}
-                          {getRemainingAttributes().map((attr: any, idx: number) => (
-                            <div className="border-b border-gray-100 pb-3" key={idx}>
-                              <p className="text-[13px] text-gray-400 font-medium">{attr.name}</p>
-                              <p className="text-[15px] font-semibold text-gray-800 mt-1">{attr.value}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'description' && (
-                  <div className="text-left space-y-4 text-sm text-gray-700 leading-relaxed max-w-3xl font-sans">
-                    {product.description
-                      .split(/\n+/)
-                      .map((para: string) => para.trim())
-                      .filter((para: string) => para.length > 0)
-                      .map((para: string, i: number) => (
-                        <p key={i} className="mb-3">
-                          {para}
-                        </p>
-                      ))
-                    }
-                  </div>
-                )}
-
-                {activeTab === 'manufacturer' && (
-                  <div className="text-left space-y-6 font-sans max-w-3xl">
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-base uppercase tracking-wider mb-3">Manufacturer Details</h4>
-                      <div className="space-y-4 text-sm text-gray-700">
-                        <div className="border-b border-gray-100 pb-3">
-                          <p className="text-xs text-gray-400 font-medium">Manufactured, Packed & Marketed By</p>
-                          <p className="text-sm font-semibold text-gray-800 mt-0.5">
-                            {getAttrValue("Manufactured, Packed & Marketed By", getAttrValue("Manufactured By", "KitchenBay Private Limited"))}
-                          </p>
-                        </div>
-                        <div className="border-b border-gray-100 pb-3">
-                          <p className="text-xs text-gray-400 font-medium">Registered Address</p>
-                          <p className="text-sm font-semibold text-gray-800 mt-0.5">
-                            {getAttrValue("Registered Address", "KitchenBay Craft Cluster, Chennai, Tamil Nadu, 600001, India")}
-                          </p>
-                        </div>
-                        <div className="border-b border-gray-100 pb-3">
-                          <p className="text-xs text-gray-400 font-medium">Country of Origin</p>
-                          <p className="text-sm font-semibold text-gray-800 mt-0.5">
-                            {getAttrValue("Country of Origin", "India")}
-                          </p>
-                        </div>
-                        <div className="border-b border-gray-100 pb-3">
-                          <p className="text-xs text-gray-400 font-medium">Customer Support Contact</p>
-                          <p className="text-sm font-semibold text-gray-800 mt-0.5">
-                            {getAttrValue("Customer Support Contact", getAttrValue("Customer Support", "support@kitchenbay.co"))}
-                          </p>
-                        </div>
-                        {/* Additional Manufacturer / Compliance Attributes */}
-                        {product?.attributes
-                          ?.filter((a: any) => {
-                            const n = a.name.toLowerCase().trim();
-                            return (
-                              n.includes('manufactur') ||
-                              n.includes('importer') ||
-                              n.includes('packer') ||
-                              n.includes('compliance') ||
-                              n.includes('fssai') ||
-                              n.includes('license') ||
-                              n.includes('origin')
-                            ) && ![
-                              "manufactured, packed & marketed by", "manufactured by",
-                              "registered address", "country of origin",
-                              "customer support contact", "customer support"
-                            ].includes(n);
-                          })
-                          .map((attr: any, idx: number) => (
-                            <div className="border-b border-gray-100 pb-3" key={idx}>
-                              <p className="text-xs text-gray-400 font-medium">{attr.name}</p>
-                              <p className="text-sm font-semibold text-gray-800 mt-0.5">{attr.value}</p>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* ── Related Products ──────────────────────────────────────────── */}
         {related.length > 0 && (
