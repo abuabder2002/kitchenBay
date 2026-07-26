@@ -918,7 +918,11 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-semibold text-gray-800">{formatPrice(subtotal + gstAmountCheckout)}</span>
+                    <span className="font-semibold text-gray-800">{formatPrice(subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>GST ({gstLabel})</span>
+                    <span className="font-semibold text-gray-800">{formatPrice(gstAmountCheckout)}</span>
                   </div>
                   {firstOrderDiscount > 0 && (
                     <div className="flex justify-between text-sm text-emerald-600 font-semibold">
@@ -951,9 +955,6 @@ export default function CheckoutPage() {
                     <span className="font-bold text-gray-900 text-sm">Grand Total</span>
                     <span className="text-2xl font-black text-blue-700">{formatPrice(payableTotal)}</span>
                   </div>
-                  <p className="text-right text-[11px] text-gray-400">
-                    (Includes {formatPrice(gstAmountCheckout)} {gstLabel})
-                  </p>
 
                   {/* Savings card */}
                   {totalSavings > 0 && (
