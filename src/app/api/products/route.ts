@@ -130,6 +130,7 @@ export async function GET(req: Request) {
         video: true,
         sizeCategory: true,
         variants: true,
+        attributes: true,
       }
       }),
       prisma.product.count({ where: whereClause }),
