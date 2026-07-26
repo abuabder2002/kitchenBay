@@ -449,6 +449,8 @@ export default function ProductDetailPage() {
                     </div>
                   ))}
                 </div>
+              )}
+
               {/* ── Tabs Section: Specifications / Description / Manufacturer info ── */}
               <div className="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-sm mt-8">
                 <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
