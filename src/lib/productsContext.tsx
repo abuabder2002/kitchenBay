@@ -76,8 +76,15 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
         setProducts(prev => [savedProduct, ...prev]);
         return { success: true, message: 'Product created successfully.' };
       } else {
-        const errBody = await res.json().catch(() => ({ error: 'Unknown error' }));
-        const msg = errBody?.error || `Server error ${res.status}`;
+        let msg = `Server error ${res.status}`;
+        try {
+          const errBody = await res.json();
+          if (errBody?.error) msg = errBody.error;
+        } catch {
+          if (res.status === 413) {
+            msg = 'Payload too large. Product video or images are too big to save.';
+          }
+        }
         console.error('addProduct API error:', msg);
         return { success: false, message: msg };
       }
@@ -120,8 +127,15 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       } else {
         // Revert optimistic update
         if (original) setProducts(prev => prev.map(p => (p.id === id ? original : p)));
-        const errBody = await res.json().catch(() => ({ error: 'Unknown error' }));
-        const msg = errBody?.error || `Server error ${res.status}`;
+        let msg = `Server error ${res.status}`;
+        try {
+          const errBody = await res.json();
+          if (errBody?.error) msg = errBody.error;
+        } catch {
+          if (res.status === 413) {
+            msg = 'Payload too large. Product video or images are too big to save.';
+          }
+        }
         console.error('updateProduct API error:', msg);
         return { success: false, message: msg };
       }

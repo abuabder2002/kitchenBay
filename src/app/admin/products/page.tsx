@@ -8,6 +8,7 @@ import { Plus, Pencil, Trash2, Search, Star, X, Upload, ShieldCheck, Package } f
 import { useProducts } from '@/lib/productsContext';
 import { Product } from '@/lib/mockData';
 import { processProductImage } from '@/lib/imageProcessor';
+import { uploadMediaFile } from '@/lib/uploadHelper';
 
 export default function AdminProductsPage() {
   const { products, toggleFeatured, deleteProduct, updateProduct, refreshProducts } = useProducts();
@@ -146,34 +147,11 @@ export default function AdminProductsPage() {
 
     setEditVideoUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Upload failed');
-      }
-
-      if (data.url) {
-        setEditingProduct(prev => prev ? { ...prev, video: data.url } : null);
-      } else if (data.error) {
-        throw new Error(data.error);
-      }
-    } catch (error) {
-      console.error('Failed to upload video via API, loading as local Data URL:', error);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setEditingProduct(prev => prev ? { ...prev, video: event.target!.result as string } : null);
-        }
-      };
-      reader.readAsDataURL(file);
+      const url = await uploadMediaFile(file);
+      setEditingProduct(prev => prev ? { ...prev, video: url } : null);
+    } catch (error: any) {
+      console.error('Video upload error:', error);
+      alert(`❌ Failed to upload video: ${error?.message || 'Unknown error'}`);
     } finally {
       setEditVideoUploading(false);
     }
@@ -324,6 +302,11 @@ export default function AdminProductsPage() {
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingProduct) {
+      if (editingProduct.video?.startsWith('data:video/')) {
+        alert('❌ The video file is stored as uncompressed raw data which exceeds the server payload limit. Please remove the video and upload it again.');
+        return;
+      }
+
       // Ensure variants have numeric price and stock before saving
       let processedVariants = editingProduct.variants;
       if (processedVariants && Object.keys(processedVariants).length > 0) {

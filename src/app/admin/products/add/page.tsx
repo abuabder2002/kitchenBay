@@ -9,6 +9,7 @@ import { useProducts } from '@/lib/productsContext';
 import { Package, Calculator, Check, Upload, ShieldCheck, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { processProductImage } from '@/lib/imageProcessor';
+import { uploadMediaFile } from '@/lib/uploadHelper';
 
 interface DbCategory { id: string; name: string; slug: string; }
 interface DbSubcategory { id: string; name: string; categoryId: string; slug: string; }
@@ -119,34 +120,11 @@ export default function AddProductPage() {
 
     setVideoUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Upload failed');
-      }
-
-      if (data.url) {
-        setForm(prev => ({ ...prev, video: data.url }));
-      } else if (data.error) {
-        throw new Error(data.error);
-      }
-    } catch (error) {
-      console.error('Failed to upload video via API, loading as local Data URL:', error);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setForm(prev => ({ ...prev, video: event.target!.result as string }));
-        }
-      };
-      reader.readAsDataURL(file);
+      const url = await uploadMediaFile(file);
+      setForm(prev => ({ ...prev, video: url }));
+    } catch (error: any) {
+      console.error('Video upload error:', error);
+      alert(`❌ Failed to upload video: ${error?.message || 'Unknown error'}`);
     } finally {
       setVideoUploading(false);
     }
@@ -223,6 +201,10 @@ export default function AddProductPage() {
     e.preventDefault();
     if (!allValid) { alert('Please fill in all required fields correctly.'); return; }
     if (!form.image) { alert('Please upload a product image.'); return; }
+    if (form.video?.startsWith('data:video/')) {
+      alert('❌ The video file is stored as uncompressed raw data which exceeds the server payload limit. Please remove the video and upload it again.');
+      return;
+    }
 
     const result = await addProduct({
       name: form.name,
