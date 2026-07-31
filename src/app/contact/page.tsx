@@ -51,7 +51,7 @@ export default function ContactPage() {
         icon: 'error',
         confirmButtonColor: '#d33',
       });
-    } fontally {
+    } finally {
       setIsSubmitting(false);
     }
   };
