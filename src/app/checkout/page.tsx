@@ -837,6 +837,13 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
+                  {gstAmountCheckout > 0 && (
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>{gstLabel}</span>
+                      <span className="font-semibold text-gray-800">+{formatINR(gstAmountCheckout)}</span>
+                    </div>
+                  )}
+
                   <div className="border-t border-gray-200 my-2" />
 
                   <div className="pt-1 flex justify-between items-start">

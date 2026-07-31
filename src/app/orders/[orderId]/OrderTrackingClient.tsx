@@ -258,6 +258,12 @@ export default function OrderTrackingClient({ orderId, contact }: OrderTrackingC
                   <span className="text-gray-500">Shipping: Flat rate</span>
                   <span className="font-medium text-gray-800">{formatCurrency(order.shipping)}</span>
                 </div>
+                {order.tax > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">GST / Tax</span>
+                    <span className="font-medium text-gray-800">+{formatCurrency(order.tax)}</span>
+                  </div>
+                )}
                 <div className="border-t border-gray-100 pt-3 mt-1">
                   <div className="flex justify-between items-start">
                     <span className="font-bold text-gray-900 text-sm">Total:</span>
