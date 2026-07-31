@@ -51,7 +51,7 @@ export default function ContactPage() {
         icon: 'error',
         confirmButtonColor: '#d33',
       });
-    } finally {
+    } fontally {
       setIsSubmitting(false);
     }
   };
@@ -180,9 +180,9 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-bold text-brand-text mb-1">Chennai Store</h3>
                     <p className="text-brand-muted leading-relaxed">
-                      Kitchenbay The Homeneeds (Chennai)<br />
-                      KitchenBay Craft Cluster<br />
-                      Chennai, Tamil Nadu - 600001<br />
+                      Kitchenbay The Home Needs (Chennai)<br />
+                      No 457, Vardharajapuram MTH Road<br />
+                      Ambattur, Chennai - 600053<br />
                       +91 7010189976
                     </p>
                   </div>

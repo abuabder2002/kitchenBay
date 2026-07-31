@@ -10,19 +10,19 @@ export default function StoreLocatorPage() {
   const stores = [
     {
       id: 1,
-      name: "Kitchenbay The Home Needs (salem)",
+      name: "Kitchenbay The Home Needs (Salem)",
       address: "19/A Line Street, Attur, Salem, Tamil Nadu 636102",
       phone: "+91 7502777766",
-      hours: "Store timing 9:30 to 9:30",
+      hours: "Store timing 9.30 AM to 9.30PM",
       mapsLink: "https://www.google.com/maps/search/?api=1&query=19%2FA+Line+Street%2C+Attur%2C+Salem%2C+Tamil+Nadu+636102",
     },
     {
       id: 2,
-      name: "Kitchenbay The Homeneeds (Chennai)",
-      address: "KitchenBay Craft Cluster, Chennai, Tamil Nadu 600001",
+      name: "Kitchenbay The Home Needs (Chennai)",
+      address: "No 457, Vardharajapuram MTH Road Ambattur Chennai 600053",
       phone: "+91 7010189976",
-      hours: "Store timing 9:30 to 9:30",
-      mapsLink: "https://maps.app.goo.gl/7Z3v7MhxSBLs1Jj49",
+      hours: "Store timing 9.30 AM to 9.30PM",
+      mapsLink: "https://www.google.com/maps/search/?api=1&query=No+457%2C+Vardharajapuram+MTH+Road+Ambattur+Chennai+600053",
     }
   ];
 
@@ -150,5 +150,3 @@ export default function StoreLocatorPage() {
     </div>
   );
 }
-
-

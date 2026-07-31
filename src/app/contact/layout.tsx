@@ -4,7 +4,7 @@ import { SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from '@/lib/seoConfig';
 export const metadata: Metadata = {
   title: 'Contact Us — KitchenBay Salem & Chennai',
   description:
-    'Have questions about our handcrafted kitchenware? Contact KitchenBay at kitchenbaypvtltd@gmail.com, visit our Salem store (19/A, Line Street, Attur, Salem, Tamil Nadu 636102) or Chennai store (KitchenBay Craft Cluster, Chennai 600001). We deliver to Madurai, Vellore, Trichy and across Tamil Nadu.',
+    'Have questions about our handcrafted kitchenware? Contact KitchenBay at kitchenbaypvtltd@gmail.com, visit our Salem store (19/A, Line Street, Attur, Salem, Tamil Nadu 636102) or Chennai store (No 457, Vardharajapuram MTH Road Ambattur Chennai 600053). We deliver to Madurai, Vellore, Trichy and across Tamil Nadu.',
   alternates: { canonical: `${SITE_URL}/contact` },
   openGraph: {
     title: `Contact ${SITE_NAME} — Customer Support & Inquiries`,
