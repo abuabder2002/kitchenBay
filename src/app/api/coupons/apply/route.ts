@@ -19,12 +19,37 @@ export async function POST(request: Request) {
 
     const user = await getDbUser(); // Optional: user might be guest
 
-    const coupon = await prisma.coupon.findUnique({
+    let coupon = await prisma.coupon.findUnique({
       where: { code },
       include: {
         _count: { select: { usages: true } },
       }
     });
+
+    if (!coupon && ['FIRST100', 'WELCOME100', 'FIRST', 'LOGIN100', 'NEWUSER', 'WELCOME'].includes(code)) {
+      try {
+        await prisma.coupon.create({
+          data: {
+            code,
+            description: 'First Login Offer - Flat ₹100 OFF',
+            type: 'FIXED',
+            value: 10000, // ₹100 in paise
+            minOrderAmount: 0,
+            eligibility: 'NEW_USER',
+            isActive: true,
+          },
+        });
+        coupon = await prisma.coupon.findUnique({
+          where: { code },
+          include: { _count: { select: { usages: true } } }
+        });
+      } catch {
+        coupon = await prisma.coupon.findUnique({
+          where: { code },
+          include: { _count: { select: { usages: true } } }
+        });
+      }
+    }
 
     if (!coupon) {
       return NextResponse.json({ error: 'Invalid coupon code' }, { status: 404 });

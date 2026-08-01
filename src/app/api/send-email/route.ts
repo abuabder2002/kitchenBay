@@ -219,7 +219,7 @@ export async function POST(request: Request) {
                         <td style="padding: 4px 0; text-align: right; color: #1f2937;">${formatPrice(subtotalRupees)}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Shipping: Flat rate</td>
+                        <td style="padding: 4px 0; color: #6b7280; text-align: left;">Shipping:</td>
                         <td style="padding: 4px 0; text-align: right; color: #1f2937;">${formatPrice(shippingRupees)}</td>
                       </tr>
                       <tr style="font-size: 15px; font-weight: bold;">

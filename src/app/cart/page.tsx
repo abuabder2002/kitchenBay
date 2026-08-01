@@ -171,7 +171,7 @@ export default function CartPage() {
                   <span>Total</span>
                   <span className="text-xl text-blue-700">{formatPrice(subtotal - discountAmount)}</span>
                 </div>
-                <p className="text-xs text-gray-400">+ {gstLabel} &amp; shipping added at checkout</p>
+                <p className="text-xs text-gray-500">All prices are inclusive of GST. Shipping calculated at checkout.</p>
               </div>
 
               <button

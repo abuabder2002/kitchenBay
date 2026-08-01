@@ -9,7 +9,7 @@ export const SITE_URL =
 
 export const SITE_NAME = 'KitchenBay';
 export const SITE_TAGLINE = 'The Home Needs';
-export const SITE_LEGAL_NAME = 'Kitchenbay The Home Needs (salem)';
+export const SITE_LEGAL_NAME = 'Kitchenbay The Home Needs (Salem)';
 
 export const SITE_DESCRIPTION =
   "India's premium destination for authentic handcrafted kitchenware, cookware, dining essentials, and traditional home décor. Shop stainless steel utensils, cast iron cookware, brass & copper vessels, and kitchen accessories online at KitchenBay.";
@@ -62,15 +62,15 @@ export const STORES = [
   },
   {
     key: 'chennai',
-    name: 'Kitchenbay The Homeneeds (Chennai)',
+    name: 'Kitchenbay The Home Needs (Chennai)',
     address: {
-      streetAddress: 'KitchenBay Craft Cluster',
+      streetAddress: 'No 457, Vardharajapuram MTH Road Ambattur',
       addressLocality: 'Chennai',
       addressRegion: 'Tamil Nadu',
-      postalCode: '600001',
+      postalCode: '600053',
       addressCountry: 'IN',
     },
-    geo: { latitude: 13.0827, longitude: 80.2707 },
+    geo: { latitude: 13.1147, longitude: 80.1548 },
     phone: '+91 7010189976',
   },
 ] as const;

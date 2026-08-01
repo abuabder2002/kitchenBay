@@ -77,7 +77,8 @@ export async function POST(req: NextRequest) {
 
       const lineSubtotal = basePrice * item.quantity;
       subtotalRupees += lineSubtotal;
-      grossGstRupees += lineSubtotal * ((dbProduct.gstPercent ?? 5) / 100);
+      const gstRate = dbProduct.gstPercent ?? 5;
+      grossGstRupees += lineSubtotal * (gstRate / (100 + gstRate));
       productShippingFees.push(getDbProductShippingFee(dbProduct));
 
       orderItems.push({

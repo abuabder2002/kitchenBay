@@ -35,87 +35,28 @@ import { productSchema } from '@/lib/schemas';
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
 
-  // Helper to get custom attributes
-  const getAttrValue = (name: string, fallback: string): string => {
-    if (!product || !product.attributes) return fallback;
-    const found = product.attributes.find((a: any) => a.name.toLowerCase() === name.toLowerCase());
-    return found ? found.value : fallback;
-  };
-
-  const getDefaultColor = (material: string): string => {
-    if (!material) return "Silver";
-    const mat = material.toLowerCase();
-    if (mat.includes("cast iron")) return "Charcoal Black";
-    if (mat.includes("brass")) return "Gold / Golden";
-    if (mat.includes("copper")) return "Reddish Bronze";
-    if (mat.includes("soapstone")) return "Grey Stone";
-    if (mat.includes("clay") || mat.includes("terracotta")) return "Clay Red";
-    return "Silver";
-  };
-
-  const hasLid = (name: string, category: string): string => {
-    const combined = `${name || ""} ${category || ""}`.toLowerCase();
-    if (combined.includes("lid") || combined.includes("casserole") || combined.includes("biryani pot") || combined.includes("kadai with lid")) {
-      return "Yes";
-    }
-    return "No";
-  };
-
-  const isDishwasherSafe = (material: string): string => {
-    if (!material) return "No (Hand wash recommended)";
-    const mat = material.toLowerCase();
-    if (mat.includes("stainless steel")) return "Yes";
-    return "No (Hand wash recommended)";
-  };
-
-  const getLidMaterial = (name: string, material: string): string => {
-    const combined = `${name || ""} ${material || ""}`.toLowerCase();
-    if (!combined.includes("lid") && !combined.includes("casserole") && !combined.includes("biryani pot")) {
-      return "N/A";
-    }
-    if (combined.includes("glass")) return "Glass";
-    if (combined.includes("stainless steel")) return "Stainless Steel";
-    if (combined.includes("brass")) return "Brass";
-    if (combined.includes("copper")) return "Copper";
-    if (combined.includes("cast iron")) return "Cast Iron";
-    return "Wood / Matching Material";
-  };
-
-  const isInductionBottom = (name: string, material: string): string => {
-    const combined = `${name || ""} ${material || ""}`.toLowerCase();
-    if (combined.includes("induction") || combined.includes("stainless steel") || combined.includes("cast iron")) {
-      return "Yes";
-    }
-    return "No";
-  };
-
-  const isAirtight = (name: string, category: string): string => {
-    const combined = `${name || ""} ${category || ""}`.toLowerCase();
-    if (combined.includes("casserole") || combined.includes("box") || combined.includes("container") || combined.includes("jar") || combined.includes("airtight") || combined.includes("tiffin")) {
-      return "Yes";
-    }
-    return "No";
-  };
-
-  const isOvenSafe = (material: string): string => {
-    if (!material) return "No";
-    const mat = material.toLowerCase();
-    if (mat.includes("cast iron") || mat.includes("clay") || mat.includes("soapstone") || mat.includes("terracotta")) {
-      return "Yes";
-    }
-    return "No";
+  // Helper to get custom attributes without hardcoded fallbacks
+  const getAttrValue = (name: string): string | null => {
+    if (!product || !product.attributes || !Array.isArray(product.attributes)) return null;
+    const found = product.attributes.find((a: any) => a?.name && a.name.toLowerCase().trim() === name.toLowerCase().trim());
+    return found && found.value && String(found.value).trim() ? String(found.value).trim() : null;
   };
 
   const getRemainingAttributes = () => {
-    if (!product || !product.attributes) return [];
+    if (!product || !product.attributes || !Array.isArray(product.attributes)) return [];
     const standardKeys = [
-      "pack of", "sales package", "brand", "model name", "model number", "color",
+      "pack of", "sales package", "brand", "model name", "model number", "sku", "color",
       "brand color", "lid included", "dishwasher safe", "lid material", "shape",
       "capacity", "induction bottom", "airtight", "oven and broiler safe",
       "manufactured, packed & marketed by", "manufactured by", "registered address",
-      "country of origin", "customer support contact", "customer support"
+      "country of origin", "customer support contact", "customer support", "material",
+      "weight", "length", "width", "height", "diameter"
     ];
-    return product.attributes.filter((attr: any) => !standardKeys.includes(attr.name.toLowerCase().trim()));
+    return product.attributes.filter((attr: any) => {
+      if (!attr?.name) return false;
+      const n = attr.name.toLowerCase().trim();
+      return !standardKeys.includes(n) && !n.includes('manufactur') && !n.includes('importer') && !n.includes('packer') && !n.includes('compliance') && !n.includes('fssai') && !n.includes('license') && !n.includes('origin');
+    });
   };
   const { products } = useProducts();
   const contextProduct = products.find((p: any) => p.id === id);
@@ -489,113 +430,107 @@ export default function ProductDetailPage() {
                     </div>
 
                     <div>
-                      {activeTab === 'specifications' && (
-                        <div className="text-left space-y-8 font-sans">
-                          {/* In the Box */}
-                          <div className="space-y-3">
-                            <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider">In the Box</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
-                              <div className="border-b border-gray-100 pb-2">
-                                <p className="text-xs text-gray-400 font-medium">Pack of</p>
-                                <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Pack of", "1")}</p>
-                              </div>
-                              <div className="border-b border-gray-100 pb-2">
-                                <p className="text-xs text-gray-400 font-medium">Sales Package</p>
-                                <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Sales Package", getAttrValue("Pack of", "1"))}</p>
-                              </div>
+                      {activeTab === 'specifications' && (() => {
+                        const packOf = getAttrValue("Pack of");
+                        const salesPackage = getAttrValue("Sales Package");
+                        const hasBoxSpecs = packOf || salesPackage;
+
+                        const brandVal = product?.brand || getAttrValue("Brand");
+                        const modelNameVal = product?.name;
+                        const modelNumberVal = product?.sku || getAttrValue("Model Number") || getAttrValue("SKU");
+                        const materialVal = product?.material || getAttrValue("Material");
+                        const colorVal = getAttrValue("Color");
+                        const brandColorVal = getAttrValue("Brand Color");
+                        const lidIncludedVal = getAttrValue("Lid Included");
+                        const lidMaterialVal = getAttrValue("Lid Material");
+                        const dishwasherSafeVal = getAttrValue("Dishwasher Safe");
+                        const inductionBottomVal = getAttrValue("Induction Bottom");
+                        const airtightVal = getAttrValue("Airtight");
+                        const ovenSafeVal = getAttrValue("Oven and Broiler Safe");
+                        const shapeVal = getAttrValue("Shape");
+                        const capacityVal = getAttrValue("Capacity");
+
+                        const weightVal = displayDimensions.weight ? `${displayDimensions.weight} kg` : getAttrValue("Weight");
+                        const lengthVal = displayDimensions.length ? `${displayDimensions.length} cm` : getAttrValue("Length");
+                        const widthVal = displayDimensions.width ? `${displayDimensions.width} cm` : getAttrValue("Width");
+                        const heightVal = displayDimensions.height ? `${displayDimensions.height} cm` : getAttrValue("Height");
+                        const diameterVal = displayDimensions.diameter ? `${displayDimensions.diameter} cm` : getAttrValue("Diameter");
+
+                        const customAttrs = getRemainingAttributes();
+
+                        const generalSpecs = [
+                          brandVal ? { label: "Brand", value: brandVal } : null,
+                          modelNameVal ? { label: "Model Name", value: modelNameVal } : null,
+                          modelNumberVal ? { label: "Model Number", value: modelNumberVal } : null,
+                          materialVal ? { label: "Material", value: materialVal } : null,
+                          colorVal ? { label: "Color", value: colorVal } : null,
+                          brandColorVal ? { label: "Brand Color", value: brandColorVal } : null,
+                          lidIncludedVal ? { label: "Lid Included", value: lidIncludedVal } : null,
+                          lidMaterialVal ? { label: "Lid Material", value: lidMaterialVal } : null,
+                          dishwasherSafeVal ? { label: "Dishwasher Safe", value: dishwasherSafeVal } : null,
+                          inductionBottomVal ? { label: "Induction Bottom", value: inductionBottomVal } : null,
+                          airtightVal ? { label: "Airtight", value: airtightVal } : null,
+                          ovenSafeVal ? { label: "Oven and Broiler Safe", value: ovenSafeVal } : null,
+                          shapeVal ? { label: "Shape", value: shapeVal } : null,
+                          capacityVal ? { label: "Capacity", value: capacityVal } : null,
+                          weightVal ? { label: "Weight", value: weightVal } : null,
+                          lengthVal ? { label: "Length", value: lengthVal } : null,
+                          widthVal ? { label: "Width", value: widthVal } : null,
+                          heightVal ? { label: "Height", value: heightVal } : null,
+                          diameterVal ? { label: "Diameter", value: diameterVal } : null,
+                          ...customAttrs.map((attr: any) => ({ label: attr.name, value: attr.value }))
+                        ].filter(Boolean) as { label: string; value: string }[];
+
+                        const hasAnySpecs = hasBoxSpecs || generalSpecs.length > 0;
+
+                        if (!hasAnySpecs) {
+                          return (
+                            <div className="text-left py-6 font-sans text-gray-500 text-sm">
+                              No additional specifications specified for this product.
                             </div>
-                          </div>
+                          );
+                        }
 
-                          {/* General */}
-                          <div className="space-y-3 pt-2">
-                            <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider">General Specifications</h4>
-                            <div className="space-y-3">
-                              {/* Brand & Model */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Brand</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{product.brand || "KitchenBay"}</p>
-                                </div>
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Model Name</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{product.name}</p>
+                        return (
+                          <div className="text-left space-y-8 font-sans">
+                            {/* In the Box */}
+                            {hasBoxSpecs && (
+                              <div className="space-y-3">
+                                <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider">In the Box</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+                                  {packOf && (
+                                    <div className="border-b border-gray-100 pb-2">
+                                      <p className="text-xs text-gray-400 font-medium">Pack of</p>
+                                      <p className="text-sm font-semibold text-gray-800 mt-0.5">{packOf}</p>
+                                    </div>
+                                  )}
+                                  {salesPackage && (
+                                    <div className="border-b border-gray-100 pb-2">
+                                      <p className="text-xs text-gray-400 font-medium">Sales Package</p>
+                                      <p className="text-sm font-semibold text-gray-800 mt-0.5">{salesPackage}</p>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
+                            )}
 
-                              {/* Grid for two columns attributes */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
-                                {/* Model Number */}
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Model Number</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{product.sku || `KB_${product.id.slice(0, 8).toUpperCase()}`}</p>
+                            {/* General Specifications */}
+                            {generalSpecs.length > 0 && (
+                              <div className="space-y-3 pt-2">
+                                <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider">General Specifications</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+                                  {generalSpecs.map((spec, idx) => (
+                                    <div className="border-b border-gray-100 pb-2" key={idx}>
+                                      <p className="text-xs text-gray-400 font-medium">{spec.label}</p>
+                                      <p className="text-sm font-semibold text-gray-800 mt-0.5">{spec.value}</p>
+                                    </div>
+                                  ))}
                                 </div>
-
-                                {/* Color */}
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Color</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Color", getDefaultColor(product.material))}</p>
-                                </div>
-
-                                {/* Brand Color */}
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Brand Color</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Brand Color", getAttrValue("Color", getDefaultColor(product.material)))}</p>
-                                </div>
-
-                                {/* Lid Included */}
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Lid Included</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Lid Included", hasLid(product.name, product.category))}</p>
-                                </div>
-
-                                {/* Dishwasher Safe */}
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Dishwasher Safe</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Dishwasher Safe", isDishwasherSafe(product.material))}</p>
-                                </div>
-
-                                {/* Induction Bottom */}
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Induction Bottom</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Induction Bottom", isInductionBottom(product.name, product.material))}</p>
-                                </div>
-
-                                {/* Airtight */}
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Airtight</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Airtight", isAirtight(product.name, product.category))}</p>
-                                </div>
-
-                                {/* Oven and Broiler Safe */}
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Oven and Broiler Safe</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Oven and Broiler Safe", isOvenSafe(product.material))}</p>
-                                </div>
-
-                                {/* Shape */}
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Shape</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Shape", "Round")}</p>
-                                </div>
-
-                                {/* Capacity */}
-                                <div className="border-b border-gray-100 pb-2">
-                                  <p className="text-xs text-gray-400 font-medium">Capacity</p>
-                                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{getAttrValue("Capacity", selectedSize || "Standard")}</p>
-                                </div>
-
-                                {/* Remaining Custom Attributes */}
-                                {getRemainingAttributes().map((attr: any, idx: number) => (
-                                  <div className="border-b border-gray-100 pb-2" key={idx}>
-                                    <p className="text-xs text-gray-400 font-medium">{attr.name}</p>
-                                    <p className="text-sm font-semibold text-gray-800 mt-0.5">{attr.value}</p>
-                                  </div>
-                                ))}
                               </div>
-                            </div>
+                            )}
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
 
                       {activeTab === 'description' && (
                         <div className="text-left space-y-3 text-sm text-gray-700 leading-relaxed font-sans">
@@ -612,63 +547,62 @@ export default function ProductDetailPage() {
                         </div>
                       )}
 
-                      {activeTab === 'manufacturer' && (
-                        <div className="text-left space-y-6 font-sans">
-                          <div>
-                            <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider mb-3">Manufacturer Details</h4>
-                            <div className="space-y-3 text-sm text-gray-700">
-                              <div className="border-b border-gray-100 pb-2">
-                                <p className="text-xs text-gray-400 font-medium">Manufactured, Packed & Marketed By</p>
-                                <p className="text-sm font-semibold text-gray-800 mt-0.5">
-                                  {getAttrValue("Manufactured, Packed & Marketed By", getAttrValue("Manufactured By", "KitchenBay Private Limited"))}
-                                </p>
-                              </div>
-                              <div className="border-b border-gray-100 pb-2">
-                                <p className="text-xs text-gray-400 font-medium">Registered Address</p>
-                                <p className="text-sm font-semibold text-gray-800 mt-0.5">
-                                  {getAttrValue("Registered Address", "KitchenBay Craft Cluster, Chennai, Tamil Nadu, 600001, India")}
-                                </p>
-                              </div>
-                              <div className="border-b border-gray-100 pb-2">
-                                <p className="text-xs text-gray-400 font-medium">Country of Origin</p>
-                                <p className="text-sm font-semibold text-gray-800 mt-0.5">
-                                  {getAttrValue("Country of Origin", "India")}
-                                </p>
-                              </div>
-                              <div className="border-b border-gray-100 pb-2">
-                                <p className="text-xs text-gray-400 font-medium">Customer Support Contact</p>
-                                <p className="text-sm font-semibold text-gray-800 mt-0.5">
-                                  {getAttrValue("Customer Support Contact", getAttrValue("Customer Support", "support@kitchenbay.co"))}
-                                </p>
-                              </div>
-                              {/* Additional Manufacturer / Compliance Attributes */}
-                              {product?.attributes
-                                ?.filter((a: any) => {
-                                  const n = a.name.toLowerCase().trim();
-                                  return (
-                                    n.includes('manufactur') ||
-                                    n.includes('importer') ||
-                                    n.includes('packer') ||
-                                    n.includes('compliance') ||
-                                    n.includes('fssai') ||
-                                    n.includes('license') ||
-                                    n.includes('origin')
-                                  ) && ![
-                                    "manufactured, packed & marketed by", "manufactured by",
-                                    "registered address", "country of origin",
-                                    "customer support contact", "customer support"
-                                  ].includes(n);
-                                })
-                                .map((attr: any, idx: number) => (
+                      {activeTab === 'manufacturer' && (() => {
+                        const mfgBy = getAttrValue("Manufactured, Packed & Marketed By") || getAttrValue("Manufactured By");
+                        const regAddr = getAttrValue("Registered Address");
+                        const country = getAttrValue("Country of Origin");
+                        const support = getAttrValue("Customer Support Contact") || getAttrValue("Customer Support");
+
+                        const extraMfgAttrs = (product?.attributes || []).filter((a: any) => {
+                          if (!a?.name) return false;
+                          const n = a.name.toLowerCase().trim();
+                          return (
+                            n.includes('manufactur') ||
+                            n.includes('importer') ||
+                            n.includes('packer') ||
+                            n.includes('compliance') ||
+                            n.includes('fssai') ||
+                            n.includes('license') ||
+                            n.includes('origin')
+                          ) && ![
+                            "manufactured, packed & marketed by", "manufactured by",
+                            "registered address", "country of origin",
+                            "customer support contact", "customer support"
+                          ].includes(n);
+                        });
+
+                        const mfgItems = [
+                          mfgBy ? { label: "Manufactured, Packed & Marketed By", value: mfgBy } : null,
+                          regAddr ? { label: "Registered Address", value: regAddr } : null,
+                          country ? { label: "Country of Origin", value: country } : null,
+                          support ? { label: "Customer Support Contact", value: support } : null,
+                          ...extraMfgAttrs.map((attr: any) => ({ label: attr.name, value: attr.value }))
+                        ].filter(Boolean) as { label: string; value: string }[];
+
+                        if (mfgItems.length === 0) {
+                          return (
+                            <div className="text-left py-6 font-sans text-gray-500 text-sm">
+                              No manufacturer details specified for this product.
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="text-left space-y-6 font-sans">
+                            <div>
+                              <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider mb-3">Manufacturer Details</h4>
+                              <div className="space-y-3 text-sm text-gray-700">
+                                {mfgItems.map((item, idx) => (
                                   <div className="border-b border-gray-100 pb-2" key={idx}>
-                                    <p className="text-xs text-gray-400 font-medium">{attr.name}</p>
-                                    <p className="text-sm font-semibold text-gray-800 mt-0.5">{attr.value}</p>
+                                    <p className="text-xs text-gray-400 font-medium">{item.label}</p>
+                                    <p className="text-sm font-semibold text-gray-800 mt-0.5">{item.value}</p>
                                   </div>
                                 ))}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   </div>
                 )}

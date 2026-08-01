@@ -101,40 +101,45 @@ export function calcCheckoutPricing(
       ? opts.shippingFeeRupees
       : SHIPPING_FEE_RUPEES;
 
-  // First-order discount (applied before GST — reduces taxable base)
+  // First-order discount (applied before GST calculation — reduces taxable base)
   const firstOrderDiscount = isFirstOrder ? Math.min(100, subtotal) : 0;
 
   // Combined pre-GST discounts
   const allPreGstDiscounts = couponDiscountRupees + firstOrderDiscount;
-  const taxableAmount = Math.max(0, subtotal - allPreGstDiscounts);
+  const netSubtotal = Math.max(0, subtotal - allPreGstDiscounts);
 
-  // GST — full precision, NO intermediate rounding.
-  // Per-product override (scaled for the first-order discount) wins over flat rate.
+  // GST — extracted from tax-inclusive prices using netSubtotal × (rate / (100 + rate)).
+  // Product prices are GST Inclusive, so GST is extracted for display only and NOT added to total.
   let gstAmount: number;
   if (gstAmountOverride !== undefined) {
     // Override reflects coupon-discounted base; scale further for first-order discount.
     const couponTaxable = Math.max(0, subtotal - couponDiscountRupees);
-    const scale = couponTaxable > 0 ? taxableAmount / couponTaxable : 0;
+    const scale = couponTaxable > 0 ? netSubtotal / couponTaxable : 0;
     gstAmount = gstAmountOverride * scale;
   } else {
-    gstAmount = taxableAmount * GST_RATE;
+    // Default 5% GST extraction: netSubtotal × (5 / 105)
+    gstAmount = netSubtotal * (5 / 105);
   }
-  const cgstAmount = gstAmount / 2;
-  const sgstAmount = gstAmount / 2;
+  gstAmount = Math.round(gstAmount * 100) / 100;
+  const cgstAmount = Math.round((gstAmount / 2) * 100) / 100;
+  const sgstAmount = Math.round((gstAmount - cgstAmount) * 100) / 100;
 
-  // Net banking discount (2% off taxable + GST subtotal)
-  const netBankingDiscount =
-    paymentMethod === 'NETBANKING' ? (taxableAmount + gstAmount) * 0.02 : 0;
+  // Taxable amount is netSubtotal minus extracted GST component (base product value before tax)
+  const taxableAmount = Math.round((netSubtotal - gstAmount) * 100) / 100;
+
+  // Net banking discount (2% off net subtotal)
+  let netBankingDiscount =
+    paymentMethod === 'NETBANKING' ? netSubtotal * 0.02 : 0;
+  netBankingDiscount = Math.round(netBankingDiscount * 100) / 100;
 
   const totalSavings =
     couponDiscountRupees + firstOrderDiscount + netBankingDiscount;
 
-  // Final payable amount is rounded to the nearest whole Rupee so what the
-  // customer sees is exactly what gets charged (no stray paise on the bill).
-  const payableTotal = Math.round(Math.max(
-    0,
-    taxableAmount + gstAmount + shippingFeeRupees - netBankingDiscount
-  ));
+  // Final payable amount = subtotal + shipping - all discounts.
+  // Selling prices are ALREADY GST-inclusive, so GST is NOT added again.
+  const payableTotal = Math.round(
+    Math.max(0, netSubtotal + shippingFeeRupees - netBankingDiscount) * 100
+  ) / 100;
 
   return {
     subtotal,

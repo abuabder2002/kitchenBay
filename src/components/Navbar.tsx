@@ -12,6 +12,7 @@ import { useCart } from '@/lib/cartContext';
 import { useWishlist } from '@/lib/wishlistContext';
 import { useAuth } from '@/lib/authContext';
 import { useProducts } from '@/lib/productsContext';
+import { StickyOfferRibbon } from '@/components/FloatingActions';
 
 export default function Navbar() {
   const router = useRouter();
@@ -252,10 +253,12 @@ export default function Navbar() {
         onClick={() => setIsMobileSearchOpen(false)}
       />
 
-      {/* Main Navbar */}
-      <header
-        className={`z-50 w-full transition-all duration-500 sticky top-0 border-b border-[#E6F2FF] ${scrolled ? 'shadow-sm py-2 bg-white/70 backdrop-blur-lg' : 'py-4 bg-white backdrop-blur-none'}`}
-      >
+      {/* Main Navbar & Sticky Offer Ribbon Container */}
+      <div className="sticky top-0 z-50 w-full">
+        <StickyOfferRibbon />
+        <header
+          className={`w-full transition-all duration-500 border-b border-[#E6F2FF] ${scrolled ? 'shadow-sm py-2 bg-white/90 backdrop-blur-lg' : 'py-4 bg-white'}`}
+        >
         <div className={`transition-all duration-[350ms] [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between ${
           isMobileSearchOpen ? 'opacity-0 scale-95 -translate-x-4 pointer-events-none lg:opacity-100 lg:scale-100 lg:translate-x-0 lg:pointer-events-auto' : 'opacity-100 scale-100 translate-x-0'
         }`}>
@@ -502,6 +505,7 @@ export default function Navbar() {
           </div>
         </div>
       </header>
+      </div>
 
       {/* Mobile Category UI Bar (Only visible on mobile) */}
       <div className="lg:hidden w-full bg-white border-b border-[#E6F2FF] overflow-x-auto no-scrollbar scroll-smooth">

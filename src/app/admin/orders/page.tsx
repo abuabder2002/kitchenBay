@@ -469,7 +469,7 @@ export default function AdminOrdersPage() {
                       <span>{formatPrice(activeNotification.order.subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-gray-500">
-                      <span>Shipping: Flat rate</span>
+                      <span>Shipping:</span>
                       <span>{formatPrice(activeNotification.order.shippingAmount)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-sm text-gray-900 border-t border-gray-100 pt-2">

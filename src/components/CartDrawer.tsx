@@ -233,7 +233,7 @@ export default function CartDrawer() {
                 <span>Estimated Total</span>
                 <span className="text-lg">{formatPrice(subtotal - discountAmount)}</span>
               </div>
-              <p className="text-xs text-[--color-brand-muted] mb-4 text-right">+ GST (5%) & shipping added at checkout</p>
+              <p className="text-xs text-[--color-brand-muted] mb-4 text-right">Prices inclusive of GST. Shipping added at checkout</p>
 
               {/* CTA Buttons */}
               <div className="flex flex-col gap-2">

@@ -4,7 +4,7 @@ import { SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from '@/lib/seoConfig';
 export const metadata: Metadata = {
   title: 'Find a Store in Salem & Chennai — KitchenBay Store Locator',
   description:
-    'Find KitchenBay stores near you. Visit our retail locations at 19/A, Line Street, Attur, Salem, Tamil Nadu 636102, or KitchenBay Craft Cluster, Chennai, Tamil Nadu 600001. We also deliver premium kitchenware to Madurai, Vellore, Tiruchirappalli (Trichy) and across Tamil Nadu.',
+    'Find KitchenBay stores near you. Visit our retail locations at 19/A, Line Street, Attur, Salem, Tamil Nadu 636102, or No 457, Vardharajapuram MTH Road Ambattur Chennai 600053. We also deliver premium kitchenware to Madurai, Vellore, Tiruchirappalli (Trichy) and across Tamil Nadu.',
   keywords: [
     'kitchenware store Salem',
     'kitchenware store Chennai',

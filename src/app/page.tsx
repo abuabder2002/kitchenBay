@@ -940,7 +940,6 @@ export default function HomePage() {
 
       {/* Floating UI Features */}
       <FloatingActions />
-      <StickyOfferRibbon />
     </div>
   );
 }

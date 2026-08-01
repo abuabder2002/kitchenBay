@@ -144,15 +144,11 @@ export function StickyOfferRibbon() {
     }
   }, []);
 
-  if (dismissed) return null;
+  if (dismissed || !show) return null;
 
   return (
-    <div
-      className={`fixed top-0 left-0 right-0 z-[99] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-        show ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
-      }`}
-    >
-      <div className="bg-gradient-to-r from-[#231F20] via-[#0333B9] to-[#231F20] text-white flex items-center justify-center gap-3 py-2.5 px-4 text-xs sm:text-sm font-bold tracking-wide relative overflow-hidden">
+    <div className="w-full animate-in fade-in slide-in-from-top-2 duration-300">
+      <div className="bg-gradient-to-r from-[#231F20] via-[#0333B9] to-[#231F20] text-white flex items-center justify-center gap-3 py-2 px-4 text-xs sm:text-sm font-bold tracking-wide relative overflow-hidden shadow-sm">
         {/* shimmer effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_ease-in-out_infinite]" />
         <span className="bg-[#D0A967] text-[#231F20] text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest shrink-0">

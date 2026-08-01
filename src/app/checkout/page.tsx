@@ -131,6 +131,7 @@ export default function CheckoutPage() {
     gstAmount,
   );
   const firstOrderDiscount  = checkoutTotals.firstOrderDiscount;
+  const shippingFeeCheckout = checkoutTotals.shippingFeeRupees;
   const gstAmountCheckout   = checkoutTotals.gstAmount;
   const cgstAmountCheckout  = checkoutTotals.cgstAmount;
   const sgstAmountCheckout  = checkoutTotals.sgstAmount;
@@ -139,7 +140,7 @@ export default function CheckoutPage() {
   const payableTotal        = checkoutTotals.payableTotal;
 
   const gstRates = Array.from(new Set(items.map(i => i.product.gstPercent ?? 5)));
-  const gstLabel = gstRates.length === 1 ? `GST ${gstRates[0]}%` : 'GST';
+  const gstLabel = gstRates.length === 1 ? `GST (${gstRates[0]}%)` : 'GST (inclusive)';
 
   useEffect(() => {
   }, [payableTotal, paymentMethod]);
@@ -802,6 +803,25 @@ export default function CheckoutPage() {
 
                 {/* Bill breakdown */}
                 <div className="border-t border-gray-100 pt-4 space-y-3">
+                  {!currentUser && (
+                    <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl flex items-center justify-between gap-2 text-xs mb-3 shadow-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base shrink-0">🎁</span>
+                        <div>
+                          <p className="font-bold text-blue-950">First Login Offer Available!</p>
+                          <p className="text-blue-800/80 text-[11px]">Sign in to get <strong className="text-blue-900 font-bold">₹100 OFF</strong> on this order.</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => router.push('/login?redirect=/checkout')}
+                        className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95"
+                      >
+                        Sign In
+                      </button>
+                    </div>
+                  )}
+
                   <div className="pb-3 border-b border-gray-100">
                     <PromoCodeInput />
                   </div>
@@ -812,13 +832,21 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>Shipping: Flat rate</span>
-                    <span className="font-semibold text-gray-800">{shippingFee > 0 ? formatINR(shippingFee) : 'FREE'}</span>
+                    <span>Shipping:</span>
+                    <span className="font-semibold text-gray-800">
+                      {shippingFeeCheckout > 0 ? (
+                        formatINR(shippingFeeCheckout)
+                      ) : (
+                        <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded text-xs">FREE</span>
+                      )}
+                    </span>
                   </div>
 
                   {firstOrderDiscount > 0 && (
-                    <div className="flex justify-between text-sm text-emerald-600 font-semibold">
-                      <span>First Order Discount</span>
+                    <div className="flex justify-between text-sm text-emerald-700 font-semibold bg-emerald-50/70 px-2.5 py-1.5 rounded-lg border border-emerald-100/80">
+                      <span className="flex items-center gap-1.5">
+                        🎉 First Login / Order Offer
+                      </span>
                       <span>-{formatINR(firstOrderDiscount)}</span>
                     </div>
                   )}
@@ -834,6 +862,13 @@ export default function CheckoutPage() {
                     <div className="flex justify-between text-sm text-emerald-600 font-semibold">
                       <span>Net Banking Discount (2%)</span>
                       <span>-{formatINR(netBankingDiscount)}</span>
+                    </div>
+                  )}
+
+                  {gstAmountCheckout > 0 && (
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>{gstLabel}</span>
+                      <span className="font-semibold text-gray-700">{formatINR(gstAmountCheckout)}</span>
                     </div>
                   )}
 
