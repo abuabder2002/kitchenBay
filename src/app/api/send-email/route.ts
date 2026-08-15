@@ -81,6 +81,9 @@ export async function POST(request: Request) {
     let shippingRupees = order.shipping || order.shippingAmount || 99;
     let gstRupees = order.tax || order.gstAmount || 0;
     let totalRupees = order.total;
+    let couponDiscountRupees = 0;
+    let firstOrderDiscountRupees = 0;
+    let couponCode = '';
     let emailItems = order.items || [];
 
     try {
@@ -96,6 +99,11 @@ export async function POST(request: Request) {
         gstRupees = dbOrder.gstAmount / 100;
         shippingRupees = dbOrder.shippingAmount / 100;
         totalRupees = dbOrder.totalAmount / 100;
+        couponDiscountRupees = dbOrder.discountAmount / 100;
+        couponCode = dbOrder.couponCode || '';
+        // First-order discount is not stored separately; back-calculate it from the totals
+        const impliedDiscount = Math.round((subtotalRupees + shippingRupees - couponDiscountRupees - totalRupees) * 100) / 100;
+        firstOrderDiscountRupees = impliedDiscount > 0.5 ? impliedDiscount : 0;
 
         const productIds = dbOrder.items.map(item => item.productId);
         const dbProducts = await prisma.product.findMany({
@@ -220,8 +228,20 @@ export async function POST(request: Request) {
                       </tr>
                       <tr>
                         <td style="padding: 4px 0; color: #6b7280; text-align: left;">Shipping:</td>
-                        <td style="padding: 4px 0; text-align: right; color: #1f2937;">${formatPrice(shippingRupees)}</td>
+                        <td style="padding: 4px 0; text-align: right; color: #1f2937;">${shippingRupees > 0 ? formatPrice(shippingRupees) : '<span style="color:#059669;font-weight:600;">FREE</span>'}</td>
                       </tr>
+                      ${firstOrderDiscountRupees > 0 ? `
+                      <tr>
+                        <td style="padding: 4px 0; color: #059669; text-align: left; font-weight: 600;">&#127881; First Order Offer:</td>
+                        <td style="padding: 4px 0; text-align: right; color: #059669; font-weight: 600;">-${formatPrice(firstOrderDiscountRupees)}</td>
+                      </tr>
+                      ` : ''}
+                      ${couponDiscountRupees > 0 ? `
+                      <tr>
+                        <td style="padding: 4px 0; color: #059669; text-align: left; font-weight: 600;">Coupon${couponCode ? ` (${couponCode})` : ''}:</td>
+                        <td style="padding: 4px 0; text-align: right; color: #059669; font-weight: 600;">-${formatPrice(couponDiscountRupees)}</td>
+                      </tr>
+                      ` : ''}
                       <tr style="font-size: 15px; font-weight: bold;">
                         <td style="padding: 15px 0 0 0; color: #1f2937; border-top: 1px solid #f1f1f1; margin-top: 10px; text-align: left;">Total:</td>
                         <td style="padding: 15px 0 0 0; text-align: right; color: #1D4ED8; border-top: 1px solid #f1f1f1; margin-top: 10px;">

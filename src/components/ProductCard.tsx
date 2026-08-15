@@ -202,10 +202,8 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
           <span className="text-xs text-gray-500">({product.reviewCount})</span>
         </div>
 
-        <div className="flex-1" />
-
         {/* Price Row */}
-        <div className={`flex items-baseline flex-wrap gap-1 sm:gap-2 ${hasVariantData ? 'mb-0.5' : 'mb-3'}`}>
+        <div className="flex items-baseline flex-wrap gap-1 sm:gap-2 mb-1.5">
           <span className="text-base font-bold text-[--color-brand-text]">
             Rs. {formatPrice(displayPrice)}
           </span>
@@ -222,7 +220,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         </div>
         {/* Size / Variant Selector — only shown when variants carry their own price/stock/image */}
         {hasVariantData && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
+          <div className="flex flex-wrap gap-1.5 mb-1.5">
             {variantSizes.map(size => (
               <button
                 key={size}
@@ -241,6 +239,8 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
             ))}
           </div>
         )}
+
+        <div className="flex-1" />
 
         {/* Add to Cart & Buy Now grid */}
         <div className="grid grid-cols-2 gap-2 mt-auto">
