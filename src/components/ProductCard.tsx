@@ -221,7 +221,7 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
         {/* Size / Variant Selector — only shown when variants carry their own price/stock/image */}
         {hasVariantData && (
           <div className="flex flex-wrap gap-1.5 mb-1.5">
-            {variantSizes.map(size => (
+            {variantSizes.slice(0, 4).map(size => (
               <button
                 key={size}
                 onClick={(e) => handleSelectSize(e, size)}
@@ -237,6 +237,11 @@ export default function ProductCard({ product, isHero = false }: ProductCardProp
                 {size}
               </button>
             ))}
+            {variantSizes.length > 4 && (
+              <span className="px-2 py-1 text-[10px] text-gray-400 border border-dashed rounded-full" style={{ borderColor: 'var(--color-brand-blue-mid)' }}>
+                +{variantSizes.length - 4}
+              </span>
+            )}
           </div>
         )}
 
