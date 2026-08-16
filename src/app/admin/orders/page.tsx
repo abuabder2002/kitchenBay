@@ -3,7 +3,7 @@
 
 
 import { useState, useEffect } from 'react';
-import { Check, ChevronDown, ShoppingBag, Mail, X, Eye, ExternalLink, Package, MessageSquare, FileText } from 'lucide-react';
+import { Check, ChevronDown, ShoppingBag, Mail, X, Eye, ExternalLink, Package, MessageSquare, FileText, Download } from 'lucide-react';
 
 export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
@@ -273,6 +273,14 @@ export default function AdminOrdersPage() {
                         >
                           Review Order
                         </button>
+                        <a
+                          href={`/admin/orders/${order.id}/invoice`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1.5 px-3 py-1.5 border border-gray-300 hover:bg-gray-800 hover:text-white hover:border-gray-800 text-gray-700 font-semibold rounded-xl text-xs transition-all cursor-pointer shadow-sm text-center"
+                        >
+                          <Download size={12} /> Download Bill
+                        </a>
                         <div className="flex items-center gap-2">
                           <div className="relative w-full">
                             <select
@@ -399,7 +407,7 @@ export default function AdminOrdersPage() {
 
             {/* Email Headers Info */}
             <div className="bg-gray-50 px-6 py-3 border-b border-gray-200 text-xs text-gray-500 space-y-1 select-none text-left">
-              <div><span className="font-semibold text-gray-400 w-16 inline-block">From:</span> Kitchenbay Alerts &lt;alerts@Kitchenbay.com&gt;</div>
+              <div><span className="font-semibold text-gray-400 w-16 inline-block">From:</span> Kitchenbay &lt;kitchenbaythehomeneeds@gmail.com&gt;</div>
               <div><span className="font-semibold text-gray-400 w-16 inline-block">To:</span> {activeNotification.order.customer} &lt;{activeNotification.order.email}&gt;</div>
               <div><span className="font-semibold text-gray-400 w-16 inline-block">Subject:</span> Update: Your Order #{activeNotification.order.id} is now {activeNotification.status.charAt(0).toUpperCase() + activeNotification.status.slice(1)}!</div>
             </div>
@@ -487,7 +495,7 @@ export default function AdminOrdersPage() {
 
                   {/* Footer notice */}
                   <div className="text-[11px] text-gray-400 text-center leading-relaxed border-t border-gray-100 pt-6 select-none">
-                    Thank you for shopping with us and supporting regional Indian craftsmen. You can track your package details live at any time using your Order ID on our website.
+                    Thank you for shopping with us. You can track your package details live at any time using your Order ID on our website.
                     <br />
                     <a href={`/orders/${activeNotification.order.id}`} target="_blank" className="text-blue-600 font-semibold hover:underline inline-flex items-center gap-0.5 mt-2">
                       Track Order Page <ExternalLink size={10} />
@@ -648,6 +656,15 @@ export default function AdminOrdersPage() {
                       <Mail size={14} /> Email Client
                     </a>
                   </div>
+
+                  <a
+                    href={`/admin/orders/${selectedOrder.id}/invoice`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-gray-300 bg-gray-50 hover:bg-gray-800 hover:text-white hover:border-gray-800 text-gray-700 font-bold rounded-xl text-xs transition-all cursor-pointer"
+                  >
+                    <Download size={14} /> Download Bill (Packing Slip)
+                  </a>
 
                   <div className="pt-2">
                     <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Update Order Status</label>

@@ -247,7 +247,7 @@ export default function Navbar() {
 
       {/* Mobile Search Backdrop Overlay */}
       <div 
-        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-40 min-[1450px]:hidden transition-opacity duration-300 ${
           isMobileSearchOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsMobileSearchOpen(false)}
@@ -260,7 +260,7 @@ export default function Navbar() {
           className={`w-full transition-all duration-500 border-b border-[#E6F2FF] ${scrolled ? 'shadow-sm py-2 bg-white/90 backdrop-blur-lg' : 'py-4 bg-white'}`}
         >
         <div className={`transition-all duration-[350ms] [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between ${
-          isMobileSearchOpen ? 'opacity-0 scale-95 -translate-x-4 pointer-events-none lg:opacity-100 lg:scale-100 lg:translate-x-0 lg:pointer-events-auto' : 'opacity-100 scale-100 translate-x-0'
+          isMobileSearchOpen ? 'opacity-0 scale-95 -translate-x-4 pointer-events-none min-[1450px]:opacity-100 min-[1450px]:scale-100 min-[1450px]:translate-x-0 min-[1450px]:pointer-events-auto' : 'opacity-100 scale-100 translate-x-0'
         }`}>
 
           {/* LEFT: Logo */}
@@ -276,7 +276,7 @@ export default function Navbar() {
           </Link>
 
           {/* CENTER: Desktop Categories */}
-          <nav className="hidden lg:flex items-center gap-10 h-full">
+          <nav className="hidden min-[1450px]:flex items-center gap-6 h-full">
             {categories.map((cat) => (
               <div
                 key={cat.name}
@@ -286,7 +286,7 @@ export default function Navbar() {
               >
                 <Link
                   href={cat.href}
-                  className="text-[13px] font-bold uppercase tracking-widest text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors flex items-center gap-1.5 px-3 py-1 rounded-full hover:bg-[--color-brand-blue-light]"
+                  className="text-[13px] font-bold uppercase tracking-widest text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors flex items-center gap-1.5 px-2 py-1 rounded-full hover:bg-[--color-brand-blue-light]"
                 >
                   {cat.name}
                   {cat.id === 'gifting' && (
@@ -324,10 +324,10 @@ export default function Navbar() {
           </nav>
 
           {/* RIGHT: Actions */}
-          <div className="flex items-center gap-2 sm:gap-4 lg:gap-6">
+          <div className="flex items-center gap-2 sm:gap-4 min-[1450px]:gap-5">
 
             {/* Desktop Search Icon / Input */}
-            <div className="hidden lg:flex items-center relative">
+            <div className="hidden min-[1450px]:flex items-center relative">
               {isSearchOpen ? (
                 <>
                   <div className="flex items-center border-b border-[--color-brand-text] pb-1 animate-in fade-in slide-in-from-right-4 absolute right-0 sm:relative z-50 bg-white">
@@ -374,14 +374,14 @@ export default function Navbar() {
             {/* Mobile Search Icon (Triggers Expansion) */}
             <button 
               onClick={() => setIsMobileSearchOpen(true)} 
-              className="lg:hidden text-[--color-brand-text] hover:text-[--color-brand-accent] transition-transform active:scale-90 p-2 rounded-full hover:bg-[--color-brand-blue-light]" 
+              className="min-[1450px]:hidden text-[--color-brand-text] hover:text-[--color-brand-accent] transition-transform active:scale-90 p-2 rounded-full hover:bg-[--color-brand-blue-light]"
               aria-label="Search"
             >
               <Search size={22} strokeWidth={1.5} />
             </button>
 
             {/* Find Store */}
-            <Link href="/store-locator" className="hidden lg:block text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Find Store">
+            <Link href="/store-locator" className="hidden min-[1450px]:block text-[--color-brand-text] hover:text-[--color-brand-accent] transition-colors p-2 rounded-full hover:bg-[--color-brand-blue-light]" aria-label="Find Store">
               <MapPin size={22} strokeWidth={1.5} />
             </Link>
 
@@ -439,7 +439,7 @@ export default function Navbar() {
             </Link>
 
             {/* Mobile Menu Toggle */}
-            <button onClick={() => setMobileOpen(true)} className="lg:hidden text-[--color-brand-text] ml-2" aria-label="Open Menu">
+            <button onClick={() => setMobileOpen(true)} className="min-[1450px]:hidden text-[--color-brand-text] ml-2" aria-label="Open Menu">
               <Menu size={26} strokeWidth={1.5} />
             </button>
 
@@ -448,7 +448,7 @@ export default function Navbar() {
 
         {/* Premium Mobile Search Overlay (Absolute over Navbar) */}
         <div
-          className={`lg:hidden absolute inset-0 bg-transparent z-[60] px-4 flex items-center justify-center transition-all duration-[350ms] [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] ${
+          className={`min-[1450px]:hidden absolute inset-0 bg-transparent z-[60] px-4 flex items-center justify-center transition-all duration-[350ms] [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] ${
             isMobileSearchOpen 
               ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
               : 'opacity-0 -translate-y-2 scale-95 pointer-events-none'
@@ -508,7 +508,7 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Category UI Bar (Only visible on mobile) */}
-      <div className="lg:hidden w-full bg-white border-b border-[#E6F2FF] overflow-x-auto no-scrollbar scroll-smooth">
+      <div className="min-[1450px]:hidden w-full bg-white border-b border-[#E6F2FF] overflow-x-auto no-scrollbar scroll-smooth">
         <div className="flex px-4 py-2.5 gap-3 min-w-max">
           {categories.map(cat => (
             <Link
@@ -529,7 +529,7 @@ export default function Navbar() {
 
       {/* Mobile Sidebar */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
+        <div className="fixed inset-0 z-50 flex min-[1450px]:hidden">
           <div className="fixed inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <div className="relative w-[85%] max-w-sm bg-white h-full flex flex-col shadow-2xl animate-in slide-in-from-left duration-300">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">

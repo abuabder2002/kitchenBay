@@ -117,7 +117,8 @@ export async function POST(request: Request) {
             name: product ? product.name : 'Unknown Craft Item',
             quantity: item.quantity,
             price: item.price / 100, // convert to Rupees
-            size: item.size
+            size: item.size,
+            image: product?.image || null
           };
         });
       } else {
@@ -133,7 +134,8 @@ export async function POST(request: Request) {
             name: item.name || (item.product && item.product.name) || 'Unknown Craft Item',
             quantity: item.quantity,
             price: price,
-            size: item.size
+            size: item.size,
+            image: item.image || (item.product && item.product.image) || null
           };
         });
       }
@@ -150,7 +152,8 @@ export async function POST(request: Request) {
           name: item.name || (item.product && item.product.name) || 'Unknown Craft Item',
           quantity: item.quantity,
           price: price,
-          size: item.size
+          size: item.size,
+          image: item.image || (item.product && item.product.image) || null
         };
       });
     }
@@ -158,13 +161,26 @@ export async function POST(request: Request) {
     const statusTitle = status.charAt(0).toUpperCase() + status.slice(1);
     const emailSubject = `Update: Your Order #${order.id} is now ${statusTitle}!`;
 
+    // Email clients can't render raw base64 blobs or relative paths reliably —
+    // resolve to an absolute, hosted URL (or a hosted placeholder) instead.
+    const siteUrl = process.env.AUTH_URL || 'http://localhost:3000';
+    const resolveEmailImage = (image: string | null | undefined): string => {
+      if (image && (image.startsWith('http://') || image.startsWith('https://'))) return image;
+      if (image && image.startsWith('/')) return `${siteUrl}${image}`;
+      return `${siteUrl}/artisan_kitchenware.png`;
+    };
+
     // Map order items to list elements
     const itemsHtml = emailItems.map((item: any) => {
       const name = item.name;
       const qty = item.quantity;
       const price = item.price;
+      const imgSrc = resolveEmailImage(item.image);
       return `
         <tr style="border-bottom: 1px solid #f1f1f1;">
+          <td style="padding: 10px 8px 10px 0; width: 48px;">
+            <img src="${imgSrc}" alt="${name}" width="44" height="44" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; display: block;" />
+          </td>
           <td style="padding: 10px 0; font-size: 14px; color: #4b5563; text-align: left;">
             ${name} ${item.size ? `(${item.size})` : ''} <span style="color: #9ca3af; font-size: 12px;">× ${qty}</span>
           </td>
@@ -260,7 +276,7 @@ export async function POST(request: Request) {
                       <tr>
                         <td align="center">
                           <p style="margin: 0 0 15px 0; font-size: 12px; color: #9ca3af; text-align: center; line-height: 1.5;">
-                            Thank you for shopping with us and supporting regional Indian craftsmen. You can track your package details live at any time using your Order ID.
+                            Thank you for shopping with us. You can track your package details live at any time using your Order ID.
                           </p>
                           <a href="${process.env.AUTH_URL || 'http://localhost:3000'}/orders/${order.id}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #1D4ED8; color: #ffffff; font-weight: bold; text-decoration: none; border-radius: 8px; font-size: 14px;">
                             Track Order Status Page
