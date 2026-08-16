@@ -41,6 +41,14 @@ export default function AdminOrderInvoicePage() {
   const formatPrice = (p: number) =>
     'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(p);
 
+  const paymentLabel = order?.paymentStatus === 'COD_PENDING'
+    ? 'Cash on Delivery (COD)'
+    : order?.razorpayId
+    ? 'Prepaid (Online Payment)'
+    : order?.paymentStatus === 'PAID'
+    ? 'Prepaid (Online Payment)'
+    : 'Cash on Delivery (COD)';
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading invoice…</div>;
   }
@@ -91,6 +99,10 @@ export default function AdminOrderInvoicePage() {
             <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Bill To</h3>
             <p className="text-sm font-semibold text-gray-900">{order.customer}</p>
             <p className="text-xs text-gray-500 mt-0.5">{order.email}</p>
+            <p className="text-xs text-gray-500 mt-2">
+              <span className="text-gray-400">Payment: </span>
+              <span className="font-semibold text-gray-700">{paymentLabel}</span>
+            </p>
           </div>
           <div>
             <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Ship To</h3>

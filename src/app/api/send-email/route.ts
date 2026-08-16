@@ -84,6 +84,7 @@ export async function POST(request: Request) {
     let couponDiscountRupees = 0;
     let firstOrderDiscountRupees = 0;
     let couponCode = '';
+    let paymentLabel = order.razorpayId ? 'Prepaid (Online Payment)' : 'Cash on Delivery (COD)';
     let emailItems = order.items || [];
 
     try {
@@ -101,6 +102,11 @@ export async function POST(request: Request) {
         totalRupees = dbOrder.totalAmount / 100;
         couponDiscountRupees = dbOrder.discountAmount / 100;
         couponCode = dbOrder.couponCode || '';
+        paymentLabel = dbOrder.paymentStatus === 'COD_PENDING'
+          ? 'Cash on Delivery (COD)'
+          : dbOrder.razorpayId || dbOrder.paymentStatus === 'PAID'
+          ? 'Prepaid (Online Payment)'
+          : 'Cash on Delivery (COD)';
         // First-order discount is not stored separately; back-calculate it from the totals
         const impliedDiscount = Math.round((subtotalRupees + shippingRupees - couponDiscountRupees - totalRupees) * 100) / 100;
         firstOrderDiscountRupees = impliedDiscount > 0.5 ? impliedDiscount : 0;
@@ -229,6 +235,11 @@ export async function POST(request: Request) {
                         </td>
                       </tr>
                     </table>
+
+                    <!-- Payment Method -->
+                    <p style="margin: 0 0 20px 0; font-size: 12px; color: #6b7280; text-align: left;">
+                      Payment Method: <span style="font-weight: 600; color: #1f2937;">${paymentLabel}</span>
+                    </p>
 
                     <!-- Items Summary -->
                     <h3 style="margin: 0 0 15px 0; font-size: 12px; font-weight: bold; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; text-align: left;">Order Summary</h3>

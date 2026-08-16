@@ -446,6 +446,10 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
 
+                  <p className="text-xs text-gray-500">
+                    Payment Method: <span className="font-semibold text-gray-800">{activeNotification.order.paymentMethod === 'COD_PENDING' || activeNotification.order.paymentMethod === 'COD' ? 'Cash on Delivery (COD)' : 'Prepaid (Online Payment)'}</span>
+                  </p>
+
                   {/* Order details section */}
                   <div className="border-t border-gray-100 pt-6">
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Order Summary</h3>
