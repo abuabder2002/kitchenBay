@@ -4,7 +4,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Printer, ArrowLeft } from 'lucide-react';
+import logoImg from '@/images/logo.jpeg';
 
 function normalizeImageSrc(image: string | null | undefined): string {
   if (!image) return '/artisan_kitchenware.png';
@@ -77,10 +79,9 @@ export default function AdminOrderInvoicePage() {
         {/* Letterhead */}
         <div className="flex items-start justify-between border-b border-gray-200 pb-6 mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-blue-700">Kitchenbay</h1>
-            <p className="text-xs text-gray-500">The Home Needs</p>
-            <p className="text-xs text-gray-400 mt-2">Kitchenbay India Pvt. Ltd.</p>
-            <p className="text-xs text-gray-400">19/A Line Street, Attur, Salem, Tamil Nadu 636102</p>
+            <Image src={logoImg} alt="Kitchenbay" className="h-12 w-auto object-contain mb-1.5" priority />
+            <p className="text-xs text-gray-500">KitchenBay – Premium Kitchenware, Cookware &amp; Home Décor</p>
+            <p className="text-xs text-gray-400 mt-2">19/A Line Street, Attur, Salem, Tamil Nadu 636102</p>
             <p className="text-xs text-gray-400">GSTIN: 07AABCA1234B1Z5</p>
           </div>
           <div className="text-right">
@@ -157,6 +158,12 @@ export default function AdminOrderInvoicePage() {
               <span>Subtotal</span>
               <span className="text-gray-800">{formatPrice(order.subtotal)}</span>
             </div>
+            {order.firstOrderDiscount > 0 && (
+              <div className="flex justify-between text-emerald-600 font-medium">
+                <span>First Order Offer</span>
+                <span>-{formatPrice(order.firstOrderDiscount)}</span>
+              </div>
+            )}
             {order.discountAmount > 0 && (
               <div className="flex justify-between text-emerald-600 font-medium">
                 <span>Discount{order.couponCode ? ` (${order.couponCode})` : ''}</span>

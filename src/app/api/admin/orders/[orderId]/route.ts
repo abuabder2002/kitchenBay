@@ -54,6 +54,10 @@ export async function GET(
     const discountRupees = order.discountAmount / 100;
     const totalRupees = order.totalAmount / 100;
 
+    // First-order discount is not stored separately; back-calculate it from the totals
+    const impliedDiscount = Math.round((subtotalRupees + shippingRupees - discountRupees - totalRupees) * 100) / 100;
+    const firstOrderDiscountRupees = impliedDiscount > 0.5 ? impliedDiscount : 0;
+
     return NextResponse.json({
       id: order.id,
       status: order.status.toLowerCase(),
@@ -75,6 +79,7 @@ export async function GET(
       gstAmount: gstRupees,
       shippingAmount: shippingRupees,
       discountAmount: discountRupees,
+      firstOrderDiscount: firstOrderDiscountRupees,
       total: totalRupees,
     });
   } catch (error: any) {
