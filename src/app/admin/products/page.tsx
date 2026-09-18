@@ -694,6 +694,23 @@ export default function AdminProductsPage() {
                   <span className="font-bold text-violet-900 text-lg">{formatPrice(editingProduct.finalPrice)}</span>
                 </div>
 
+                {/* First-Order Discount Opt-Out */}
+                <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={!!editingProduct.excludeFromFirstOrderDiscount}
+                      onChange={(e) => setEditingProduct(prev => prev ? {...prev, excludeFromFirstOrderDiscount: e.target.checked} : null)}
+                    />
+                    <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                  </label>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Exclude from First-Order ₹100 Discount</p>
+                    <p className="text-xs text-gray-500">Turn on for low-margin/promo products where a ₹100 discount would eat the profit</p>
+                  </div>
+                </div>
+
                 {/* Dimensions & Size Variants */}
                 <div className="pt-2">
                   <h3 className="font-semibold text-gray-800 mb-3">Dimensions & Size Variants</h3>

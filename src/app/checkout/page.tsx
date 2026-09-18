@@ -27,6 +27,7 @@ import {
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import { calcCheckoutPricingFromCoupon } from '@/lib/checkoutPricing';
+import { getItemBasePrice } from '@/lib/pricing';
 
 type PaymentMethod = 'RAZORPAY' | 'COD' | 'NETBANKING';
 
@@ -121,6 +122,13 @@ export default function CheckoutPage() {
     }
   }, [currentUser]);
 
+  // Products flagged excludeFromFirstOrderDiscount (e.g. already thin-margin items)
+  // don't count toward the ₹100 first-order discount base.
+  const discountEligibleSubtotal = items.reduce((sum, item) => {
+    if (item.product.excludeFromFirstOrderDiscount) return sum;
+    return sum + getItemBasePrice(item.product, item.size) * item.quantity;
+  }, 0);
+
   // ── Correct GST calculation via standalone pricing engine ──────────────────
   const checkoutTotals = calcCheckoutPricingFromCoupon(
     subtotal,
@@ -129,6 +137,7 @@ export default function CheckoutPage() {
     isFirstOrder,
     paymentMethod,
     gstAmount,
+    discountEligibleSubtotal,
   );
   const firstOrderDiscount  = checkoutTotals.firstOrderDiscount;
   const shippingFeeCheckout = checkoutTotals.shippingFeeRupees;

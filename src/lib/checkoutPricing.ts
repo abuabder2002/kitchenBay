@@ -83,6 +83,10 @@ export function calcCheckoutPricing(
     /** Pre-computed GST in Rupees (per-product rates). When provided, overrides
      *  the flat GST_RATE. Should already reflect the post-discount taxable base. */
     gstAmountOverride?: number;
+    /** Portion of `subtotal` (Rupees) eligible for the first-order discount.
+     *  Items flagged `excludeFromFirstOrderDiscount` should be left out of this.
+     *  Defaults to the full `subtotal` when omitted. */
+    discountEligibleSubtotal?: number;
   } = {}
 ): CheckoutPricingResult {
   const {
@@ -91,6 +95,7 @@ export function calcCheckoutPricing(
     paymentMethod = 'COD',
     freeShipping = false,
     gstAmountOverride,
+    discountEligibleSubtotal = subtotal,
   } = opts;
 
   // Shipping: free-shipping coupon → ₹2000+ order → explicit override → fallback default
@@ -101,8 +106,10 @@ export function calcCheckoutPricing(
       ? opts.shippingFeeRupees
       : SHIPPING_FEE_RUPEES;
 
-  // First-order discount (applied before GST calculation — reduces taxable base)
-  const firstOrderDiscount = isFirstOrder ? Math.min(100, subtotal) : 0;
+  // First-order discount (applied before GST calculation — reduces taxable base).
+  // Only computed against the discount-eligible portion of the subtotal, so
+  // items opted out (e.g. already-thin-margin products) don't get discounted.
+  const firstOrderDiscount = isFirstOrder ? Math.min(100, Math.max(0, discountEligibleSubtotal)) : 0;
 
   // Combined pre-GST discounts
   const allPreGstDiscounts = couponDiscountRupees + firstOrderDiscount;
@@ -172,7 +179,8 @@ export function calcCheckoutPricingFromCoupon(
   appliedCoupon: { discountAmount: number; type: string } | null | undefined,
   isFirstOrder: boolean,
   paymentMethod: string,
-  gstAmountOverride?: number
+  gstAmountOverride?: number,
+  discountEligibleSubtotal?: number
 ): CheckoutPricingResult {
   const freeShipping  = appliedCoupon?.type === 'FREE_SHIPPING';
   // discountAmount in cart context is stored in PAISE → convert
@@ -187,6 +195,7 @@ export function calcCheckoutPricingFromCoupon(
     paymentMethod,
     freeShipping,
     gstAmountOverride,
+    discountEligibleSubtotal,
   });
 }
 

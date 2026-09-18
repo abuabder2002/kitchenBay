@@ -122,6 +122,7 @@ export async function POST(req: NextRequest) {
     const productMap = new Map(dbProducts.map(p => [p.id, p]));
 
     let subtotalRupees = 0;
+    let discountEligibleSubtotalRupees = 0; // excludes products opted out of the first-order discount
     let grossGstRupees = 0; // per-product GST on pre-coupon base
     const dbOrderItems = [];
     const productShippingFees: number[] = [];
@@ -147,6 +148,9 @@ export async function POST(req: NextRequest) {
 
       const lineSubtotal = basePrice * item.quantity;
       subtotalRupees += lineSubtotal;
+      if (!dbProduct.excludeFromFirstOrderDiscount) {
+        discountEligibleSubtotalRupees += lineSubtotal;
+      }
       const gstRate = dbProduct.gstPercent ?? 5;
       grossGstRupees += lineSubtotal * (gstRate / (100 + gstRate));
       productShippingFees.push(getDbProductShippingFee(dbProduct));
@@ -192,6 +196,7 @@ export async function POST(req: NextRequest) {
       paymentMethod: isCod ? 'COD' : 'RAZORPAY',
       shippingFeeRupees,
       gstAmountOverride,
+      discountEligibleSubtotal: discountEligibleSubtotalRupees,
     });
 
     // ── Enforce COD limit ───────────────────────────────────

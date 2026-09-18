@@ -131,6 +131,7 @@ export async function GET(req: Request) {
         sizeCategory: true,
         variants: true,
         attributes: true,
+        excludeFromFirstOrderDiscount: true,
       }
       }),
       prisma.product.count({ where: whereClause }),
@@ -178,6 +179,7 @@ export async function GET(req: Request) {
         shippingFee: p.shippingFee !== null && p.shippingFee !== undefined ? p.shippingFee / 100 : undefined,
         shippingMethod: p.shippingMethod || undefined,
         video: p.video || undefined,
+        excludeFromFirstOrderDiscount: p.excludeFromFirstOrderDiscount,
       };
     });
 
@@ -232,6 +234,7 @@ export async function POST(req: Request) {
         shippingFee: data.shippingFee !== undefined && data.shippingFee !== null ? Math.round(parseFloat(data.shippingFee) * 100) : null,
         shippingMethod: data.shippingMethod || null,
         video: data.video || null,
+        excludeFromFirstOrderDiscount: !!data.excludeFromFirstOrderDiscount,
       }
     });
 
@@ -273,6 +276,7 @@ export async function POST(req: Request) {
       shippingFee: newProduct.shippingFee !== null && newProduct.shippingFee !== undefined ? newProduct.shippingFee / 100 : undefined,
       shippingMethod: newProduct.shippingMethod || undefined,
       video: newProduct.video || undefined,
+      excludeFromFirstOrderDiscount: newProduct.excludeFromFirstOrderDiscount,
     });
   } catch (error) {
     console.error('Error creating product:', error);

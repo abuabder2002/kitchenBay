@@ -658,7 +658,9 @@ export default function ProductDetailPage() {
                     )}
                   </div>
                   <p className="text-xs text-[--color-brand-muted] uppercase tracking-widest mb-1">GST ({product.gstPercent ?? 5}%) Added & shipping at checkout</p>
-
+                  {product.excludeFromFirstOrderDiscount && (
+                    <p className="text-xs font-semibold text-amber-600 mt-1">First-order ₹100 login discount is not applicable on this product</p>
+                  )}
 
                 </div>
 

@@ -109,6 +109,7 @@ model Product {
   brand            String?           // Brand assignment
   shippingFee      Int?              // Optional shipping fee in paise
   shippingMethod   String?           // Optional shipping method assignment
+  excludeFromFirstOrderDiscount Boolean @default(false) // Opt out of the ₹100 first-order discount (e.g. already low-margin/promo items)
 
   @@index([category])
   @@index([subcategory])

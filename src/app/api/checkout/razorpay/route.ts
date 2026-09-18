@@ -47,6 +47,9 @@ export async function POST(req: NextRequest) {
 
     // ── Calculate subtotal from DB product prices (authoritative) ─
     let subtotalRupees = 0;
+    // Portion of subtotal eligible for the first-order discount — excludes
+    // products flagged excludeFromFirstOrderDiscount (e.g. already thin-margin items).
+    let discountEligibleSubtotalRupees = 0;
     // GST computed per product line at its own gstPercent, on the pre-coupon base.
     // Scaled for coupon discount below once the total discount ratio is known.
     let grossGstRupees = 0;
@@ -77,6 +80,9 @@ export async function POST(req: NextRequest) {
 
       const lineSubtotal = basePrice * item.quantity;
       subtotalRupees += lineSubtotal;
+      if (!dbProduct.excludeFromFirstOrderDiscount) {
+        discountEligibleSubtotalRupees += lineSubtotal;
+      }
       const gstRate = dbProduct.gstPercent ?? 5;
       grossGstRupees += lineSubtotal * (gstRate / (100 + gstRate));
       productShippingFees.push(getDbProductShippingFee(dbProduct));
@@ -124,6 +130,7 @@ export async function POST(req: NextRequest) {
       paymentMethod,
       shippingFeeRupees,
       gstAmountOverride,
+      discountEligibleSubtotal: discountEligibleSubtotalRupees,
     });
 
     // ── Save shipping address ───────────────────────────────

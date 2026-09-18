@@ -38,6 +38,7 @@ export interface Product {
   brand?: string;
   shippingFee?: number;
   shippingMethod?: string;
+  excludeFromFirstOrderDiscount?: boolean;
   categoryId?: string | null;
   subcategoryId?: string | null;
 }
