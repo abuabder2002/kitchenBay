@@ -1,19 +1,56 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Printer, ArrowLeft } from 'lucide-react';
-import logoImg from '@/images/logo.jpeg';
+import logoImg from '@/images/invoice-logo.jpg';
+import { code128BWidths } from '@/lib/code128';
 
-function normalizeImageSrc(image: string | null | undefined): string {
-  if (!image) return '/artisan_kitchenware.png';
-  if (image.startsWith('http') || image.startsWith('/') || image.startsWith('data:')) {
-    return image;
-  }
-  return `data:image/jpeg;base64,${image}`;
+const SELLER = {
+  name: 'Kitchenbay The Homeneeds',
+  addressLines: ['19/A Line Street', 'Attur (T.k)', 'Salem 636102', 'Tamil Nadu', '75027 77766'],
+  gstin: '33FR0PS5957L1ZR',
+};
+
+const inr = (n: number) =>
+  'INR' + new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+
+const formatDate = (d: string | Date) => new Date(d).toLocaleDateString('en-GB').replace(/\//g, '-');
+
+function Barcode({ value }: { value: string }) {
+  const widths = code128BWidths(value);
+  const total = widths.reduce((a, b) => a + b, 0);
+  let x = 0;
+  const bars: React.ReactElement[] = [];
+  widths.forEach((w, i) => {
+    if (i % 2 === 0) bars.push(<rect key={i} x={x} y={0} width={w} height={40} />);
+    x += w;
+  });
+  return (
+    <svg
+      viewBox={`0 0 ${total} 40`}
+      preserveAspectRatio="none"
+      style={{ width: Math.min(total * 1.4, 240), height: 40 }}
+      className="fill-slate-900"
+      role="img"
+      aria-label={`Barcode for order ${value}`}
+    >
+      {bars}
+    </svg>
+  );
+}
+
+function Party({ title, name, lines, email }: { title: string; name: string; lines: string[]; email?: string }) {
+  return (
+    <div className="text-xs leading-6">
+      <p className="font-bold text-slate-800">{title}</p>
+      <p>{name}</p>
+      {lines.map((l, i) => <p key={i}>{l}</p>)}
+      {email && <p>{email}</p>}
+    </div>
+  );
 }
 
 export default function AdminOrderInvoicePage() {
@@ -40,9 +77,6 @@ export default function AdminOrderInvoicePage() {
       .finally(() => setLoading(false));
   }, [orderId, router]);
 
-  const formatPrice = (p: number) =>
-    'Rs. ' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(p);
-
   const paymentLabel = order?.paymentStatus === 'COD_PENDING'
     ? 'Cash on Delivery (COD)'
     : order?.razorpayId
@@ -58,6 +92,16 @@ export default function AdminOrderInvoicePage() {
   if (error || !order) {
     return <div className="min-h-screen flex items-center justify-center text-red-500">{error || 'Order not found'}</div>;
   }
+
+  const addr = order.address;
+  const addressLines: string[] = addr
+    ? [
+        addr.street,
+        `${addr.city} ${addr.zip}`.trim(),
+        addr.state,
+        addr.country && addr.country !== 'India' ? addr.country : '',
+      ].filter(Boolean)
+    : ['No address on file'];
 
   return (
     <div className="min-h-screen bg-gray-100 py-8 print:bg-white print:py-0">
@@ -75,119 +119,111 @@ export default function AdminOrderInvoicePage() {
       </div>
 
       {/* Invoice sheet */}
-      <div className="max-w-3xl mx-auto bg-white shadow-sm print:shadow-none border border-gray-100 print:border-0 rounded-2xl print:rounded-none p-8 sm:p-10 text-gray-800">
-        {/* Letterhead */}
-        <div className="flex items-start justify-between border-b border-gray-200 pb-6 mb-6">
-          <div>
-            <Image src={logoImg} alt="Kitchenbay" className="h-12 w-auto object-contain mb-1.5" priority />
-            <p className="text-xs text-gray-500">KitchenBay – Premium Kitchenware, Cookware &amp; Home Décor</p>
-            <p className="text-xs text-gray-400 mt-2">19/A Line Street, Attur, Salem, Tamil Nadu 636102</p>
-            <p className="text-xs text-gray-400">GSTIN: 07AABCA1234B1Z5</p>
+      <div className="max-w-3xl mx-auto bg-white shadow-sm print:shadow-none border border-gray-100 print:border-0 rounded-2xl print:rounded-none p-8 sm:p-10 print:p-4 text-slate-700">
+        {/* Title + barcode */}
+        <div className="flex items-start justify-between gap-6">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-800">INVOICE</h1>
+          <Barcode value={String(order.id)} />
+        </div>
+
+        {/* Logo / GSTIN + From */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-x-6 gap-y-6 mt-5">
+          <div className="sm:col-span-2 print:col-span-2">
+            <Image src={logoImg} alt="Kitchenbay" className="w-36 h-36 object-contain" priority />
+            <p className="text-xs mt-6">GSTIN: {SELLER.gstin}</p>
           </div>
-          <div className="text-right">
-            <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide">Tax Invoice</h2>
-            <p className="text-xs text-gray-500 mt-1">Order #{order.id}</p>
-            <p className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-            <span className="inline-block mt-2 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-              {order.status}
-            </span>
+          <div className="text-xs leading-6 sm:pt-8">
+            <p className="font-bold text-slate-800">From</p>
+            <p>{SELLER.name}</p>
+            {SELLER.addressLines.map((l, i) => <p key={i}>{l}</p>)}
           </div>
         </div>
 
-        {/* Bill to / Ship to */}
-        <div className="grid grid-cols-2 gap-6 mb-8">
-          <div>
-            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Bill To</h3>
-            <p className="text-sm font-semibold text-gray-900">{order.customer}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{order.email}</p>
-            <p className="text-xs text-gray-500 mt-2">
-              <span className="text-gray-400">Payment: </span>
-              <span className="font-semibold text-gray-700">{paymentLabel}</span>
+        {/* Bill to / Ship to / Invoice meta */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-x-6 gap-y-6 mt-8">
+          <Party title="Bill to" name={order.customer} lines={addressLines} email={order.email} />
+          <Party title="Ship to" name={order.customer} lines={addressLines} email={order.email} />
+          <div className="text-xs leading-6">
+            <p className="text-lg leading-8 mb-1 whitespace-nowrap">
+              <span className="font-bold text-slate-800">Invoice no:</span>{' '}
+              <span className="font-normal">{order.id}</span>
             </p>
-          </div>
-          <div>
-            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Ship To</h3>
-            {order.address ? (
-              <p className="text-xs text-gray-600 leading-relaxed">
-                {order.address.street}, {order.address.city}, {order.address.state} - {order.address.zip}, {order.address.country}
-              </p>
-            ) : (
-              <p className="text-xs text-gray-400">No address on file</p>
-            )}
+            <p><span className="font-bold text-slate-800">Invoice date:</span> {formatDate(order.createdAt)}</p>
+            <p><span className="font-bold text-slate-800">Order no:</span> {order.id}</p>
+            <p><span className="font-bold text-slate-800">Order date:</span> {formatDate(order.createdAt)}</p>
+            <p><span className="font-bold text-slate-800">Payment method:</span> {paymentLabel}</p>
           </div>
         </div>
 
         {/* Items table */}
-        <table className="w-full text-sm mb-8 border-collapse">
+        <table className="w-full text-xs mt-10 border-collapse">
           <thead>
-            <tr className="border-b-2 border-gray-200 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-              <th className="py-2 pr-2">Item</th>
-              <th className="py-2 px-2 text-center">Qty</th>
-              <th className="py-2 px-2 text-right">Price</th>
-              <th className="py-2 pl-2 text-right">Total</th>
+            <tr className="border-b border-slate-200 text-slate-800 font-bold">
+              <th className="py-3 pr-2 text-left w-14">S.No</th>
+              <th className="py-3 px-2 text-left">Product</th>
+              <th className="py-3 px-2 text-center">Quantity</th>
+              <th className="py-3 px-2 text-left">Unit price</th>
+              <th className="py-3 pl-2 text-right">Total price</th>
             </tr>
           </thead>
           <tbody>
             {order.items.map((item: any, idx: number) => (
-              <tr key={idx} className="border-b border-gray-100">
-                <td className="py-3 pr-2">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={normalizeImageSrc(item.image)}
-                      alt={item.name}
-                      className="w-12 h-12 object-cover rounded-lg border border-gray-200 shrink-0 print:w-10 print:h-10"
-                    />
-                    <div>
-                      <p className="font-semibold text-gray-800 leading-tight">{item.name}</p>
-                      {item.size && <p className="text-xs text-gray-400">Size: {item.size}</p>}
-                    </div>
-                  </div>
+              <tr key={idx} className="border-b border-slate-200 align-middle">
+                <td className="py-4 pr-2">{idx + 1}</td>
+                <td className="py-4 px-2 leading-6">
+                  {item.name}
+                  {item.size && <span className="block text-slate-400">Size: {item.size}</span>}
                 </td>
-                <td className="py-3 px-2 text-center text-gray-600">{item.quantity}</td>
-                <td className="py-3 px-2 text-right text-gray-600">{formatPrice(item.price)}</td>
-                <td className="py-3 pl-2 text-right font-semibold text-gray-900">{formatPrice(item.price * item.quantity)}</td>
+                <td className="py-4 px-2 text-center">{item.quantity}</td>
+                <td className="py-4 px-2 whitespace-nowrap">{inr(item.price)}</td>
+                <td className="py-4 pl-2 text-right whitespace-nowrap">{inr(item.price * item.quantity)}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         {/* Totals */}
-        <div className="flex justify-end mb-8">
-          <div className="w-full max-w-xs space-y-2 text-sm">
-            <div className="flex justify-between text-gray-500">
+        <div className="flex justify-end">
+          <div className="w-full sm:w-[45%] print:w-[45%] sm:min-w-[260px] text-xs">
+            <div className="flex justify-between py-2.5">
               <span>Subtotal</span>
-              <span className="text-gray-800">{formatPrice(order.subtotal)}</span>
+              <span className="text-right">{inr(order.subtotal)} (incl. tax)</span>
             </div>
             {order.firstOrderDiscount > 0 && (
-              <div className="flex justify-between text-emerald-600 font-medium">
+              <div className="flex justify-between py-2.5 text-emerald-600 font-medium">
                 <span>First Order Offer</span>
-                <span>-{formatPrice(order.firstOrderDiscount)}</span>
+                <span>-{inr(order.firstOrderDiscount)}</span>
               </div>
             )}
             {order.discountAmount > 0 && (
-              <div className="flex justify-between text-emerald-600 font-medium">
+              <div className="flex justify-between py-2.5 text-emerald-600 font-medium">
                 <span>Discount{order.couponCode ? ` (${order.couponCode})` : ''}</span>
-                <span>-{formatPrice(order.discountAmount)}</span>
+                <span>-{inr(order.discountAmount)}</span>
               </div>
             )}
-            <div className="flex justify-between text-gray-500">
+            <div className="flex justify-between py-2.5 border-b border-slate-200">
               <span>Shipping</span>
-              <span className="text-gray-800">{order.shippingAmount > 0 ? formatPrice(order.shippingAmount) : 'FREE'}</span>
+              <span className="text-right">
+                {order.shippingAmount > 0 ? (
+                  <>{inr(order.shippingAmount)} <span className="text-[10px]">via Flat rate</span></>
+                ) : (
+                  'Free shipping'
+                )}
+              </span>
             </div>
-            {order.gstAmount > 0 && (
-              <div className="flex justify-between text-gray-400 text-xs">
-                <span>(includes GST)</span>
-                <span>{formatPrice(order.gstAmount)}</span>
-              </div>
-            )}
-            <div className="flex justify-between border-t border-gray-200 pt-2 mt-2 text-base font-bold text-gray-900">
-              <span>Grand Total</span>
-              <span>{formatPrice(order.total)}</span>
+            <div className="flex justify-between items-center py-4">
+              <span>Total</span>
+              <span className="text-right font-bold text-slate-800 text-sm">
+                <span className="block">{inr(order.total)}</span>
+                {order.gstAmount > 0 && (
+                  <span className="block text-xs">(incl. tax {inr(order.gstAmount)})</span>
+                )}
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-100 pt-6 text-center text-[11px] text-gray-400">
+        <div className="border-t border-slate-100 mt-12 pt-5 text-center text-[11px] text-slate-400">
           Thank you for shopping with Kitchenbay. For queries, contact kitchenbaypvtltd@gmail.com
         </div>
       </div>
